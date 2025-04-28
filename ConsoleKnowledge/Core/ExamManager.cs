@@ -216,7 +216,7 @@ public class ExamManager
         Console.ReadKey(true);
     }
     
-     private void DisplayQuestion(Question question)
+    private void DisplayQuestion(Question question)
     {
         AnsiConsole.Clear();
         
@@ -252,13 +252,15 @@ public class ExamManager
             AnsiConsole.WriteLine();
             
             // Display score if available
-            if (_currentScore?.QuestionScores != null && 
-                question.QuestionId != null && 
-                _currentScore.QuestionScores.TryGetValue(question.QuestionId, out var questionScore))
+            if (_currentScore != null && question.QuestionId != null)
             {
-                AnsiConsole.MarkupLine($"[yellow]Score:[/] {questionScore.ObtainedScore}/{questionScore.MaxScore}");
-                AnsiConsole.MarkupLine($"[yellow]Result:[/] {(questionScore.IsCorrect ? "[green]Correct[/]" : "[red]Incorrect[/]")}");
-                AnsiConsole.WriteLine();
+                var questionScore = _currentScore.GetQuestionScore(question.QuestionId);
+                if (questionScore != null)
+                {
+                    AnsiConsole.MarkupLine($"[yellow]Score:[/] {questionScore.ObtainedScore}/{questionScore.MaxScore}");
+                    AnsiConsole.MarkupLine($"[yellow]Result:[/] {(questionScore.IsCorrect ? "[green]Correct[/]" : "[red]Incorrect[/]")}");
+                    AnsiConsole.WriteLine();
+                }
             }
         }
         else
@@ -605,11 +607,9 @@ public class ExamManager
         
         var table = new Table()
             .Border(TableBorder.Rounded)
-            .AddColumn(_i18n.GetText("stats.total_questions"))
+            .AddColumn("Metric")
             .AddColumn("Value");
         
-        table.AddRow(_i18n.GetText("stats.total_questions"), totalQuestions.ToString());
-        table.AddRow(_i18n.GetText("stats.answered_questions"), answeredQuestions.ToString());
         table.AddRow(_i18n.GetText("stats.total_questions"), totalQuestions.ToString());
         table.AddRow(_i18n.GetText("stats.answered_questions"), answeredQuestions.ToString());
         table.AddRow(_i18n.GetText("stats.completion_rate"), $"{(totalQuestions > 0 ? (double)answeredQuestions / totalQuestions * 100 : 0):F1}%");
@@ -623,28 +623,56 @@ public class ExamManager
         
         AnsiConsole.Write(table);
         
-        // 显示分数详情
+        // 显示章节分数
+        if (_currentScore != null && _currentScore.SectionScores.Count > 0)
+        {
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[blue]== Section Scores ==[/]");
+            
+            var sectionTable = new Table()
+                .Border(TableBorder.Rounded)
+                .AddColumn("Section")
+                .AddColumn("Score");
+                
+            foreach (var score in _currentScore.SectionScores)
+            {
+                sectionTable.AddRow(
+                    score.Key,
+                    $"{score.Value}"
+                );
+            }
+            
+            AnsiConsole.Write(sectionTable);
+        }
+        
+        // 显示问题分数详情
         if (_currentScore != null && _currentScore.QuestionScores.Count > 0)
         {
             AnsiConsole.WriteLine();
             AnsiConsole.MarkupLine("[blue]== Question Scores ==[/]");
             
-            var scoreTable = new Table()
-                .Border(TableBorder.Rounded)
-                .AddColumn("Question ID")
-                .AddColumn("Score")
-                .AddColumn("Result");
-                
-            foreach (var score in _currentScore.QuestionScores)
+            foreach (var sectionEntry in _currentScore.QuestionScores)
             {
-                scoreTable.AddRow(
-                    score.Key,
-                    $"{score.Value.ObtainedScore}/{score.Value.MaxScore}",
-                    score.Value.IsCorrect ? "[green]Correct[/]" : "[red]Incorrect[/]"
-                );
+                AnsiConsole.MarkupLine($"[yellow]Section: {sectionEntry.Key}[/]");
+                
+                var scoreTable = new Table()
+                    .Border(TableBorder.Rounded)
+                    .AddColumn("Question ID")
+                    .AddColumn("Score")
+                    .AddColumn("Result");
+                    
+                foreach (var score in sectionEntry.Value)
+                {
+                    scoreTable.AddRow(
+                        score.Key,
+                        $"{score.Value.ObtainedScore}/{score.Value.MaxScore}",
+                        score.Value.IsCorrect ? "[green]Correct[/]" : "[red]Incorrect[/]"
+                    );
+                }
+                
+                AnsiConsole.Write(scoreTable);
+                AnsiConsole.WriteLine();
             }
-            
-            AnsiConsole.Write(scoreTable);
         }
         
         AnsiConsole.WriteLine();

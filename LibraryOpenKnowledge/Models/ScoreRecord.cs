@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
-
 namespace LibraryOpenKnowledge.Models;
-
 [Serializable]
 public class ScoreRecord : ISerializable
 {
@@ -16,7 +15,7 @@ public class ScoreRecord : ISerializable
     public double TotalScore { get; set; } = 0;
     public double ObtainedScore { get; set; } = 0;
     public Dictionary<string, double> SectionScores { get; set; } = new();
-    public Dictionary<string, QuestionScore> QuestionScores { get; set; } = new();
+    public Dictionary<string, Dictionary<string, QuestionScore>> QuestionScores { get; set; } = new();
     
     #region ISerializable
     
@@ -33,7 +32,7 @@ public class ScoreRecord : ISerializable
         TotalScore = info.GetDouble("TotalScore");
         ObtainedScore = info.GetDouble("ObtainedScore");
         SectionScores = (Dictionary<string, double>)info.GetValue("SectionScores", typeof(Dictionary<string, double>))!;
-        QuestionScores = (Dictionary<string, QuestionScore>)info.GetValue("QuestionScores", typeof(Dictionary<string, QuestionScore>))!;
+        QuestionScores = (Dictionary<string, Dictionary<string, QuestionScore>>)info.GetValue("QuestionScores", typeof(Dictionary<string, Dictionary<string, QuestionScore>>))!;
     }
     
     public void GetObjectData(SerializationInfo info, StreamingContext context)
@@ -60,6 +59,7 @@ public class ScoreRecord : ISerializable
         TotalScore = examination.ExaminationMetadata.TotalScore;
         ObtainedScore = 0;
         SectionScores.Clear();
+        QuestionScores.Clear();
         
         foreach (var section in examination.ExaminationSections)
         {
@@ -67,12 +67,15 @@ public class ScoreRecord : ISerializable
                 continue;
                 
             double sectionScore = 0;
+            string sectionId = section.SectionId ?? section.Title;
+            
+            // 为每个章节创建问题分数字典
+            var sectionQuestionScores = new Dictionary<string, QuestionScore>();
+            QuestionScores[sectionId] = sectionQuestionScores;
             
             foreach (var question in section.Questions)
             {
-                if (question.QuestionId == null) 
-                    continue;
-                    
+                string questionId = question.QuestionId ?? Guid.NewGuid().ToString();
                 double questionScore = 0;
                 
                 // For AI judged questions, the score is set by the AI
@@ -88,10 +91,10 @@ public class ScoreRecord : ISerializable
                     questionScore = isCorrect ? question.Score : 0;
                 }
                 
-                // Add to question scores dictionary
-                QuestionScores[question.QuestionId] = new QuestionScore
+                // Add to question scores dictionary for this section
+                sectionQuestionScores[questionId] = new QuestionScore
                 {
-                    QuestionId = question.QuestionId,
+                    QuestionId = questionId,
                     MaxScore = question.Score,
                     ObtainedScore = questionScore,
                     IsCorrect = Math.Abs(questionScore - question.Score) < 0.001
@@ -102,14 +105,47 @@ public class ScoreRecord : ISerializable
             }
             
             // Add to section scores dictionary
-            if (section.SectionId != null)
-            {
-                SectionScores[section.SectionId] = sectionScore;
-            }
+            SectionScores[sectionId] = sectionScore;
             
             // Add to total score
             ObtainedScore += sectionScore;
         }
+    }
+    
+    /// <summary>
+    /// Gets the question score for a specific question
+    /// </summary>
+    /// <param name="questionId">The question ID</param>
+    /// <returns>The question score or null if not found</returns>
+    public QuestionScore? GetQuestionScore(string questionId)
+    {
+        foreach (var sectionScores in QuestionScores.Values)
+        {
+            if (sectionScores.TryGetValue(questionId, out var score))
+            {
+                return score;
+            }
+        }
+        return null;
+    }
+    
+    /// <summary>
+    /// Gets all question scores as a flattened dictionary
+    /// </summary>
+    /// <returns>Dictionary with question IDs as keys and scores as values</returns>
+    public Dictionary<string, QuestionScore> GetAllQuestionScores()
+    {
+        var result = new Dictionary<string, QuestionScore>();
+        
+        foreach (var sectionScores in QuestionScores.Values)
+        {
+            foreach (var score in sectionScores)
+            {
+                result[score.Key] = score.Value;
+            }
+        }
+        
+        return result;
     }
     
     private bool IsAnswerCorrect(Question question)
@@ -142,4 +178,3 @@ public class ScoreRecord : ISerializable
         }
     }
 }
-

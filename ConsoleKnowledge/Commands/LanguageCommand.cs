@@ -30,7 +30,7 @@ public class LanguageCommand : AsyncCommand<LanguageCommand.Settings>
             foreach (var lang in i18n.GetSupportedLanguages())
             {
                 var isCurrent = lang == i18n.CurrentLanguage;
-                AnsiConsole.MarkupLine($"{(isCurrent ? "[green]* " : "  ")}{lang}[/]");
+                AnsiConsole.MarkupLine($"{(isCurrent ? "[green]* " : "[green]  ")}{lang}[/]");
             }
             return 0;
         }
