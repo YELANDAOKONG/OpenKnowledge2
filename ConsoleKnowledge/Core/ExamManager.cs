@@ -328,12 +328,19 @@ public class ExamManager
         AnsiConsole.WriteLine();
         
         // Display reference materials if available
-        if (question.ReferenceMaterials != null && question.ReferenceMaterials.Length > 0)
+        if (question.ReferenceMaterials != null)
         {
             AnsiConsole.MarkupLine("[green]Reference Materials:[/]");
-            foreach (var material in question.ReferenceMaterials)
+            foreach (var referenceMaterial in question.ReferenceMaterials)
             {
-                AnsiConsole.WriteLine(material);
+                if (referenceMaterial != null && referenceMaterial.Materials.Length > 0)
+                {
+                    foreach (var material in referenceMaterial.Materials)
+                    {
+                        AnsiConsole.WriteLine(material);
+                    }
+                    
+                }
             }
             AnsiConsole.WriteLine();
         }

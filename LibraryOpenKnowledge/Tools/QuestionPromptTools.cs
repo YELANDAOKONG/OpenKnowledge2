@@ -16,7 +16,23 @@ public class QuestionPromptTools
         info.AppendLine($"@UserAnswer: {string.Join(", ", question.UserAnswer ?? Array.Empty<string>())}");
         info.AppendLine($"@Answer: {string.Join(", ", question.Answer)}");
         info.AppendLine($"@ReferenceAnswer: {string.Join(", ", question.ReferenceAnswer ?? Array.Empty<string>())}");
-        info.AppendLine($"@ReferenceMaterials: {string.Join(", ", question.ReferenceMaterials ?? Array.Empty<string>())}");
+        List<string> materials = new List<string>();
+        if (question.ReferenceMaterials != null)
+        {
+            foreach (var referenceMaterial in question.ReferenceMaterials)
+            {
+                if (referenceMaterial != null && referenceMaterial.Materials.Length > 0)
+                {
+                    foreach (var material in referenceMaterial.Materials)
+                    {
+                        materials.Add(material);
+                        materials.Add(", ");
+                    }
+                }
+            }
+        }
+
+        info.AppendLine($"@ReferenceMaterials: {string.Join(", ", materials.ToArray() ?? Array.Empty<string>())}");
         return info.ToString();
     }
     
@@ -35,14 +51,30 @@ public class QuestionPromptTools
         prompt.AppendLine(question.Stem.Replace("\"", "\\\"").Replace("'", "\\'").Replace("`", "\\`"));
         prompt.AppendLine("\"\"\"");
         
-        // Add reference materials if available
-        if (question.ReferenceMaterials != null && question.ReferenceMaterials.Length > 0)
+        ///// Add reference materials if available
+        // if (question.ReferenceMaterials != null && question.ReferenceMaterials.Materials.Length > 0)
+        // {
+        //     prompt.AppendLine("\nReference Materials:");
+        //     prompt.AppendLine("\"\"\"");
+        //     foreach (var material in question.ReferenceMaterials.Materials)
+        //     {
+        //         prompt.AppendLine(material.Replace("\"", "\\\"").Replace("'", "\\'").Replace("`", "\\`"));
+        //     }
+        //     prompt.AppendLine("\"\"\"");
+        // }
+        if (question.ReferenceMaterials != null)
         {
             prompt.AppendLine("\nReference Materials:");
             prompt.AppendLine("\"\"\"");
-            foreach (var material in question.ReferenceMaterials)
+            foreach (var referenceMaterial in question.ReferenceMaterials)
             {
-                prompt.AppendLine(material.Replace("\"", "\\\"").Replace("'", "\\'").Replace("`", "\\`"));
+                if (referenceMaterial != null && referenceMaterial.Materials.Length > 0)
+                {
+                    foreach (var material in referenceMaterial.Materials)
+                    {
+                        prompt.AppendLine(material.Replace("\"", "\\\"").Replace("'", "\\'").Replace("`", "\\`"));
+                    }
+                }
             }
             prompt.AppendLine("\"\"\"");
         }

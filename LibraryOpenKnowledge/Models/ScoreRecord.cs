@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 namespace LibraryOpenKnowledge.Models;
 [Serializable]
-public class ScoreRecord : ISerializable
+public class ScoreRecord
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
     public string ExamId { get; set; } = string.Empty;
@@ -16,40 +16,6 @@ public class ScoreRecord : ISerializable
     public double ObtainedScore { get; set; } = 0;
     public Dictionary<string, double> SectionScores { get; set; } = new();
     public Dictionary<string, Dictionary<string, QuestionScore>> QuestionScores { get; set; } = new();
-    
-    #region ISerializable
-    
-    public ScoreRecord() { }
-    
-    protected ScoreRecord(SerializationInfo info, StreamingContext context)
-    {
-        Id = info.GetString("Id") ?? Guid.NewGuid().ToString();
-        ExamId = info.GetString("ExamId") ?? string.Empty;
-        ExamTitle = info.GetString("ExamTitle") ?? string.Empty;
-        UserId = info.GetString("UserId") ?? string.Empty;
-        UserName = info.GetString("UserName") ?? string.Empty;
-        Timestamp = info.GetDateTime("Timestamp");
-        TotalScore = info.GetDouble("TotalScore");
-        ObtainedScore = info.GetDouble("ObtainedScore");
-        SectionScores = (Dictionary<string, double>)info.GetValue("SectionScores", typeof(Dictionary<string, double>))!;
-        QuestionScores = (Dictionary<string, Dictionary<string, QuestionScore>>)info.GetValue("QuestionScores", typeof(Dictionary<string, Dictionary<string, QuestionScore>>))!;
-    }
-    
-    public void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        info.AddValue("Id", Id);
-        info.AddValue("ExamId", ExamId);
-        info.AddValue("ExamTitle", ExamTitle);
-        info.AddValue("UserId", UserId);
-        info.AddValue("UserName", UserName);
-        info.AddValue("Timestamp", Timestamp);
-        info.AddValue("TotalScore", TotalScore);
-        info.AddValue("ObtainedScore", ObtainedScore);
-        info.AddValue("SectionScores", SectionScores);
-        info.AddValue("QuestionScores", QuestionScores);
-    }
-    
-    #endregion
     
     public void CalculateScores(Examination examination)
     {
