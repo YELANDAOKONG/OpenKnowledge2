@@ -13,4 +13,16 @@ static class Program
         ApplicationConfiguration.Initialize();
         Application.Run(new MainForm());
     }
+
+    internal static void Exit(int code, bool force = false)
+    {
+        if (force)
+        {
+            Environment.Exit(code);
+        }
+        else
+        {
+            Application.Exit();
+        }
+    }
 }
