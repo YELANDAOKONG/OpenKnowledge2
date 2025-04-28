@@ -32,7 +32,7 @@ public class QuestionPromptTools
         prompt.AppendLine($"Question Type: \"{GetQuestionTypeDescription(question.Type)}\"");
         prompt.AppendLine($"Question: ");
         prompt.AppendLine("\"\"\"");
-        prompt.AppendLine(question.Stem);
+        prompt.AppendLine(question.Stem.Replace("\"", "\\\"").Replace("'", "\\'").Replace("`", "\\`"));
         prompt.AppendLine("\"\"\"");
         
         // Add reference materials if available
@@ -42,7 +42,7 @@ public class QuestionPromptTools
             prompt.AppendLine("\"\"\"");
             foreach (var material in question.ReferenceMaterials)
             {
-                prompt.AppendLine(material);
+                prompt.AppendLine(material.Replace("\"", "\\\"").Replace("'", "\\'").Replace("`", "\\`"));
             }
             prompt.AppendLine("\"\"\"");
         }
@@ -54,7 +54,7 @@ public class QuestionPromptTools
             prompt.AppendLine("\"\"\"");
             foreach (var answer in question.UserAnswer)
             {
-                prompt.AppendLine(answer);
+                prompt.AppendLine(answer.Replace("\"", "\\\"").Replace("'", "\\'").Replace("`", "\\`"));
             }
             prompt.AppendLine("\"\"\"");
         }
@@ -68,7 +68,7 @@ public class QuestionPromptTools
         prompt.AppendLine("\"\"\"");
         foreach (var answer in question.Answer)
         {
-            prompt.AppendLine(answer);
+            prompt.AppendLine(answer.Replace("\"", "\\\"").Replace("'", "\\'").Replace("`", "\\`"));
         }
         prompt.AppendLine("\"\"\"");
         
@@ -79,7 +79,7 @@ public class QuestionPromptTools
             prompt.AppendLine("\"\"\"");
             foreach (var refAnswer in question.ReferenceAnswer)
             {
-                prompt.AppendLine(refAnswer);
+                prompt.AppendLine(refAnswer.Replace("\"", "\\\"").Replace("'", "\\'").Replace("`", "\\`"));
             }
             prompt.AppendLine("\"\"\"");
         }
@@ -91,7 +91,7 @@ public class QuestionPromptTools
             prompt.AppendLine("\"\"\"");
             foreach (var commit in question.Commits)
             {
-                prompt.AppendLine(commit);
+                prompt.AppendLine(commit.Replace("\"", "\\\"").Replace("'", "\\'").Replace("`", "\\`"));
             }
             prompt.AppendLine("\"\"\"");
         }
