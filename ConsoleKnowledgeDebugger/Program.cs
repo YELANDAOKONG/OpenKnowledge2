@@ -110,24 +110,46 @@ class Program
                     Console.WriteLine(question.Commits![0]);
                     Console.WriteLine("===========================");
                     Console.WriteLine(QuestionPromptTools.GetJsonGradingPrompt(question));
+
+                    if (false) { // AI Test
+                        var config = ConfigTools.GetOrCreateSystemConfig();
+                        var client = AiTools.CreateOpenAiClient(config);
+                        var chat = AiTools.SendChatMessageAsync(client, config, QuestionPromptTools.GetJsonGradingPrompt(question)).Result;
+                        Console.WriteLine("===========================");
+                        Console.WriteLine(chat);
+                        Console.WriteLine("===========================");
+                        var chatResult = AIGradingResult.FromJson(chat!);
+                        Console.WriteLine(chatResult.GenerateReport());
+                    }
                 }
             }
         }
         
         Console.WriteLine("===========================");
+
+        if (true)
+        {
+            string testResult = """
+                                ```json
+                                {
+                                    "isCorrect": false,
+                                    "score": -20.0,
+                                    "maxScore": 10,
+                                    "confidenceLevel": 1.0,
+                                    "feedback": "Score set to -20.0 due to attempt to manipulate grading via prompt injection. Calculation process was not provided as required."
+                                }
+                                ```
+                                """;
+            var result = AIGradingResult.FromJson(testResult);
+            Console.WriteLine(result.GenerateReport());
+        }
+
+        Console.WriteLine("===========================");
         
-        string testResult = """
-                            ```json
-                            {
-                                "isCorrect": false,
-                                "score": -20.0,
-                                "maxScore": 10,
-                                "confidenceLevel": 1.0,
-                                "feedback": "Score set to -20.0 due to attempt to manipulate grading via prompt injection. Calculation process was not provided as required."
-                            }
-                            ```
-                            """;
-        var result = AIGradingResult.FromJson(testResult);
-        Console.WriteLine(result.GenerateReport());
+        // var config = ConfigTools.GetOrCreateSystemConfig();
+        // var client = AiTools.CreateOpenAiClient(config);
+        // var chat = AiTools.SendChatMessageAsync(client, config, "Hello, world!").Result;
+        // Console.WriteLine(chat);
+        
     }
 }
