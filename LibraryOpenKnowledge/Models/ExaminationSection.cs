@@ -11,7 +11,9 @@ public class ExaminationSection : ISerializable
     public string? Description { get; set; } = null; // 章节描述
     public ReferenceMaterial[]? ReferenceMaterials { get; set; } = new ReferenceMaterial[] { }; // 章节参考材料
     
+    public double? Score { get; set; } = null; // 章节分数
     public Question[]? Questions { get; set; } = new Question[] { };
+    
     
     
     
@@ -29,6 +31,7 @@ public class ExaminationSection : ISerializable
         Description = info.GetString("Description");
         ReferenceMaterials = (ReferenceMaterial[]?) info.GetValue("ReferenceMaterials", typeof(ReferenceMaterial[]));
         
+        Score = info.GetDouble("Score");
         Questions = (Question[]?) info.GetValue("Questions", typeof(Question[]));
     }
     
@@ -39,6 +42,7 @@ public class ExaminationSection : ISerializable
         info.AddValue("Description", Description);
         info.AddValue("ReferenceMaterials", ReferenceMaterials);
         
+        info.AddValue("Score", Score);
         info.AddValue("Questions", Questions);
     }
 

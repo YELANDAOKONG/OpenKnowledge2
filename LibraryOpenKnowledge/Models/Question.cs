@@ -9,7 +9,7 @@ public class Question : ISerializable
     public string? QuestionId { get; set; } = null;
     public QuestionTypes Type { get; set; } = QuestionTypes.Unknown;
     public string Stem { get; set; } = "Default"; // 题目文本
-    public double Weight { get; set; } = 1.0; // 分数
+    public double Score { get; set; } = 1.0; // 分数
 
     public string[]? UserAnswer; // 用户答案
     public string[] Answer; // 标准答案
@@ -33,7 +33,7 @@ public class Question : ISerializable
         QuestionId = info.GetString("QuestionId");
         Type = (QuestionTypes) info.GetInt32("Type");
         Stem = info.GetString("Stem")!;
-        Weight = info.GetDouble("Weight");
+        Score = info.GetDouble("Score");
         
         UserAnswer = (string[]?) info.GetValue("UserAnswer", typeof(string[]));
         Answer = (string[]) info.GetValue("Answer", typeof(string[]))!;
@@ -50,7 +50,7 @@ public class Question : ISerializable
         info.AddValue("QuestionId", QuestionId);
         info.AddValue("Type", (int) Type);
         info.AddValue("Stem", Stem);
-        info.AddValue("Weight", Weight);
+        info.AddValue("Score", Score);
         
         info.AddValue("UserAnswer", UserAnswer);
         info.AddValue("Answer", Answer);
