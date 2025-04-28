@@ -19,4 +19,6 @@ public class Question
     
     public bool IsAiJudge { get; set; } = false; // 是否需要AI判题
     public string[]? Commits { get; set; } = new string[] { }; // AI提示
+    
+    public Question[]? SubQuestions { get; set; } = new Question[] { };
 }
