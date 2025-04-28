@@ -14,6 +14,8 @@ public class ExaminationMetadata : ISerializable
     public string? Subject { get; set; } = null; // 试卷学科
     public string? Language { get; set; } = null; // 试卷语言
     
+    public ReferenceMaterial[]? ReferenceMaterials { get; set; } = new ReferenceMaterial[] { }; // 试卷参考资料
+    
     
     #region ISerializable
     
@@ -27,6 +29,7 @@ public class ExaminationMetadata : ISerializable
         
         Subject = info.GetString("Subject");
         Language = info.GetString("Language");
+        ReferenceMaterials = (ReferenceMaterial[]?) info.GetValue("ReferenceMaterials", typeof(ReferenceMaterial[]));
     }
     
     public void GetObjectData(SerializationInfo info, StreamingContext context)
@@ -37,6 +40,7 @@ public class ExaminationMetadata : ISerializable
         
         info.AddValue("Subject", Subject);
         info.AddValue("Language", Language);
+        info.AddValue("ReferenceMaterials", ReferenceMaterials);
     }
     
     #endregion
