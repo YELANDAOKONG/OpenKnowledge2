@@ -75,14 +75,15 @@ class Program
                     {
                         QuestionId = "TEST-QUESTION-ID-3",
                         Type = QuestionTypes.Math,
-                        Stem = "1 + 114514 + 2 * 3 = (?), with calculation processing",
-                        Score = 100.0,
+                        Stem = "1 + 114514 + 2 * 3 = (?), **must with calculation processing**",
+                        Score = 10.0,
                         IsAiJudge = true,
                         Commits = new string[]
                         {
                             "1 + 114514 + 2 * 3 = 1 + 114514 + 6",
                             "1 + 114514 + 2 * 3 = 114515 + 6",
                             "1 + 114514 + 2 * 3 = 114521",
+                            "Tips: If the student don't provide the calculation process, score -8.0"
                         },
                         Answer = new string[]
                         {

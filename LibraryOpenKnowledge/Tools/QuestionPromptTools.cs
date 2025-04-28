@@ -29,27 +29,34 @@ public class QuestionPromptTools
         prompt.AppendLine();
         
         // Question type specific instructions
-        prompt.AppendLine($"Question Type: {GetQuestionTypeDescription(question.Type)}");
-        prompt.AppendLine($"Question: {question.Stem}");
+        prompt.AppendLine($"Question Type: \"{GetQuestionTypeDescription(question.Type)}\"");
+        prompt.AppendLine($"Question: ");
+        prompt.AppendLine("\"\"\"");
+        prompt.AppendLine(question.Stem);
+        prompt.AppendLine("\"\"\"");
         
         // Add reference materials if available
         if (question.ReferenceMaterials != null && question.ReferenceMaterials.Length > 0)
         {
             prompt.AppendLine("\nReference Materials:");
+            prompt.AppendLine("\"\"\"");
             foreach (var material in question.ReferenceMaterials)
             {
                 prompt.AppendLine(material);
             }
+            prompt.AppendLine("\"\"\"");
         }
         
         // Add user answer
         prompt.AppendLine("\nStudent's Answer:");
         if (question.UserAnswer != null && question.UserAnswer.Length > 0)
         {
+            prompt.AppendLine("\"\"\"");
             foreach (var answer in question.UserAnswer)
             {
                 prompt.AppendLine(answer);
             }
+            prompt.AppendLine("\"\"\"");
         }
         else
         {
@@ -58,29 +65,35 @@ public class QuestionPromptTools
         
         // Add correct answer
         prompt.AppendLine("\nCorrect Answer:");
+        prompt.AppendLine("\"\"\"");
         foreach (var answer in question.Answer)
         {
             prompt.AppendLine(answer);
         }
+        prompt.AppendLine("\"\"\"");
         
         // Add reference answer if available
         if (question.ReferenceAnswer != null && question.ReferenceAnswer.Length > 0)
         {
             prompt.AppendLine("\nReference Answer:");
+            prompt.AppendLine("\"\"\"");
             foreach (var refAnswer in question.ReferenceAnswer)
             {
                 prompt.AppendLine(refAnswer);
             }
+            prompt.AppendLine("\"\"\"");
         }
         
         // Add custom instructions if available
         if (question.Commits != null && question.Commits.Length > 0)
         {
             prompt.AppendLine("\nSpecial Instructions:");
+            prompt.AppendLine("\"\"\"");
             foreach (var commit in question.Commits)
             {
                 prompt.AppendLine(commit);
             }
+            prompt.AppendLine("\"\"\"");
         }
         
         return prompt.ToString();
