@@ -16,6 +16,26 @@ class Program
         exam.ExaminationMetadata.Description = "TEST-DESCRIPTION";
         exam.ExaminationMetadata.Subject = "TEST-SUBJECT";
         exam.ExaminationMetadata.Language = "zh-CN";
+        exam.ExaminationMetadata.ReferenceMaterials = new ReferenceMaterial[]
+        {
+            new ReferenceMaterial()
+            {
+                Materials = new string[]
+                {
+                    "TEST-MATERIAL-1",
+                    "TEST-MATERIAL-2"
+                },
+                Images = new[]
+                {
+                    new ReferenceMaterialImage()
+                    {
+                        Type = ReferenceMaterialImageTypes.Local,
+                        Uri = "TEST-IMAGE-URI",
+                        Image = new byte[] { 0x00, 0x01, 0x02, 0 }
+                    }
+                }
+            }
+        };
         exam.ExaminationMetadata.TotalScore = 100;
         exam.ExaminationVersion = DefaultClass.CurrentVersion;
         exam.ExaminationSections = new ExaminationSection[]
@@ -33,7 +53,16 @@ class Program
                         {
                             "TEST-MATERIAL-1",
                             "TEST-MATERIAL-2"
-                        }
+                        },
+                        Images = new []
+                        {
+                            new ReferenceMaterialImage()
+                            {
+                                Type = ReferenceMaterialImageTypes.Local,
+                                Uri = "TEST-IMAGE-URI",
+                                Image = new byte[] { 0x00, 0x01, 0x02, 0x03 }
+                            },
+                        },
                     }
                 },
                 Score = 100.0,
@@ -53,7 +82,18 @@ class Program
                         Answer = new string[]
                         {
                             "A"
-                        }
+                        },
+                        ReferenceMaterials = new ReferenceMaterial[]
+                        {
+                            new ReferenceMaterial()
+                            {
+                                Materials = new string[]
+                                {
+                                    "TEST-MATERIAL-1",
+                                    "TEST-MATERIAL-2"
+                                },
+                            }
+                        },
                     },
                     new Question()
                     {
