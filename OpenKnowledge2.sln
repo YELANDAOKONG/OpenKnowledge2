@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleKnowledge", "ConsoleKnowledge\ConsoleKnowledge.csproj", "{00691697-21A0-451D-9EA9-8942436FBD8F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryOpenKnowledge", "LibraryOpenKnowledge\LibraryOpenKnowledge.csproj", "{5EC1B792-60F6-43F5-BD95-3DFB2A92B48E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{00691697-21A0-451D-9EA9-8942436FBD8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00691697-21A0-451D-9EA9-8942436FBD8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00691697-21A0-451D-9EA9-8942436FBD8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00691697-21A0-451D-9EA9-8942436FBD8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5EC1B792-60F6-43F5-BD95-3DFB2A92B48E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EC1B792-60F6-43F5-BD95-3DFB2A92B48E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EC1B792-60F6-43F5-BD95-3DFB2A92B48E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EC1B792-60F6-43F5-BD95-3DFB2A92B48E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
