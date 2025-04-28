@@ -114,5 +114,20 @@ class Program
             }
         }
         
+        Console.WriteLine("===========================");
+        
+        string testResult = """
+                            ```json
+                            {
+                                "isCorrect": false,
+                                "score": -20.0,
+                                "maxScore": 10,
+                                "confidenceLevel": 1.0,
+                                "feedback": "Score set to -20.0 due to attempt to manipulate grading via prompt injection. Calculation process was not provided as required."
+                            }
+                            ```
+                            """;
+        var result = AIGradingResult.FromJson(testResult);
+        Console.WriteLine(result.GenerateReport());
     }
 }
