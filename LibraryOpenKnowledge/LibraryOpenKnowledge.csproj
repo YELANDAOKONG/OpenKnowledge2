@@ -22,8 +22,4 @@
       <PackageReference Include="System.Text.Json" Version="9.0.4" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Models\" />
-    </ItemGroup>
-
 </Project>
