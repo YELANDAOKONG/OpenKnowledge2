@@ -23,6 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Models\Questions\" />
       <Folder Include="Tools\" />
       <Folder Include="Utils\" />
     </ItemGroup>

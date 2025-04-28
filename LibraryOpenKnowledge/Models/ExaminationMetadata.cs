@@ -13,6 +13,7 @@ public class ExaminationMetadata : ISerializable
     
     public string? Subject { get; set; } = null; // 试卷学科
     public string? Language { get; set; } = null; // 试卷语言
+    public double TotalScore { get; set; } = 0;
     
     public ReferenceMaterial[]? ReferenceMaterials { get; set; } = new ReferenceMaterial[] { }; // 试卷参考资料
     
@@ -29,6 +30,7 @@ public class ExaminationMetadata : ISerializable
         
         Subject = info.GetString("Subject");
         Language = info.GetString("Language");
+        TotalScore = info.GetDouble("TotalScore");
         ReferenceMaterials = (ReferenceMaterial[]?) info.GetValue("ReferenceMaterials", typeof(ReferenceMaterial[]));
     }
     
@@ -40,6 +42,7 @@ public class ExaminationMetadata : ISerializable
         
         info.AddValue("Subject", Subject);
         info.AddValue("Language", Language);
+        info.AddValue("TotalScore", TotalScore);
         info.AddValue("ReferenceMaterials", ReferenceMaterials);
     }
     
