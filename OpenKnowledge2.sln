@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryOpenKnowledge", "Lib
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleKnowledgeDebugger", "ConsoleKnowledgeDebugger\ConsoleKnowledgeDebugger.csproj", "{6C530311-DCA5-4E24-A04A-585D85167113}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DesktopKnowledge", "DesktopKnowledge\DesktopKnowledge.csproj", "{1F562930-B503-40AF-970C-18672D3DAF1D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{6C530311-DCA5-4E24-A04A-585D85167113}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6C530311-DCA5-4E24-A04A-585D85167113}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6C530311-DCA5-4E24-A04A-585D85167113}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F562930-B503-40AF-970C-18672D3DAF1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F562930-B503-40AF-970C-18672D3DAF1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F562930-B503-40AF-970C-18672D3DAF1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F562930-B503-40AF-970C-18672D3DAF1D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
