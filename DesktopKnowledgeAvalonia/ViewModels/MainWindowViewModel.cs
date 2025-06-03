@@ -26,6 +26,9 @@ public partial class MainWindowViewModel : ViewModelBase
     
     [ObservableProperty]
     private bool _isEditingUsername;
+
+    [ObservableProperty] 
+    private bool _isWindowsVisible = true;
     
     public string VersionInfo
     {
@@ -100,36 +103,52 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private void OpenExamination()
     {
+        ExaminationWindowViewModel model = new();
+        ExaminationWindow window = new ExaminationWindow(model);
+        IsWindowsVisible = false;
+        window.Show();
+        window.Closed += (s, e) => IsWindowsVisible = true;
+        // TODO...
         // To be implemented
     }
     
     [RelayCommand]
     private void OpenStudy()
     {
+        StudyWindowViewModel model = new();
+        StudyWindow window = new StudyWindow(model);
+        IsWindowsVisible = false;
+        window.Show();
+        window.Closed += (s, e) => IsWindowsVisible = true;
+        // TODO...
         // To be implemented
     }
     
     [RelayCommand]
     private void OpenPapers()
     {
+        // TODO...
         // To be implemented
     }
     
     [RelayCommand]
     private void OpenWrongQuestions()
     {
+        // TODO...
         // To be implemented
     }
     
     [RelayCommand]
     private void OpenStatistics()
     {
+        // TODO...
         // To be implemented
     }
     
     [RelayCommand]
     private void OpenSettings()
     {
+        // TODO...
         // To be implemented
     }
 }
