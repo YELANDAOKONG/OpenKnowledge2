@@ -7,6 +7,9 @@
         x:Class="DesktopKnowledgeAvalonia.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        ExtendClientAreaToDecorationsHint="True"
         Title="Desktop Knowledge"
         MinWidth="800"
         MinHeight="600"
@@ -18,6 +21,11 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="20">
+        <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Button HorizontalAlignment="Center" VerticalAlignment="Center" Click="Button_OnClick">Open Test Windows</Button>
+    </StackPanel>
+    
+    
 
 </Window>
