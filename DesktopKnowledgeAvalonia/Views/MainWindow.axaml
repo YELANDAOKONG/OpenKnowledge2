@@ -13,6 +13,7 @@
         ExtendClientAreaToDecorationsHint="True"
         Title="{loc:Translate Key=main.title}"
         IsVisible="{Binding IsWindowsVisible}"
+        ShowInTaskbar="{Binding IsWindowsVisible}"
         Width="600" Height="500"
         MinWidth="600" MinHeight="500">
         <!--600 / 650-->
