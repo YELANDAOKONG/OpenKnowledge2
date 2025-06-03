@@ -7,7 +7,9 @@
         x:Class="DesktopKnowledgeAvalonia.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="DesktopKnowledgeAvalonia"
+        Title="Desktop Knowledge"
+        MinWidth="800"
+        MinHeight="600"
         >
 
     <Design.DataContext>
