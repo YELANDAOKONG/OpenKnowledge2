@@ -5,11 +5,11 @@ using DesktopKnowledgeAvalonia.ViewModels;
 
 namespace DesktopKnowledgeAvalonia.Views;
 
-public partial class ExaminationWindow : Window
+public partial class StudyWindow : Window
 {
-    public ExaminationWindow(ExaminationWindowViewModel model)
+    public StudyWindow(StudyWindowViewModel model)
     {
         InitializeComponent();
-        this.DataContext = model;
+        DataContext = model;
     }
 }

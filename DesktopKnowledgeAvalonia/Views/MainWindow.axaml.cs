@@ -16,12 +16,20 @@ public partial class MainWindow : Window
 
     private void Button_OnClick(object? sender, RoutedEventArgs e)
     {
-        ExaminationWindow window = new();
+        ExaminationWindowViewModel model = new();
+        ExaminationWindow window = new(model);
         window.ShowDialog(this);
     }
 
     private void ThrowButton_OnClick(object? sender, RoutedEventArgs e)
     {
         throw new Exception("Test Exception");
+    }
+
+    private void StudyButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        StudyWindowViewModel model = new();
+        StudyWindow window = new(model);
+        window.ShowDialog(this);
     }
 }
