@@ -75,7 +75,8 @@ public class LocalizationService
         catch (Exception ex) when (!throwExceptions)
         {
             // In a real app, you'd want to log this error
-            // Console.WriteLine($"Error loading translations: {ex.Message}");
+            // TODO: Add error handling / Better Logger
+            Console.WriteLine($"Error loading translations: {ex.Message}");
         }
     }
 
