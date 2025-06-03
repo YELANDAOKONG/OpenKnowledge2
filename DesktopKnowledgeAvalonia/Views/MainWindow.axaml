@@ -7,7 +7,8 @@
         x:Class="DesktopKnowledgeAvalonia.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="DesktopKnowledgeAvalonia">
+        Title="DesktopKnowledgeAvalonia"
+        >
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,

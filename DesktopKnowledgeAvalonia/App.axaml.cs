@@ -1,16 +1,21 @@
+using System;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using System.Linq;
 using Avalonia.Markup.Xaml;
+using DesktopKnowledgeAvalonia.Services;
 using DesktopKnowledgeAvalonia.ViewModels;
 using DesktopKnowledgeAvalonia.Views;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DesktopKnowledgeAvalonia;
 
 public partial class App : Application
 {
+    private static IServiceProvider? _serviceProvider;
+    
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -18,6 +23,11 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        // Set up dependency injection
+        var services = new ServiceCollection();
+        ConfigureServices(services);
+        _serviceProvider = services.BuildServiceProvider();
+        
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
@@ -31,6 +41,15 @@ public partial class App : Application
 
         base.OnFrameworkInitializationCompleted();
     }
+    
+    private void ConfigureServices(ServiceCollection services)
+    {
+        // Register services
+        services.AddSingleton<LocalizationService>();
+        
+        // Register view models
+        services.AddTransient<MainWindowViewModel>();
+    }
 
     private void DisableAvaloniaDataAnnotationValidation()
     {
@@ -43,5 +62,10 @@ public partial class App : Application
         {
             BindingPlugins.DataValidators.Remove(plugin);
         }
+    }
+    
+    public static T GetService<T>() where T : class
+    {
+        return _serviceProvider?.GetService<T>() ?? throw new InvalidOperationException($"Service {typeof(T).Name} not found");
     }
 }
