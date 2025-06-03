@@ -18,4 +18,9 @@ public partial class MainWindow : Window
         ExaminationWindow window = new();
         window.ShowDialog(this);
     }
+
+    private void ThrowButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        throw new System.NotImplementedException();
+    }
 }

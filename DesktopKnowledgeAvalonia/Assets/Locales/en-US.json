@@ -1,3 +1,11 @@
 ﻿{
-  "test": "Test"
+  "test": "Test",
+
+  "error.window.title": "Application Error",
+  "error.header": "An unexpected error has occurred",
+  "error.instruction": "The application needs to close. Please report this error with the details below:",
+  "error.stacktrace.header": "Error details:",
+  "error.button.copy": "Copy Details",
+  "error.button.exit": "Exit Application",
+  "error.copy.success": "Error details copied to clipboard"
 }

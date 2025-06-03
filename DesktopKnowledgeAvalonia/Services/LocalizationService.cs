@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace DesktopKnowledgeAvalonia.Services;
 
@@ -119,5 +120,56 @@ public class LocalizationService
     }
     
     public string this[string key] => Translate(key);
+    
+    public string DetectSystemLanguage()
+    {
+        // Get the current system UI culture
+        var currentUICulture = CultureInfo.CurrentUICulture;
+        var languageCode = currentUICulture.Name; // e.g., "en-US", "zh-CN"
+        
+        // Check if we have this language available
+        if (_translations.ContainsKey(languageCode))
+            return languageCode;
+        
+        // If not, try the base language (e.g., "en" from "en-US")
+        var baseLanguage = currentUICulture.TwoLetterISOLanguageName;
+        foreach (var availableLanguage in _translations.Keys)
+        {
+            if (availableLanguage.StartsWith(baseLanguage + "-") || availableLanguage == baseLanguage)
+                return availableLanguage;
+        }
+        
+        // If no match, return default language
+        return "en-US";
+    }
+    
+    public void UseSystemLanguage()
+    {
+        CurrentLanguage = DetectSystemLanguage();
+    }
+    
+    public void LoadSavedLanguage()
+    {
+        // Try to get from settings
+        var configService = App.GetService<ConfigureService>();
+        if (configService.AppConfig.PreferredLanguage != null)
+        {
+            if (_translations.ContainsKey(configService.AppConfig.PreferredLanguage))
+            {
+                CurrentLanguage = configService.AppConfig.PreferredLanguage;
+                return;
+            }
+        }
+    
+        // Fall back to system language if no saved preference
+        UseSystemLanguage();
+    }
+    
+    public async Task SaveLanguagePreference()
+    {
+        var configService = App.GetService<ConfigureService>();
+        configService.AppConfig.PreferredLanguage = CurrentLanguage;
+        await configService.UpdateAppConfigAsync(configService.AppConfig);
+    }
 
 }

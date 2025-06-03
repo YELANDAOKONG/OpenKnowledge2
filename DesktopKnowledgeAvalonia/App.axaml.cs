@@ -5,6 +5,7 @@ using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using System.Linq;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using DesktopKnowledgeAvalonia.Services;
 using DesktopKnowledgeAvalonia.ViewModels;
 using DesktopKnowledgeAvalonia.Views;
@@ -24,9 +25,13 @@ public partial class App : Application
     public override void OnFrameworkInitializationCompleted()
     {
         // Set up dependency injection
+        SetupExceptionHandling();
         var services = new ServiceCollection();
         ConfigureServices(services);
         _serviceProvider = services.BuildServiceProvider();
+        
+        var localizationService = GetService<LocalizationService>();
+        localizationService.LoadSavedLanguage();
         
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -48,6 +53,42 @@ public partial class App : Application
         // Register view models
         services.AddTransient<MainWindowViewModel>();
     }
+    
+    private void SetupExceptionHandling()
+    {
+        Avalonia.Threading.Dispatcher.UIThread.UnhandledException += (sender, args) =>
+        {
+            args.Handled = true;
+            
+            var errorWindow = new FatalErrorWindow(args.Exception);
+            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                errorWindow.ShowDialog(desktop.MainWindow!);
+            }
+        };
+        
+        AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+        {
+            var exception = args.ExceptionObject as Exception;
+            if (exception != null)
+            {
+                Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    var errorWindow = new FatalErrorWindow(exception);
+                    if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                    {
+                        errorWindow.ShowDialog(desktop.MainWindow!);
+                    }
+                    else
+                    {
+                        errorWindow.Show();
+                    }
+                });
+            }
+        };
+    }
+
+
 
     private void DisableAvaloniaDataAnnotationValidation()
     {

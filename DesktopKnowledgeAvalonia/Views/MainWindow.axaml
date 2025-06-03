@@ -24,6 +24,7 @@
     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="20">
         <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         <Button HorizontalAlignment="Center" VerticalAlignment="Center" Click="Button_OnClick">Open Test Windows</Button>
+        <Button HorizontalAlignment="Center" VerticalAlignment="Center" Click="ThrowButton_OnClick">Throw Exception</Button>
     </StackPanel>
     
     
