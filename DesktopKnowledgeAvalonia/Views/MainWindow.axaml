@@ -3,31 +3,164 @@
         xmlns:vm="using:DesktopKnowledgeAvalonia.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        xmlns:loc="using:DesktopKnowledgeAvalonia.Localization"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="650"
         x:Class="DesktopKnowledgeAvalonia.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
         TransparencyLevelHint="AcrylicBlur"
         Background="Transparent"
         ExtendClientAreaToDecorationsHint="True"
-        Title="Desktop Knowledge"
-        MinWidth="800"
-        MinHeight="600"
-        >
-
+        Title="{loc:Translate Key=main.title}"
+        Width="600" Height="500"
+        MinWidth="600" MinHeight="500">
+        <!--600 / 650-->
+        
     <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="20">
-        <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        <Button HorizontalAlignment="Center" VerticalAlignment="Center" Click="Button_OnClick">Open Test Windows</Button>
-        <Button HorizontalAlignment="Center" VerticalAlignment="Center" Click="ThrowButton_OnClick">Throw Exception</Button>
-        <Button HorizontalAlignment="Center" VerticalAlignment="Center" Click="StudyButton_OnClick">Open Study Windows</Button>
-    </StackPanel>
-    
-    
-
+    <Grid RowDefinitions="Auto,*,Auto" Margin="20">
+        <!-- Header with Avatar and Username -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,10,0,20">
+            <!-- Avatar -->
+            <Border Grid.Column="0" Width="80" Height="80" CornerRadius="40" 
+                    Background="#569AFF" Margin="0,0,15,0">
+                <TextBlock Text="{Binding UserInitials}" 
+                           HorizontalAlignment="Center" 
+                           VerticalAlignment="Center"
+                           FontSize="32" 
+                           FontWeight="SemiBold" 
+                           Foreground="White"/>
+            </Border>
+            
+            <!-- Username and Welcome -->
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <!-- Username (label that turns into textbox on double-click) -->
+                <ContentControl>
+                    <ContentControl.Content>
+                        <Panel>
+                            <!-- Username Label (visible when not editing) -->
+                            <TextBlock Text="{Binding UserName}" 
+                                      FontSize="24" 
+                                      FontWeight="SemiBold"
+                                      IsVisible="{Binding !IsEditingUsername}"
+                                      DoubleTapped="OnUsernameDoubleTapped"/>
+                                
+                            <!-- Username TextBox (visible when editing) -->
+                            <TextBox Text="{Binding UserName}" 
+                                    FontSize="24"
+                                    FontWeight="SemiBold"
+                                    IsVisible="{Binding IsEditingUsername}"
+                                    LostFocus="OnUsernameEditComplete"
+                                    KeyDown="OnUsernameKeyDown"/>
+                        </Panel>
+                    </ContentControl.Content>
+                </ContentControl>
+                
+                <!-- Welcome Message -->
+                <TextBlock Text="{loc:Translate Key=main.welcome}" 
+                           Opacity="0.7"
+                           Margin="0,5,0,0"/>
+            </StackPanel>
+        </Grid>
+        
+        <!-- Main Menu Buttons Grid -->
+        <UniformGrid Grid.Row="1" Columns="3" Rows="2" Margin="0,10">
+            <!-- Top Row -->
+            <!-- Examination Button -->
+            <Button Classes="MenuButton" Command="{Binding OpenExaminationCommand}" Margin="5">
+                <StackPanel>
+                    <PathIcon Data="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17zM19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" 
+                              Width="64" Height="64" 
+                              Foreground="#569AFF"/>
+                    <TextBlock Text="{loc:Translate Key=main.menu.examination}" 
+                               HorizontalAlignment="Center"
+                               Margin="0,15,0,0"
+                               FontSize="16"/>
+                </StackPanel>
+            </Button>
+            
+            <!-- Study Button -->
+            <Button Classes="MenuButton" Command="{Binding OpenStudyCommand}" Margin="5">
+                <StackPanel>
+                    <PathIcon Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" 
+                              Width="64" Height="64" 
+                              Foreground="#569AFF"/>
+                    <TextBlock Text="{loc:Translate Key=main.menu.study}" 
+                               HorizontalAlignment="Center"
+                               Margin="0,15,0,0"
+                               FontSize="16"/>
+                </StackPanel>
+            </Button>
+            
+            <!-- Papers Button -->
+            <Button Classes="MenuButton" Command="{Binding OpenPapersCommand}" Margin="5" IsEnabled="False">
+                <StackPanel>
+                    <PathIcon Data="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v4h5v12zM8 14h8v-2H8v2zm0 4h8v-2H8v2zm0-8h5V8H8v2z" 
+                              Width="64" Height="64" 
+                              Foreground="#569AFF"/>
+                    <TextBlock Text="{loc:Translate Key=main.menu.papers}" 
+                               HorizontalAlignment="Center"
+                               Margin="0,15,0,0"
+                               FontSize="16"/>
+                </StackPanel>
+            </Button>
+            
+            <!-- Bottom Row -->
+            <!-- Wrong Questions Button -->
+            <Button Classes="MenuButton" Command="{Binding OpenWrongQuestionsCommand}" Margin="5" IsEnabled="False">
+                <StackPanel>
+                    <PathIcon Data="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" 
+                              Width="64" Height="64" 
+                              Foreground="#569AFF"/>
+                    <TextBlock Text="{loc:Translate Key=main.menu.wrong.questions}" 
+                               HorizontalAlignment="Center"
+                               Margin="0,15,0,0"
+                               FontSize="16"/>
+                </StackPanel>
+            </Button>
+            
+            <!-- Statistics Button -->
+            <Button Classes="MenuButton" Command="{Binding OpenStatisticsCommand}" Margin="5" IsEnabled="False">
+                <StackPanel>
+                    <PathIcon Data="M7 19h10V4H7v15zm-5-2h4V6H2v11zM18 6v11h4V6h-4z" 
+                              Width="64" Height="64" 
+                              Foreground="#569AFF"/>
+                    <TextBlock Text="{loc:Translate Key=main.menu.statistics}" 
+                               HorizontalAlignment="Center"
+                               Margin="0,15,0,0"
+                               FontSize="16"/>
+                </StackPanel>
+            </Button>
+            
+            <!-- Settings Button -->
+            <Button Classes="MenuButton" Command="{Binding OpenSettingsCommand}" Margin="5" IsEnabled="True">
+                <StackPanel>
+                    <PathIcon Data="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z" 
+                              Width="64" Height="64" 
+                              Foreground="#569AFF"/>
+                    <TextBlock Text="{loc:Translate Key=main.menu.settings}" 
+                               HorizontalAlignment="Center"
+                               Margin="0,15,0,0"
+                               FontSize="16"/>
+                </StackPanel>
+            </Button>
+        </UniformGrid>
+        
+        <!-- Bottom Status Bar -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" Margin="0,10,0,0">
+            <!-- Version Info -->
+            <TextBlock Grid.Column="0" 
+                       Text="{Binding VersionInfo}" 
+                       Opacity="0.6" 
+                       FontSize="11"/>
+            
+            <!-- Date and Time -->
+            <TextBlock Grid.Column="2" 
+                       Text="{Binding CurrentDateTime}" 
+                       Opacity="0.6" 
+                       FontSize="11"/>
+        </Grid>
+    </Grid>
 </Window>

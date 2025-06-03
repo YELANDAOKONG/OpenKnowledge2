@@ -7,5 +7,14 @@
   "error.stacktrace.header": "错误详情：",
   "error.button.copy": "复制详情",
   "error.button.exit": "退出应用程序",
-  "error.copy.success": "错误详情已复制到剪贴板"
+  "error.copy.success": "错误详情已复制到剪贴板",
+
+  "main.title": "开放知识桌面版",
+  "main.welcome": "欢迎！",
+  "main.menu.examination": "考试",
+  "main.menu.study": "学习",
+  "main.menu.papers": "试卷",
+  "main.menu.wrong.questions": "错题",
+  "main.menu.statistics": "统计",
+  "main.menu.settings": "设置"
 }

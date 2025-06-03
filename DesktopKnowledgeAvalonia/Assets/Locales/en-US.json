@@ -7,5 +7,14 @@
   "error.stacktrace.header": "Error details:",
   "error.button.copy": "Copy Details",
   "error.button.exit": "Exit Application",
-  "error.copy.success": "Error details copied to clipboard"
+  "error.copy.success": "Error details copied to clipboard",
+
+  "main.title": "OpenKnowledge Desktop",
+  "main.welcome": "Welcome!",
+  "main.menu.examination": "Examination",
+  "main.menu.study": "Study",
+  "main.menu.papers": "Papers",
+  "main.menu.wrong.questions": "Wrong Questions",
+  "main.menu.statistics": "Statistics",
+  "main.menu.settings": "Settings"
 }

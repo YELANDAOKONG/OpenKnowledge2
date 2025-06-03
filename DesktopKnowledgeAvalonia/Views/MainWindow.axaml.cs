@@ -1,35 +1,49 @@
-using System;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
-using DesktopKnowledgeAvalonia.Services;
 using DesktopKnowledgeAvalonia.ViewModels;
 
 namespace DesktopKnowledgeAvalonia.Views;
 
 public partial class MainWindow : Window
 {
+    private MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
+
     public MainWindow(MainWindowViewModel viewModel)
     {
         InitializeComponent();
         DataContext = viewModel;
     }
 
-    private void Button_OnClick(object? sender, RoutedEventArgs e)
+    private void OnUsernameDoubleTapped(object sender, TappedEventArgs e)
     {
-        ExaminationWindowViewModel model = new();
-        ExaminationWindow window = new(model);
-        window.ShowDialog(this);
+        if (ViewModel != null)
+        {
+            ViewModel.IsEditingUsername = true;
+        }
     }
 
-    private void ThrowButton_OnClick(object? sender, RoutedEventArgs e)
+    private void OnUsernameEditComplete(object sender, RoutedEventArgs e)
     {
-        throw new Exception("Test Exception");
+        if (ViewModel != null)
+        {
+            ViewModel.IsEditingUsername = false;
+            ViewModel.SaveUsername();
+        }
     }
 
-    private void StudyButton_OnClick(object? sender, RoutedEventArgs e)
+    private void OnUsernameKeyDown(object sender, KeyEventArgs e)
     {
-        StudyWindowViewModel model = new();
-        StudyWindow window = new(model);
-        window.ShowDialog(this);
+        if (e.Key == Key.Enter || e.Key == Key.Escape)
+        {
+            if (ViewModel != null)
+            {
+                ViewModel.IsEditingUsername = false;
+                if (e.Key == Key.Enter)
+                {
+                    ViewModel.SaveUsername();
+                }
+            }
+        }
     }
 }
