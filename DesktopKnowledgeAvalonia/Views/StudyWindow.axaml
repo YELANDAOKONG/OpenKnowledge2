@@ -119,10 +119,17 @@
                         </StackPanel>
                         
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                            <Button Classes="Accent">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <PathIcon Data="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17zM19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 16H5V5h2v3h10V5h2v14z" Width="16" Height="16"/>
+                                    <TextBlock Text="智能检查"/>
+                                </StackPanel>
+                            </Button>
+                            
                             <!-- AI Help Button -->
                             <Button Classes="Accent">
                                 <StackPanel Orientation="Horizontal" Spacing="5">
-                                    <PathIcon Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-4h2v2h-2zm0-10h2v8h-2z" 
+                                    <PathIcon Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1-5h-2v2h2v-2zm0-8c1.41 0 2.5 1.09 2.5 2.5 0 .83-.42 1.59-1.12 2.03l-.88.59c-.61.41-1 1.13-1 1.88v.5h-2v-.5c0-1.31.83-2.45 2.06-2.86l.88-.59c.27-.18.44-.5.44-.84 0-.55-.45-1-1-1s-1 .45-1 1H9c0-1.66 1.34-3 3-3z" 
                                               Width="16" Height="16"/>
                                     <TextBlock Text="智能答疑"/>
                                 </StackPanel>
@@ -171,8 +178,8 @@
                                 <!-- AI Feedback Button -->
                                 <Button Classes="Secondary">
                                     <StackPanel Orientation="Horizontal" Spacing="5">
-                                        <PathIcon Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z" Width="16" Height="16"/>
-                                        <TextBlock Text="题目反馈"/>
+                                        <PathIcon Data="M11 15h2v2h-2v-2zm0-8h2v6h-2V7zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" Width="16" Height="16"/>
+                                        <TextBlock Text="题目错误"/>
                                     </StackPanel>
                                 </Button>
                                 
@@ -189,14 +196,14 @@
                             <Border Background="#15569AFF" CornerRadius="4" Padding="15" IsVisible="True">
                                 <StackPanel Spacing="10">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <PathIcon Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-4h2v2h-2zm0-10h2v8h-2z" Width="16" Height="16" Foreground="#569AFF"/>
-                                        <TextBlock Text="AI 反馈" Foreground="#569AFF" FontWeight="SemiBold"/>
+                                        <PathIcon Data="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17zM19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 16H5V5h2v3h10V5h2v14z" Width="16" Height="16" Foreground="#569AFF"/>
+                                        <TextBlock Text="智能检查" Foreground="#569AFF" FontWeight="SemiBold"/>
                                     </StackPanel>
                                     
                                     <TextBlock TextWrapping="Wrap" Text="你的答案正确地解释了导数的几何意义！可以再补充一点：导数还表示函数在该点的瞬时变化率，这在物理上对应速度或加速度等概念。建议你可以增加一个具体的例子来展示，比如 f(x) = x² 在 x₀ = 1 处的导数是 2，所以切线斜率也是 2。"/>
                                     
                                     <Button HorizontalAlignment="Right" Classes="Transparent">
-                                        <TextBlock Text="关闭反馈" Foreground="#569AFF"/>
+                                        <TextBlock Text="关闭检查" Foreground="#569AFF"/>
                                     </Button>
                                 </StackPanel>
                             </Border>
