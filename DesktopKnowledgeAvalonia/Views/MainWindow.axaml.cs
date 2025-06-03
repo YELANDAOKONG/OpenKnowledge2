@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using DesktopKnowledgeAvalonia.Services;
@@ -21,6 +22,6 @@ public partial class MainWindow : Window
 
     private void ThrowButton_OnClick(object? sender, RoutedEventArgs e)
     {
-        throw new System.NotImplementedException();
+        throw new Exception("Test Exception");
     }
 }
