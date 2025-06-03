@@ -16,5 +16,27 @@
   "main.menu.papers": "试卷",
   "main.menu.wrong.questions": "错题",
   "main.menu.statistics": "统计",
-  "main.menu.settings": "设置"
+  "main.menu.settings": "设置",
+
+  "init.window.title": "初始设置",
+  "init.welcome": "欢迎使用 OpenKnowledge",
+  "init.description": "在开始使用前，我们需要设置您的AI配置。这是应用程序正常运行所必需的。",
+  "init.api.url": "API 地址",
+  "init.api.url.placeholder": "输入 API 地址（例如：https://api.deepseek.com/v1）",
+  "init.api.key": "API 密钥",
+  "init.api.key.placeholder": "输入您的 API 密钥",
+  "init.model": "AI 模型",
+  "init.model.placeholder": "输入模型名称（例如：deepseek-chat）",
+  "init.temperature": "温度参数",
+  "init.test.connection.title": "测试连接",
+  "init.test.connection.description": "在保存前测试您的配置以确保它正常工作。",
+  "init.test.connection.button": "测试连接",
+  "init.test.connection.success": "连接成功！您的配置正常工作。",
+  "init.test.connection.error": "连接失败",
+  "init.test.connection.fill.all.fields": "请在测试前填写所有必填字段。",
+  "init.button.save": "保存配置",
+  "init.button.exit": "退出",
+  "init.error.api.url.required": "API 地址为必填项",
+  "init.error.api.key.required": "API 密钥为必填项",
+  "init.error.model.required": "模型名称为必填项"
 }

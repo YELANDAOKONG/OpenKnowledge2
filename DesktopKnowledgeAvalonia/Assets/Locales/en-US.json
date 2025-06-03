@@ -16,5 +16,27 @@
   "main.menu.papers": "Papers",
   "main.menu.wrong.questions": "Wrong Questions",
   "main.menu.statistics": "Statistics",
-  "main.menu.settings": "Settings"
+  "main.menu.settings": "Settings",
+
+  "init.window.title": "Initial Setup",
+  "init.welcome": "Welcome to OpenKnowledge",
+  "init.description": "Before you begin, we need to set up your AI configuration. This is required for the application to function properly.",
+  "init.api.url": "API URL",
+  "init.api.url.placeholder": "Enter API URL (e.g., https://api.deepseek.com/v1)",
+  "init.api.key": "API Key",
+  "init.api.key.placeholder": "Enter your API key",
+  "init.model": "AI Model",
+  "init.model.placeholder": "Enter model name (e.g., deepseek-chat)",
+  "init.temperature": "Temperature",
+  "init.test.connection.title": "Test Connection",
+  "init.test.connection.description": "Test your configuration to ensure it works correctly before saving.",
+  "init.test.connection.button": "Test Connection",
+  "init.test.connection.success": "Connection successful! Your configuration is working.",
+  "init.test.connection.error": "Connection failed",
+  "init.test.connection.fill.all.fields": "Please fill in all required fields before testing.",
+  "init.button.save": "Save Configuration",
+  "init.button.exit": "Exit",
+  "init.error.api.url.required": "API URL is required",
+  "init.error.api.key.required": "API Key is required",
+  "init.error.model.required": "Model name is required"
 }

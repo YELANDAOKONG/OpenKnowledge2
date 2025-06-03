@@ -38,7 +38,36 @@ public partial class App : Application
             // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
             // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
             DisableAvaloniaDataAnnotationValidation();
-            desktop.MainWindow = new MainWindow(new MainWindowViewModel());
+            {
+                // Check if we need to initialize the AI API settings
+                var configService = GetService<ConfigureService>();
+                bool needsInitialization = string.IsNullOrEmpty(configService.SystemConfig.OpenAiApiUrl) || 
+                                           string.IsNullOrEmpty(configService.SystemConfig.OpenAiApiKey) || 
+                                           string.IsNullOrEmpty(configService.SystemConfig.OpenAiModel);
+        
+                if (needsInitialization)
+                {
+                    // Show the initialization window
+                    var initWindow = new InitializationWindow();
+                    desktop.MainWindow = initWindow; // Make it the main window initially
+            
+                    // Create the actual main window but don't show it yet
+                    var mainWindow = new MainWindow(new MainWindowViewModel());
+            
+                    // When initialization completes, switch to the main window
+                    initWindow.Closed += (s, e) => 
+                    {
+                        desktop.MainWindow = mainWindow;
+                        mainWindow.Show();
+                    };
+                }
+                else
+                {
+                    // No initialization needed, show main window directly
+                    desktop.MainWindow = new MainWindow(new MainWindowViewModel());
+                }
+            }
+            // desktop.MainWindow = new MainWindow(new MainWindowViewModel());
         }
 
         base.OnFrameworkInitializationCompleted();
