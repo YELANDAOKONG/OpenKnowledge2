@@ -45,17 +45,30 @@
                 </StackPanel>
                 
                 <!-- API Key -->
+                <!-- API Key with visibility toggle -->
                 <StackPanel>
                     <TextBlock Text="{loc:Translate Key=init.api.key}" 
                                Margin="0,0,0,5"/>
-                    <TextBox Text="{Binding ApiKey}"
-                             PasswordChar="•" 
-                             Watermark="{loc:Translate Key=init.api.key.placeholder}"
-                             MaxLength="100"/>
+                    <Grid>
+                        <TextBox Text="{Binding ApiKey}"
+                                 PasswordChar="{Binding ApiKeyPasswordChar}"
+                                 Watermark="{loc:Translate Key=init.api.key.placeholder}"
+                                 MaxLength="100"/>
+                        <Button Grid.Column="1" 
+                                HorizontalAlignment="Right" 
+                                VerticalAlignment="Center"
+                                Margin="0,0,10,0"
+                                Background="Transparent"
+                                Padding="5"
+                                Command="{Binding ToggleApiKeyVisibilityCommand}">
+                            <PathIcon Data="{Binding ApiKeyVisibilityIcon}" Width="16" Height="16"/>
+                        </Button>
+                    </Grid>
                     <TextBlock Text="{Binding ApiKeyError}" 
                                Foreground="Red" 
                                IsVisible="{Binding !!ApiKeyError}"/>
                 </StackPanel>
+
                 
                 <!-- Model -->
                 <StackPanel>

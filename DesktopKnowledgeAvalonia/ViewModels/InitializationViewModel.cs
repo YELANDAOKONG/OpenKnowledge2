@@ -98,6 +98,26 @@ public partial class InitializationViewModel : ViewModelBase
         };
     }
     
+    // Add these properties to track password visibility
+    [ObservableProperty]
+    private bool _isApiKeyVisible = false;
+
+    public char? ApiKeyPasswordChar => IsApiKeyVisible ? null : '•';
+
+    public string ApiKeyVisibilityIcon => IsApiKeyVisible 
+        ? "M12 6c-4.5 0-8 3.5-8 8s3.5 8 8 8 8-3.5 8-8-3.5-8-8-8zm0 14c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6zm0-10c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"
+        : "M12 6c-4.5 0-8 3.5-8 8s3.5 8 8 8 8-3.5 8-8-3.5-8-8-8zm0 14c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6zm-1-7.5h2v2h-2v-2zm0-6h2v5h-2v-5z";
+
+    // Add a method to toggle password visibility
+    [RelayCommand]
+    private void ToggleApiKeyVisibility()
+    {
+        IsApiKeyVisible = !IsApiKeyVisible;
+        OnPropertyChanged(nameof(ApiKeyPasswordChar));
+        OnPropertyChanged(nameof(ApiKeyVisibilityIcon));
+    }
+
+    
     [RelayCommand]
     private async Task SaveAsync()
     {
@@ -142,49 +162,34 @@ public partial class InitializationViewModel : ViewModelBase
             IsConnectionTested = true;
             return;
         }
-        
+    
         IsTestingConnection = true;
-        
+    
         try
         {
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ApiKey);
-            
-            // Build simple test request
-            var requestObj = new
+            // Create a temporary SystemConfig with current values
+            var tempConfig = new SystemConfig
             {
-                model = Model,
-                messages = new[]
-                {
-                    new { role = "system", content = "You are a helpful assistant." },
-                    new { role = "user", content = "Hello!" }
-                },
-                max_tokens = 10,
-                temperature = Temperature
+                OpenAiApiUrl = ApiUrl,
+                OpenAiApiKey = ApiKey,
+                OpenAiModel = Model,
+                OpenAiModelTemperature = Temperature
             };
-            
-            var json = JsonSerializer.Serialize(requestObj);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            
-            var testUrl = ApiUrl;
-            if (!testUrl.EndsWith("/chat/completions", StringComparison.OrdinalIgnoreCase))
-            {
-                testUrl = testUrl.TrimEnd('/') + "/chat/completions";
-            }
-            
-            var response = await client.PostAsync(testUrl, content);
-            
-            if (response.IsSuccessStatusCode)
-            {
-                ConnectionStatus = _localizationService["init.test.connection.success"];
-                ConnectionStatusBackground = new SolidColorBrush(Color.Parse("#2ECC71"));
-            }
-            else
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                ConnectionStatus = $"{_localizationService["init.test.connection.error"]} ({response.StatusCode}): {errorContent}";
-                ConnectionStatusBackground = new SolidColorBrush(Color.Parse("#E74C3C"));
-            }
+        
+            // Create OpenAI client using the SDK
+            var client = LibraryOpenKnowledge.Tools.AiTools.CreateOpenAiClient(tempConfig);
+        
+            // Send a test message
+            var response = await LibraryOpenKnowledge.Tools.AiTools.SendChatMessageAsync(
+                client,
+                tempConfig,
+                "Hello, this is a test message.",
+                throwExceptions: true
+            );
+        
+            // If we get here, the connection was successful
+            ConnectionStatus = _localizationService["init.test.connection.success"];
+            ConnectionStatusBackground = new SolidColorBrush(Color.Parse("#2ECC71"));
         }
         catch (Exception ex)
         {
@@ -197,4 +202,5 @@ public partial class InitializationViewModel : ViewModelBase
             IsConnectionTested = true;
         }
     }
+
 }
