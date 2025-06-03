@@ -150,7 +150,7 @@
                                        TextWrapping="Wrap" FontSize="16"/>
                             
                             <!-- Reference materials if any -->
-                            <Expander Header="学习参考资料">
+                            <Expander Header="参考资料">
                                 <StackPanel Margin="0,5">
                                     <TextBlock Text="导数的几何意义：函数导数 f'(x₀) 在几何上表示函数图像在点 (x₀, f(x₀)) 处的切线斜率。" 
                                                TextWrapping="Wrap" Margin="0,3"/>
