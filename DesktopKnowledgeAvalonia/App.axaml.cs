@@ -52,7 +52,9 @@ public partial class App : Application
                     desktop.MainWindow = initWindow; // Make it the main window initially
             
                     // Create the actual main window but don't show it yet
-                    var mainWindow = new MainWindow(new MainWindowViewModel());
+                    var mainModel = new MainWindowViewModel();
+                    mainModel.IsWindowsVisible = false;
+                    var mainWindow = new MainWindow(mainModel);
             
                     // When initialization completes, switch to the main window
                     initWindow.Closed += (s, e) => 
