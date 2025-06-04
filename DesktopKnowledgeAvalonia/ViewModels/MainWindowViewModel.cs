@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Input;
 using DesktopKnowledgeAvalonia.Services;
 using DesktopKnowledgeAvalonia.Views;
 using LibraryOpenKnowledge;
+using LibraryOpenKnowledge.Tools;
 
 namespace DesktopKnowledgeAvalonia.ViewModels;
 
@@ -107,8 +108,8 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private void OpenExamination()
     {
-        ExaminationWindowViewModel model = new();
-        ExaminationWindow window = new ExaminationWindow(model);
+        ExaminationWindowViewModel model = new(_configureService, App.GetService<LocalizationService>());
+        ExaminationWindow window = new ExaminationWindow();
         IsWindowsVisible = false;
         window.Show();
         window.Closed += (s, e) => IsWindowsVisible = true;

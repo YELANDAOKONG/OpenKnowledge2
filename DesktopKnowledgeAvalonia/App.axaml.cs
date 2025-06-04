@@ -95,7 +95,8 @@ public partial class App : Application
             var errorWindow = new FatalErrorWindow(args.Exception);
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                errorWindow.ShowDialog(desktop.MainWindow!);
+                // errorWindow.ShowDialog(desktop.MainWindow);
+                errorWindow.Show();
             }
         };
         
