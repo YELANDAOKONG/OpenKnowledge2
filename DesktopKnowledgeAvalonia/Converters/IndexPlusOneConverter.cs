@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Globalization;
 using Avalonia.Data.Converters;
-using Avalonia.Media;
 
 namespace DesktopKnowledgeAvalonia.Converters;
 
-public class AnsweredBackgroundConverter : IValueConverter
+public class IndexPlusOneConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is string[] answers && answers.Length > 0)
+        if (value is int index)
         {
-            return new SolidColorBrush(Color.Parse("#22569AFF"));
+            return index + 1;
         }
-        return new SolidColorBrush(Colors.Transparent);
+        return 1;
     }
         
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

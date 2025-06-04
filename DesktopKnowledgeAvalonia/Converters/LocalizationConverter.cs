@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Globalization;
 using Avalonia.Data.Converters;
-using Avalonia.Media;
 
 namespace DesktopKnowledgeAvalonia.Converters;
 
-public class AnsweredBackgroundConverter : IValueConverter
+public class LocalizationConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is string[] answers && answers.Length > 0)
+        if (value is string key)
         {
-            return new SolidColorBrush(Color.Parse("#22569AFF"));
+            var localizationService = App.GetService<Services.LocalizationService>();
+            return localizationService.Translate(key);
         }
-        return new SolidColorBrush(Colors.Transparent);
+        return value?.ToString() ?? string.Empty;
     }
-        
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         throw new NotImplementedException();

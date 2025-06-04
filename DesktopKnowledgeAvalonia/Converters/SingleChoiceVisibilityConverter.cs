@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Globalization;
 using Avalonia.Data.Converters;
-using Avalonia.Media;
+using LibraryOpenKnowledge.Models;
 
 namespace DesktopKnowledgeAvalonia.Converters;
 
-public class AnsweredBackgroundConverter : IValueConverter
+public class SingleChoiceVisibilityConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is string[] answers && answers.Length > 0)
+        if (value is QuestionTypes type)
         {
-            return new SolidColorBrush(Color.Parse("#22569AFF"));
+            return type == QuestionTypes.SingleChoice;
         }
-        return new SolidColorBrush(Colors.Transparent);
+        return false;
     }
         
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
