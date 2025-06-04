@@ -1,4 +1,6 @@
 ﻿using System.Runtime.Serialization;
+using LibraryOpenKnowledge.Tools;
+using Newtonsoft.Json;
 
 namespace LibraryOpenKnowledge.Models;
 
@@ -8,7 +10,8 @@ public class Question
     public string? QuestionId { get; set; } = null;
     public QuestionTypes Type { get; set; } = QuestionTypes.Unknown;
     public string Stem { get; set; } = "Default"; // 题目文本
-    public List<(string, string)>? Options { get; set; } = new List<(string, string)>();
+    [JsonProperty(ItemConverterType = typeof(OptionConverter))]
+    public List<Option> Options { get; set; } = new List<Option>(); // public List<(string, string)>? Options { get; set; } = new List<(string, string)>();
     public double Score { get; set; } = 1.0; // 分数
 
     public string[]? UserAnswer { get; set; } // 用户答案

@@ -181,10 +181,10 @@ namespace LibraryOpenKnowledge.Tools
         {
             var result = new List<(string, string)>();
             
-            // Handle null
+            // Handle null or empty array
             if (reader.TokenType == JsonToken.Null)
                 return result;
-                
+                    
             // Make sure we're reading an array
             if (reader.TokenType != JsonToken.StartArray)
                 throw new JsonSerializationException("Expected start of array");
@@ -198,8 +198,8 @@ namespace LibraryOpenKnowledge.Tools
                 if (token.Type == JTokenType.Object)
                 {
                     // Extract Item1 and Item2 from the object
-                    string item1 = token["Item1"]?.Value<string>() ?? string.Empty;
-                    string item2 = token["Item2"]?.Value<string>() ?? string.Empty;
+                    string item1 = token["Item1"]?.ToString() ?? string.Empty;
+                    string item2 = token["Item2"]?.ToString() ?? string.Empty;
                     
                     result.Add((item1, item2));
                 }
@@ -236,4 +236,56 @@ namespace LibraryOpenKnowledge.Tools
             writer.WriteEndArray();
         }
     }
+    
+    public class OptionConverter : JsonConverter
+    {
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(Option);
+        }
+        
+        public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
+        {
+            if (reader.TokenType == JsonToken.Null) return null;
+            JObject jsonObject = JObject.Load(reader);
+            var option = new Option();
+            
+            if (jsonObject["Id"] != null && jsonObject["Text"] != null)
+            {
+                option.Id = jsonObject["Id"]!.ToString();
+                option.Text = jsonObject["Text"]!.ToString();
+            }
+            else if (jsonObject["Item1"] != null && jsonObject["Item2"] != null)
+            {
+                option.Id = jsonObject["Item1"]!.ToString();
+                option.Text = jsonObject["Item2"]!.ToString();
+            }
+            else
+            {
+                option.Id = string.Empty;
+                option.Text = string.Empty;
+            }
+            
+            return option;
+        }
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            var option = (Option)value;
+            
+            writer.WriteStartObject();
+            
+            // writer.WritePropertyName("Id");
+            // writer.WriteValue(option.Id);
+            // writer.WritePropertyName("Text");
+            // writer.WriteValue(option.Text);
+            
+            writer.WritePropertyName("Item1");
+            writer.WriteValue(option.Id);
+            writer.WritePropertyName("Item2");
+            writer.WriteValue(option.Text);
+            
+            writer.WriteEndObject();
+        }
+    }
+
 }

@@ -1,4 +1,5 @@
 ﻿using LibraryOpenKnowledge;
+using LibraryOpenKnowledge.Extensions;
 using LibraryOpenKnowledge.Models;
 using LibraryOpenKnowledge.Tools;
 
@@ -77,7 +78,7 @@ class Program
                         {
                             ("A", "1"),
                             ("B", "100")
-                        },
+                        }.ToOptionList(),
                         Score = 10.0,
                         Answer = new string[]
                         {
@@ -104,7 +105,7 @@ class Program
                         {
                             ("A", "1000"),
                             ("B", "100")
-                        },
+                        }.ToOptionList(),
                         Score = 80.0,
                         Answer = new string[]
                         {

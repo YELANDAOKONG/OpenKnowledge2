@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -13,6 +14,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using DesktopKnowledgeAvalonia.Services;
 using DesktopKnowledgeAvalonia.ViewModels;
+using LibraryOpenKnowledge.Extensions;
 using LibraryOpenKnowledge.Models;
 using LibraryOpenKnowledge.Tools;
 
@@ -57,6 +59,9 @@ public partial class ExaminationWindow : AppWindowBase
         
         // Initialize timers
         InitializeTimers();
+        
+        // Assign the save method to ViewModel's delegate
+        _viewModel.SaveCurrentAnswer = SaveCurrentAnswer;
     }
     
     private void InitializeUI()
@@ -72,7 +77,13 @@ public partial class ExaminationWindow : AppWindowBase
     private void SetupEventHandlers()
     {
         // Button click handlers
-        BackButton.Click += (s, e) => _viewModel.BackToMain();
+        BackButton.Click += async (s, e) => 
+        {
+            SaveCurrentAnswer();
+            await _viewModel.SaveProgressSilently();
+            Close();
+        };
+        
         SaveButton.Click += async (s, e) => await _viewModel.SaveProgress();
         SubmitButton.Click += async (s, e) => await SubmitExamination();
         PrevButton.Click += (s, e) => _viewModel.NavigatePrevious();
@@ -278,14 +289,19 @@ public partial class ExaminationWindow : AppWindowBase
                     Grid.SetColumn(numberText, 0);
                     grid.Children.Add(numberText);
                     
-                    // Add question title
+                    // Add question title - with truncated text (first 40 chars max)
+                    string truncatedStem = TruncateWithEllipsis(question.Stem, 40);
                     var titleText = new TextBlock
                     {
-                        Text = question.Stem,
-                        TextTrimming = TextTrimming.CharacterEllipsis
+                        Text = truncatedStem,
+                        TextTrimming = TextTrimming.CharacterEllipsis,
+                        MaxLines = 2 // Limit to 2 lines max
                     };
                     Grid.SetColumn(titleText, 1);
                     grid.Children.Add(titleText);
+                    
+                    // Set full text as tooltip for hover
+                    ToolTip.SetTip(button, question.Stem);
                     
                     // Add check icon if answered
                     var checkIcon = new PathIcon
@@ -314,9 +330,21 @@ public partial class ExaminationWindow : AppWindowBase
         }
     }
     
+    // Helper method to truncate text with ellipsis
+    private string TruncateWithEllipsis(string text, int maxLength)
+    {
+        if (string.IsNullOrEmpty(text) || text.Length <= maxLength)
+            return text;
+            
+        return text.Substring(0, maxLength) + "...";
+    }
+    
     private void OnQuestionChanged(object? sender, EventArgs e)
     {
         if (_viewModel.CurrentQuestion == null) return;
+        
+        // Ensure question has valid Options for judgement questions
+        EnsureQuestionOptions();
         
         // Update question info
         QuestionTypeText.Text = _viewModel.GetLocalizedQuestionType(_viewModel.CurrentQuestion.Type);
@@ -360,6 +388,26 @@ public partial class ExaminationWindow : AppWindowBase
             if (SectionsPanel.Children[i] is Expander expander)
             {
                 expander.IsExpanded = i == _viewModel.CurrentSectionIndex;
+            }
+        }
+    }
+    
+    // Helper method to ensure judgment questions have proper Options
+    private void EnsureQuestionOptions()
+    {
+        if (_viewModel.CurrentQuestion == null) return;
+        
+        // For judgment questions, ensure Options are set properly
+        if (_viewModel.CurrentQuestion.Type == QuestionTypes.Judgment)
+        {
+            if (_viewModel.CurrentQuestion.Options == null || _viewModel.CurrentQuestion.Options.Count < 2)
+            {
+                // Create default True/False options if none exist
+                _viewModel.CurrentQuestion.Options = new List<(string, string)>
+                {
+                    ("True", "True"),
+                    ("False", "False")
+                }.ToOptionList();
             }
         }
     }
@@ -482,28 +530,35 @@ public partial class ExaminationWindow : AppWindowBase
     
     private void CreateSingleChoiceUI(string questionId)
     {
-        if (_viewModel.CurrentQuestion?.Options == null) return;
+        if (_viewModel.CurrentQuestion?.Options == null || _viewModel.CurrentQuestion.Options.Count == 0) return;
         
         var radioButtons = new List<RadioButton>();
         
-        foreach (var option in _viewModel.CurrentQuestion.Options)
+        // Get letter prefixes for options (A, B, C, etc.)
+        var letters = GetOptionLetters(_viewModel.CurrentQuestion.Options.Count);
+        
+        for (int i = 0; i < _viewModel.CurrentQuestion.Options.Count; i++)
         {
+            var option = _viewModel.CurrentQuestion.Options[i];
+            var letter = letters[i];
+            
             var radioButton = new RadioButton
             {
-                Content = option.Item2,
+                Content = $"{letter}. {option.Text}",
                 GroupName = $"SingleChoice_{questionId}",
-                Margin = new Thickness(0, 5)
+                Margin = new Thickness(0, 5),
+                Tag = option.Id // Store the option ID in the Tag
             };
             
             // Check if this option is selected
             if (_viewModel.CurrentQuestion.UserAnswer != null && 
-                _viewModel.CurrentQuestion.UserAnswer.Contains(option.Item1))
+                _viewModel.CurrentQuestion.UserAnswer.Contains(option.Id))
             {
                 radioButton.IsChecked = true;
             }
             
             // Set handler
-            string optionId = option.Item1;
+            string optionId = option.Id;
             radioButton.Checked += (s, e) => 
             {
                 if (_viewModel.CurrentQuestion != null)
@@ -522,27 +577,33 @@ public partial class ExaminationWindow : AppWindowBase
     
     private void CreateMultipleChoiceUI(string questionId)
     {
-        if (_viewModel.CurrentQuestion?.Options == null) return;
+        if (_viewModel.CurrentQuestion?.Options == null || _viewModel.CurrentQuestion.Options.Count == 0) return;
         
         var checkBoxes = new List<CheckBox>();
         
-        foreach (var option in _viewModel.CurrentQuestion.Options)
+        // Get letter prefixes for options (A, B, C, etc.)
+        var letters = GetOptionLetters(_viewModel.CurrentQuestion.Options.Count);
+        
+        for (int i = 0; i < _viewModel.CurrentQuestion.Options.Count; i++)
         {
+            var option = _viewModel.CurrentQuestion.Options[i];
+            var letter = letters[i];
+            
             var checkBox = new CheckBox
             {
-                Content = option.Item2,
-                Margin = new Thickness(0, 5)
+                Content = $"{letter}. {option.Text}",
+                Margin = new Thickness(0, 5),
+                Tag = option.Id // Store the option ID in the Tag
             };
             
             // Check if this option is selected
             if (_viewModel.CurrentQuestion.UserAnswer != null && 
-                _viewModel.CurrentQuestion.UserAnswer.Contains(option.Item1))
+                _viewModel.CurrentQuestion.UserAnswer.Contains(option.Id))
             {
                 checkBox.IsChecked = true;
             }
             
             // Set handler
-            string optionId = option.Item1;
             checkBox.Checked += (s, e) => UpdateMultipleChoiceAnswer(questionId);
             checkBox.Unchecked += (s, e) => UpdateMultipleChoiceAnswer(questionId);
             
@@ -562,13 +623,11 @@ public partial class ExaminationWindow : AppWindowBase
         
         var selectedOptions = new List<string>();
         
-        for (int i = 0; i < checkBoxes.Count; i++)
+        foreach (var checkBox in checkBoxes)
         {
-            if (checkBoxes[i].IsChecked == true && 
-                _viewModel.CurrentQuestion.Options != null && 
-                i < _viewModel.CurrentQuestion.Options.Count)
+            if (checkBox.IsChecked == true && checkBox.Tag is string optionId)
             {
-                selectedOptions.Add(_viewModel.CurrentQuestion.Options[i].Item1);
+                selectedOptions.Add(optionId);
             }
         }
         
@@ -578,47 +637,55 @@ public partial class ExaminationWindow : AppWindowBase
     
     private void CreateJudgmentUI(string questionId)
     {
+        if (_viewModel.CurrentQuestion?.Options == null || _viewModel.CurrentQuestion.Options.Count < 2) return;
+        
         var panel = new StackPanel
         {
             Orientation = Orientation.Horizontal,
             Spacing = 20
         };
         
+        // Get options (should be True/False)
+        var trueOption = _viewModel.CurrentQuestion.Options[0];
+        var falseOption = _viewModel.CurrentQuestion.Options[1];
+        
         var trueRadio = new RadioButton
         {
-            Content = "True",
-            GroupName = $"Judgment_{questionId}"
+            Content = "T. " + trueOption.Text,
+            GroupName = $"Judgment_{questionId}",
+            Tag = trueOption.Id
         };
         
         var falseRadio = new RadioButton
         {
-            Content = "False",
-            GroupName = $"Judgment_{questionId}"
+            Content = "F. " + falseOption.Text,
+            GroupName = $"Judgment_{questionId}",
+            Tag = falseOption.Id
         };
         
         // Set initial state
-        if (_viewModel.CurrentQuestion?.UserAnswer != null && _viewModel.CurrentQuestion.UserAnswer.Length > 0)
+        if (_viewModel.CurrentQuestion.UserAnswer != null && _viewModel.CurrentQuestion.UserAnswer.Length > 0)
         {
             string answer = _viewModel.CurrentQuestion.UserAnswer[0];
-            trueRadio.IsChecked = answer.Equals("True", StringComparison.OrdinalIgnoreCase);
-            falseRadio.IsChecked = answer.Equals("False", StringComparison.OrdinalIgnoreCase);
+            trueRadio.IsChecked = answer.Equals(trueOption.Id, StringComparison.OrdinalIgnoreCase);
+            falseRadio.IsChecked = answer.Equals(falseOption.Id, StringComparison.OrdinalIgnoreCase);
         }
         
         // Set handlers
         trueRadio.Checked += (s, e) => 
         {
-            if (_viewModel.CurrentQuestion != null)
+            if (_viewModel.CurrentQuestion != null && trueRadio.Tag is string optionId)
             {
-                _viewModel.CurrentQuestion.UserAnswer = new[] { "True" };
+                _viewModel.CurrentQuestion.UserAnswer = new[] { optionId };
                 _viewModel.UpdateProgress();
             }
         };
         
         falseRadio.Checked += (s, e) => 
         {
-            if (_viewModel.CurrentQuestion != null)
+            if (_viewModel.CurrentQuestion != null && falseRadio.Tag is string optionId)
             {
-                _viewModel.CurrentQuestion.UserAnswer = new[] { "False" };
+                _viewModel.CurrentQuestion.UserAnswer = new[] { optionId };
                 _viewModel.UpdateProgress();
             }
         };
@@ -630,6 +697,28 @@ public partial class ExaminationWindow : AppWindowBase
         
         var radioButtons = new List<RadioButton> { trueRadio, falseRadio };
         _choiceAnswers[questionId] = radioButtons;
+    }
+    
+    // Helper method to get option letters
+    private string[] GetOptionLetters(int count)
+    {
+        string[] letters = new string[count];
+        for (int i = 0; i < count; i++)
+        {
+            // For 26 or fewer options, use A-Z
+            if (i < 26)
+            {
+                letters[i] = ((char)('A' + i)).ToString();
+            }
+            else
+            {
+                // For more than 26 options, use AA, AB, etc.
+                int first = (i / 26) - 1;
+                int second = i % 26;
+                letters[i] = $"{(char)('A' + first)}{(char)('A' + second)}";
+            }
+        }
+        return letters;
     }
     
     private void CreateTextAnswerUI(string questionId)
@@ -777,11 +866,8 @@ public partial class ExaminationWindow : AppWindowBase
                 }
                 break;
                 
-            // Other question types are handled through direct UI element events
+            // Choice questions are handled through direct UI element events
         }
-        
-        // Assign the implementation to the ViewModel's method
-        _viewModel.SaveCurrentAnswer = SaveCurrentAnswer;
     }
     
     protected override void OnClosed(EventArgs e)

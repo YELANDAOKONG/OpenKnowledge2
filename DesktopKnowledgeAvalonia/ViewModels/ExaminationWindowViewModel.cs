@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using DesktopKnowledgeAvalonia.Services;
+using LibraryOpenKnowledge.Extensions;
 using LibraryOpenKnowledge.Models;
 using LibraryOpenKnowledge.Tools;
 
@@ -66,6 +67,7 @@ public partial class ExaminationWindowViewModel : ViewModelBase
         if (_configService.AppData.CurrentExamination != null)
         {
             Examination = _configService.AppData.CurrentExamination;
+            EnsureJudgmentQuestionOptions();
             InitializeExamination();
         }
     }
@@ -129,7 +131,33 @@ public partial class ExaminationWindowViewModel : ViewModelBase
         
         ProgressUpdated?.Invoke(this, EventArgs.Empty);
     }
-
+    
+    public void EnsureJudgmentQuestionOptions()
+    {
+        // Go through all sections and questions to ensure judgment questions have proper options
+        if (Examination == null) return;
+    
+        foreach (var section in Examination.ExaminationSections)
+        {
+            if (section.Questions == null) continue;
+        
+            foreach (var question in section.Questions)
+            {
+                if (question.Type == QuestionTypes.Judgment)
+                {
+                    // Ensure options exist for judgment questions
+                    if (question.Options == null || question.Options.Count < 2)
+                    {
+                        question.Options = new List<(string, string)>
+                        {
+                            ("True", "True"),
+                            ("False", "False")
+                        }.ToOptionList();
+                    }
+                }
+            }
+        }
+    }
     
     public void NavigateToQuestion(int sectionIndex, int questionIndex)
     {

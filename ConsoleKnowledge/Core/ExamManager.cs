@@ -236,7 +236,7 @@ public class ExamManager
             AnsiConsole.MarkupLine($"[green]{_i18n.GetText("question.options")}:[/]");
             foreach (var option in question.Options)
             {
-                AnsiConsole.MarkupLine($"[yellow]{option.Item1})[/] {option.Item2}");
+                AnsiConsole.MarkupLine($"[yellow]{option.Id})[/] {option.Text}");
             }
             AnsiConsole.WriteLine();
         }
@@ -352,7 +352,7 @@ public class ExamManager
             AnsiConsole.MarkupLine("[green]Options:[/]");
             foreach (var option in question.Options)
             {
-                AnsiConsole.MarkupLine($"[yellow]{option.Item1})[/] {option.Item2}");
+                AnsiConsole.MarkupLine($"[yellow]{option.Id})[/] {option.Text}");
             }
             AnsiConsole.WriteLine();
         }
@@ -447,7 +447,7 @@ public class ExamManager
         }
         
         var options = question.Options
-            .Select(o => $"{o.Item1}) {o.Item2}")
+            .Select(o => $"{o.Id}) {o.Text}")
             .ToArray();
         
         var selectedOption = AnsiConsole.Prompt(
@@ -468,7 +468,7 @@ public class ExamManager
         }
         
         var options = question.Options
-            .Select(o => $"{o.Item1}) {o.Item2}")
+            .Select(o => $"{o.Id}) {o.Text}")
             .ToArray();
         
         var selectedOptions = AnsiConsole.Prompt(
