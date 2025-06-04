@@ -5,7 +5,7 @@ using DesktopKnowledgeAvalonia.ViewModels;
 
 namespace DesktopKnowledgeAvalonia.Views;
 
-public partial class StudyWindow : Window
+public partial class StudyWindow : AppWindowBase
 {
     public StudyWindow(StudyWindowViewModel model)
     {

@@ -1,11 +1,13 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using DesktopKnowledgeAvalonia.Models;
+using DesktopKnowledgeAvalonia.Services;
 using DesktopKnowledgeAvalonia.ViewModels;
 
 namespace DesktopKnowledgeAvalonia.Views;
 
-public partial class MainWindow : Window
+public partial class MainWindow : AppWindowBase
 {
     private MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
 

@@ -80,6 +80,7 @@ public partial class App : Application
         // Register services
         services.AddSingleton<LocalizationService>();
         services.AddSingleton<ConfigureService>();
+        services.AddSingleton<ThemeService>();
         
         // Register view models
         services.AddTransient<MainWindowViewModel>();

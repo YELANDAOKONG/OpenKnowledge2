@@ -9,7 +9,7 @@ using DesktopKnowledgeAvalonia.Services;
 
 namespace DesktopKnowledgeAvalonia.Views;
 
-public partial class FatalErrorWindow : Window
+public partial class FatalErrorWindow : AppWindowBase
 {
     private readonly LocalizationService _localizationService;
     private readonly string _errorDetails;

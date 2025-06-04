@@ -7,7 +7,7 @@ using DesktopKnowledgeAvalonia.ViewModels;
 
 namespace DesktopKnowledgeAvalonia.Views;
 
-public partial class InitializationWindow : Window
+public partial class InitializationWindow : AppWindowBase
 {
     private readonly InitializationViewModel _viewModel;
     private bool _configurationSaved = false;

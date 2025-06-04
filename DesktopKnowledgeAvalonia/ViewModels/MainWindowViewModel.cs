@@ -49,6 +49,8 @@ public partial class MainWindowViewModel : ViewModelBase
             return $"OpenKnowledge Desktop {versionString} (Protocol {protocolVersion})";
         }
     }
+    
+    
 
     public MainWindowViewModel()
     {
@@ -97,7 +99,7 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         UpdateUserInitials();
         _configureService.AppConfig.UserName = UserName;
-        _configureService.SaveChangesAsync();
+        _configureService.SaveChangesAsync().Start();
     }
     
     [RelayCommand]
