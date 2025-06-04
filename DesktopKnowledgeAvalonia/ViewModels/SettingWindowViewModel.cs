@@ -16,6 +16,8 @@ public partial class SettingWindowViewModel : ViewModelBase
     private readonly ConfigureService _configService;
     private readonly LocalizationService _localizationService;
     private readonly ThemeService _themeService;
+    
+    public event EventHandler? WindowCloseRequested;
 
     [ObservableProperty]
     private ObservableCollection<SettingCategory> _categories = new();
@@ -77,6 +79,13 @@ public partial class SettingWindowViewModel : ViewModelBase
         }
 
         await _configService.SaveChangesAsync();
+    }
+    
+    [RelayCommand]
+    public async Task SaveExitAsync()
+    {
+        await SaveAsync();
+        WindowCloseRequested?.Invoke(this, EventArgs.Empty);
     }
 }
 

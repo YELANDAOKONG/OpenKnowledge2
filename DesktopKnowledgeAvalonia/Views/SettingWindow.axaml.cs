@@ -10,12 +10,15 @@ public partial class SettingWindow : AppWindowBase
     public SettingWindow()
     {
         InitializeComponent();
-        DataContext = new SettingWindowViewModel();
+        var model = new SettingWindowViewModel();
+        DataContext = model;
+        model.WindowCloseRequested += (s, e) => Close();
     }
     
     public SettingWindow(SettingWindowViewModel model)
     {
         InitializeComponent();
+        model.WindowCloseRequested += (s, e) => Close();
         DataContext = model;
     }
 }

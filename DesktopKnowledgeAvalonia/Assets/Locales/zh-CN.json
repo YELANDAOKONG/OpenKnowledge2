@@ -43,6 +43,7 @@
   "settings.window.title": "设置",
   "settings.header": "设置",
   "settings.save": "保存",
+  "settings.save-exit": "保存并退出",
   "settings.category.general": "通用",
   "settings.category.appearance": "外观",
   "settings.category.language": "语言",

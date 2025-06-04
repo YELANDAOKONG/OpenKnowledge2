@@ -59,156 +59,174 @@
 
             <!-- Right Side: Settings Content -->
             <Grid Grid.Column="1" Margin="20,0,0,0" RowDefinitions="*,Auto">
-                <!-- Settings Content -->
-                <ContentControl Grid.Row="0" Content="{Binding SelectedCategory.Content}">
-                    <ContentControl.DataTemplates>
-                        <!-- General Settings Template -->
-                        <DataTemplate DataType="vm:GeneralSettingsViewModel">
-                            <StackPanel Spacing="15">
-                                <TextBlock Text="{loc:Translate Key=settings.general.username}" 
-                                           FontWeight="SemiBold" 
-                                           Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding UserName}" MaxLength="50"/>
-                            </StackPanel>
-                        </DataTemplate>
-                        
-                        <!-- Appearance Settings Template -->
-                        <DataTemplate DataType="vm:AppearanceSettingsViewModel">
-                            <StackPanel Spacing="15">
-                                <StackPanel>
-                                    <TextBlock Text="{loc:Translate Key=settings.appearance.theme}" 
+                <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                    <!-- Settings Content -->
+                    <ContentControl Grid.Row="0" Content="{Binding SelectedCategory.Content}">
+                        <ContentControl.DataTemplates>
+                            <!-- General Settings Template -->
+                            <DataTemplate DataType="vm:GeneralSettingsViewModel">
+                                <StackPanel Spacing="15">
+                                    <TextBlock Text="{loc:Translate Key=settings.general.username}" 
                                                FontWeight="SemiBold" 
                                                Margin="0,0,0,5"/>
-                                    <ComboBox ItemsSource="{Binding ThemeOptions}" 
-                                              SelectedItem="{Binding SelectedTheme}"
+                                    <TextBox Text="{Binding UserName}" MaxLength="50"/>
+                                </StackPanel>
+                            </DataTemplate>
+                            
+                            <!-- Appearance Settings Template -->
+                            <DataTemplate DataType="vm:AppearanceSettingsViewModel">
+                                <StackPanel Spacing="15">
+                                    <StackPanel>
+                                        <TextBlock Text="{loc:Translate Key=settings.appearance.theme}" 
+                                                   FontWeight="SemiBold" 
+                                                   Margin="0,0,0,5"/>
+                                        <ComboBox ItemsSource="{Binding ThemeOptions}" 
+                                                  SelectedItem="{Binding SelectedTheme}"
+                                                  Width="200"
+                                                  HorizontalAlignment="Left"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel>
+                                        <TextBlock Text="{loc:Translate Key=settings.appearance.transparency}" 
+                                                   FontWeight="SemiBold" 
+                                                   Margin="0,0,0,5"/>
+                                        <ComboBox ItemsSource="{Binding TransparencyOptions}" 
+                                                  SelectedItem="{Binding SelectedTransparency}"
+                                                  Width="200"
+                                                  HorizontalAlignment="Left"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </DataTemplate>
+                            
+                            <!-- Language Settings Template -->
+                            <DataTemplate DataType="vm:LanguageSettingsViewModel">
+                                <StackPanel Spacing="15">
+                                    <TextBlock Text="{loc:Translate Key=settings.language.select}" 
+                                               FontWeight="SemiBold" 
+                                               Margin="0,0,0,5"/>
+                                    <ComboBox ItemsSource="{Binding AvailableLanguages}" 
+                                              SelectedItem="{Binding SelectedLanguage}"
                                               Width="200"
                                               HorizontalAlignment="Left"/>
                                 </StackPanel>
-                                
-                                <StackPanel>
-                                    <TextBlock Text="{loc:Translate Key=settings.appearance.transparency}" 
-                                               FontWeight="SemiBold" 
-                                               Margin="0,0,0,5"/>
-                                    <ComboBox ItemsSource="{Binding TransparencyOptions}" 
-                                              SelectedItem="{Binding SelectedTransparency}"
-                                              Width="200"
-                                              HorizontalAlignment="Left"/>
-                                </StackPanel>
-                            </StackPanel>
-                        </DataTemplate>
-                        
-                        <!-- Language Settings Template -->
-                        <DataTemplate DataType="vm:LanguageSettingsViewModel">
-                            <StackPanel Spacing="15">
-                                <TextBlock Text="{loc:Translate Key=settings.language.select}" 
-                                           FontWeight="SemiBold" 
-                                           Margin="0,0,0,5"/>
-                                <ComboBox ItemsSource="{Binding AvailableLanguages}" 
-                                          SelectedItem="{Binding SelectedLanguage}"
-                                          Width="200"
-                                          HorizontalAlignment="Left"/>
-                            </StackPanel>
-                        </DataTemplate>
-                        
-                        <!-- AI Settings Template -->
-                        <DataTemplate DataType="vm:AISettingsViewModel">
-                            <StackPanel Spacing="15">
-                                <!-- API URL -->
-                                <StackPanel>
-                                    <TextBlock Text="{loc:Translate Key=settings.ai.apiurl}" 
-                                               FontWeight="SemiBold"
-                                               Margin="0,0,0,5"/>
-                                    <TextBox Text="{Binding ApiUrl}" 
-                                             Watermark="{loc:Translate Key=settings.ai.apiurl.placeholder}"
-                                             MaxLength="100"/>
-                                </StackPanel>
-                                
-                                <!-- API Key -->
-                                <StackPanel>
-                                    <TextBlock Text="{loc:Translate Key=settings.ai.apikey}" 
-                                               FontWeight="SemiBold"
-                                               Margin="0,0,0,5"/>
-                                    <Grid>
-                                        <TextBox Text="{Binding ApiKey}"
-                                                 PasswordChar="{Binding ApiKeyPasswordChar}"
-                                                 Watermark="{loc:Translate Key=settings.ai.apikey.placeholder}"
-                                                 MaxLength="100"/>
-                                        <Button Grid.Column="1" 
-                                                HorizontalAlignment="Right" 
-                                                VerticalAlignment="Center"
-                                                Margin="0,0,10,0"
-                                                Background="Transparent"
-                                                Padding="5"
-                                                Command="{Binding ToggleApiKeyVisibilityCommand}">
-                                            <PathIcon Data="{Binding ApiKeyVisibilityIcon}" Width="16" Height="16"/>
-                                        </Button>
-                                    </Grid>
-                                </StackPanel>
-                                
-                                <!-- Model -->
-                                <StackPanel>
-                                    <TextBlock Text="{loc:Translate Key=settings.ai.model}" 
-                                               FontWeight="SemiBold"
-                                               Margin="0,0,0,5"/>
-                                    <TextBox Text="{Binding Model}" 
-                                             Watermark="{loc:Translate Key=settings.ai.model.placeholder}"
-                                             MaxLength="50"/>
-                                </StackPanel>
-                                
-                                <!-- Temperature -->
-                                <StackPanel>
-                                    <Grid ColumnDefinitions="*,Auto">
-                                        <TextBlock Grid.Column="0" 
-                                                   Text="{loc:Translate Key=settings.ai.temperature}" 
+                            </DataTemplate>
+                            
+                            <!-- AI Settings Template -->
+                            <DataTemplate DataType="vm:AISettingsViewModel">
+                                <StackPanel Spacing="15">
+                                    <!-- API URL -->
+                                    <StackPanel>
+                                        <TextBlock Text="{loc:Translate Key=settings.ai.apiurl}" 
                                                    FontWeight="SemiBold"
                                                    Margin="0,0,0,5"/>
-                                        <TextBlock Grid.Column="1" 
-                                                   Text="{Binding TemperatureFormatted}" 
-                                                   Opacity="0.7"/>
-                                    </Grid>
-                                    <Slider Value="{Binding Temperature}" 
-                                            Minimum="0" 
-                                            Maximum="2" 
-                                            TickFrequency="0.01" 
-                                            IsSnapToTickEnabled="True" 
-                                            SmallChange="0.01" 
-                                            LargeChange="0.1"/>
-                                </StackPanel>
-                                
-                                <!-- Test Connection Section -->
-                                <Border Background="#10FFFFFF" CornerRadius="4" Padding="15" Margin="0,15,0,0">
-                                    <StackPanel Spacing="10">
-                                        <Grid ColumnDefinitions="*,Auto" Margin="0,5,0,0">
-                                            <Button Grid.Column="1" 
-                                                    Content="{loc:Translate Key=settings.ai.test.button}" 
-                                                    Command="{Binding TestConnectionCommand}" 
-                                                    IsEnabled="{Binding !IsTestingConnection}"/>
-                                        </Grid>
-                                        
-                                        <!-- Test Results -->
-                                        <Border IsVisible="{Binding IsConnectionTested}" 
-                                                Background="{Binding ConnectionStatusBackground}" 
-                                                CornerRadius="4" 
-                                                Padding="10">
-                                            <TextBlock Text="{Binding ConnectionStatus}" 
-                                                       Foreground="White" 
-                                                       TextWrapping="Wrap"/>
-                                        </Border>
+                                        <TextBox Text="{Binding ApiUrl}" 
+                                                 Watermark="{loc:Translate Key=settings.ai.apiurl.placeholder}"
+                                                 MaxLength="100"/>
                                     </StackPanel>
-                                </Border>
-                            </StackPanel>
-                        </DataTemplate>
+                                    
+                                    <!-- API Key -->
+                                    <StackPanel>
+                                        <TextBlock Text="{loc:Translate Key=settings.ai.apikey}" 
+                                                   FontWeight="SemiBold"
+                                                   Margin="0,0,0,5"/>
+                                        <Grid>
+                                            <TextBox Text="{Binding ApiKey}"
+                                                     PasswordChar="{Binding ApiKeyPasswordChar}"
+                                                     Watermark="{loc:Translate Key=settings.ai.apikey.placeholder}"
+                                                     MaxLength="100"/>
+                                            <Button Grid.Column="1" 
+                                                    HorizontalAlignment="Right" 
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,10,0"
+                                                    Background="Transparent"
+                                                    Padding="5"
+                                                    Command="{Binding ToggleApiKeyVisibilityCommand}">
+                                                <PathIcon Data="{Binding ApiKeyVisibilityIcon}" Width="16" Height="16"/>
+                                            </Button>
+                                        </Grid>
+                                    </StackPanel>
+                                    
+                                    <!-- Model -->
+                                    <StackPanel>
+                                        <TextBlock Text="{loc:Translate Key=settings.ai.model}" 
+                                                   FontWeight="SemiBold"
+                                                   Margin="0,0,0,5"/>
+                                        <TextBox Text="{Binding Model}" 
+                                                 Watermark="{loc:Translate Key=settings.ai.model.placeholder}"
+                                                 MaxLength="50"/>
+                                    </StackPanel>
+                                    
+                                    <!-- Temperature -->
+                                    <StackPanel>
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Grid.Column="0" 
+                                                       Text="{loc:Translate Key=settings.ai.temperature}" 
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,0,0,5"/>
+                                            <TextBlock Grid.Column="1" 
+                                                       Text="{Binding TemperatureFormatted}" 
+                                                       Opacity="0.7"/>
+                                        </Grid>
+                                        <Slider Value="{Binding Temperature}" 
+                                                Minimum="0" 
+                                                Maximum="2" 
+                                                TickFrequency="0.01" 
+                                                IsSnapToTickEnabled="True" 
+                                                SmallChange="0.01" 
+                                                LargeChange="0.1"/>
+                                    </StackPanel>
+                                    
+                                    <!-- Test Connection Section -->
+                                    <Border Background="#10FFFFFF" CornerRadius="4" Padding="15" Margin="0,15,0,0">
+                                        <StackPanel Spacing="10">
+                                            <Grid ColumnDefinitions="*,Auto" Margin="0,5,0,0">
+                                                <Button Grid.Column="1" 
+                                                        Content="{loc:Translate Key=settings.ai.test.button}" 
+                                                        Command="{Binding TestConnectionCommand}" 
+                                                        IsEnabled="{Binding !IsTestingConnection}"/>
+                                            </Grid>
+                                            
+                                            <!-- Test Results -->
+                                            <Border IsVisible="{Binding IsConnectionTested}" 
+                                                    Background="{Binding ConnectionStatusBackground}" 
+                                                    CornerRadius="4" 
+                                                    Padding="10">
+                                                <TextBlock Text="{Binding ConnectionStatus}" 
+                                                           Foreground="White" 
+                                                           TextWrapping="Wrap"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </DataTemplate>
 
-                    </ContentControl.DataTemplates>
-                </ContentControl>
+                        </ContentControl.DataTemplates>
+                    </ContentControl>
+                </ScrollViewer>
 
-                <!-- Save Button -->
-                <Button Grid.Row="1"
-                        Content="{loc:Translate Key=settings.save}"
-                        HorizontalAlignment="Right"
-                        Margin="0,20,0,0"
-                        Classes="Primary"
-                        Command="{Binding SaveCommand}"/>
+                <!-- Buttons Container -->
+                <StackPanel Grid.Row="1" 
+                            Orientation="Horizontal" 
+                            HorizontalAlignment="Right" 
+                            Spacing="10" 
+                            Margin="0,20,0,0">
+                    <!-- Save Button -->
+                    <Button Grid.Row="1"
+                            Content="{loc:Translate Key=settings.save}"
+                            HorizontalAlignment="Right"
+                            Margin="0,20,0,0"
+                            Classes="Primary"
+                            Command="{Binding SaveCommand}"/>
+                    
+                    <!-- Save & Exit Button -->
+                    <Button Grid.Row="1"
+                            Content="{loc:Translate Key=settings.save-exit}"
+                            HorizontalAlignment="Right"
+                            Margin="0,20,0,0"
+                            Background="Green"
+                            Classes="Primary"
+                            Command="{Binding SaveExitCommand}"/>
+                </StackPanel>
             </Grid>
         </Grid>
     </Grid>

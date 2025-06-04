@@ -43,6 +43,7 @@
   "settings.window.title": "Settings",
   "settings.header": "Settings",
   "settings.save": "Save",
+  "settings.save-exit": "Save & Exit",
   "settings.category.general": "General",
   "settings.category.appearance": "Appearance",
   "settings.category.language": "Language",
