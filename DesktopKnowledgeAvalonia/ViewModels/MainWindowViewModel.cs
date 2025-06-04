@@ -101,7 +101,7 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         UpdateUserInitials();
         _configureService.AppConfig.UserName = UserName;
-        _configureService.SaveChangesAsync().Start();
+        _configureService.SaveChangesAsync();
     }
     
     [RelayCommand]
