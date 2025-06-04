@@ -53,6 +53,21 @@
   "settings.appearance.theme": "Theme",
   "settings.appearance.transparency": "Transparency Mode",
   "settings.language.select": "Select Language",
-  "settings.general.username": "Username"
-
+  "settings.general.username": "Username",
+  "settings.theme.light": "Light",
+  "settings.theme.dark": "Dark",
+  "settings.theme.system": "System",
+  "settings.category.ai": "AI Configuration",
+  "settings.ai.apiurl": "API URL",
+  "settings.ai.apiurl.placeholder": "Enter API URL (e.g., https://api.deepseek.com/v1)",
+  "settings.ai.apikey": "API Key",
+  "settings.ai.apikey.placeholder": "Enter your API key",
+  "settings.ai.model": "AI Model",
+  "settings.ai.model.placeholder": "Enter model name (e.g., deepseek-chat)",
+  "settings.ai.temperature": "Temperature",
+  "settings.ai.test.button": "Test Connection",
+  "settings.ai.test.success": "Connection successful! Your configuration is working.",
+  "settings.ai.test.error": "Connection failed",
+  "settings.ai.test.fill.all.fields": "Please fill in all required fields before testing."
+  
 }

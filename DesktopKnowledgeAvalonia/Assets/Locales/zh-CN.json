@@ -53,6 +53,21 @@
   "settings.appearance.theme": "主题",
   "settings.appearance.transparency": "透明度模式",
   "settings.language.select": "选择语言",
-  "settings.general.username": "用户名"
-
+  "settings.general.username": "用户名",
+  "settings.theme.light": "浅色",
+  "settings.theme.dark": "深色",
+  "settings.theme.system": "系统",
+  "settings.category.ai": "AI 配置",
+  "settings.ai.apiurl": "API 地址",
+  "settings.ai.apiurl.placeholder": "输入 API 地址（例如：https://api.deepseek.com/v1）",
+  "settings.ai.apikey": "API 密钥",
+  "settings.ai.apikey.placeholder": "输入您的 API 密钥",
+  "settings.ai.model": "AI 模型",
+  "settings.ai.model.placeholder": "输入模型名称（例如：deepseek-chat）",
+  "settings.ai.temperature": "温度参数",
+  "settings.ai.test.button": "测试连接",
+  "settings.ai.test.success": "连接成功！您的配置正常工作。",
+  "settings.ai.test.error": "连接失败",
+  "settings.ai.test.fill.all.fields": "请在测试前填写所有必填字段。"
+  
 }
