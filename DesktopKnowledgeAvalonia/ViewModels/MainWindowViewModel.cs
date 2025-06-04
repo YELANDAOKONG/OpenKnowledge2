@@ -30,6 +30,8 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] 
     private bool _isWindowsVisible = true;
     
+    public event EventHandler? WindowCloseRequested;
+    
     public string VersionInfo
     {
         get
@@ -153,6 +155,12 @@ public partial class MainWindowViewModel : ViewModelBase
         SettingWindow window = new SettingWindow();
         IsWindowsVisible = false;
         window.Show();
-        window.Closed += (s, e) => IsWindowsVisible = true;
+        window.Closed += (s, e) =>
+        {
+            // IsWindowsVisible = true;
+            MainWindow newWindows = new MainWindow();
+            WindowCloseRequested?.Invoke(this, EventArgs.Empty);
+            newWindows.Show();
+        };
     }
 }

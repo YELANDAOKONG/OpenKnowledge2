@@ -11,9 +11,18 @@ public partial class MainWindow : AppWindowBase
 {
     private MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
 
+    public MainWindow()
+    {
+        InitializeComponent();
+        var model = new MainWindowViewModel();
+        model.WindowCloseRequested += (s, e) => Close();
+        DataContext = model;
+    }
+    
     public MainWindow(MainWindowViewModel viewModel)
     {
         InitializeComponent();
+        viewModel.WindowCloseRequested += (s, e) => Close();
         DataContext = viewModel;
     }
 

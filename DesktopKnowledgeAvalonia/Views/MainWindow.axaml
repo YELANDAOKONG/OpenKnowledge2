@@ -31,7 +31,7 @@
                 <TextBlock Text="{Binding UserInitials}" 
                            HorizontalAlignment="Center" 
                            VerticalAlignment="Center"
-                           FontSize="32" 
+                           FontSize="50" 
                            FontWeight="SemiBold" 
                            Foreground="White"/>
             </Border>
@@ -52,6 +52,7 @@
                             <!-- Username TextBox (visible when editing) -->
                             <TextBox Text="{Binding UserName}" 
                                     FontSize="24"
+                                    MaxLength="32"
                                     FontWeight="SemiBold"
                                     IsVisible="{Binding IsEditingUsername}"
                                     LostFocus="OnUsernameEditComplete"
