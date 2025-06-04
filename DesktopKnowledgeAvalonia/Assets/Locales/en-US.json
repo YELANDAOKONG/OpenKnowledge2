@@ -38,5 +38,21 @@
   "init.button.exit": "Exit",
   "init.error.api.url.required": "API URL is required",
   "init.error.api.key.required": "API Key is required",
-  "init.error.model.required": "Model name is required"
+  "init.error.model.required": "Model name is required",
+
+  "settings.window.title": "Settings",
+  "settings.header": "Settings",
+  "settings.save": "Save",
+  "settings.category.general": "General",
+  "settings.category.appearance": "Appearance",
+  "settings.category.language": "Language",
+  "settings.transparency.auto": "Auto",
+  "settings.transparency.full": "Full Transparency",
+  "settings.transparency.light": "Light Background",
+  "settings.transparency.dark": "Dark Background",
+  "settings.appearance.theme": "Theme",
+  "settings.appearance.transparency": "Transparency Mode",
+  "settings.language.select": "Select Language",
+  "settings.general.username": "Username"
+
 }

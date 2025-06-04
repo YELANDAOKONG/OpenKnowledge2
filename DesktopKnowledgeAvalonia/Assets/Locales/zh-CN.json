@@ -38,5 +38,21 @@
   "init.button.exit": "退出",
   "init.error.api.url.required": "API 地址为必填项",
   "init.error.api.key.required": "API 密钥为必填项",
-  "init.error.model.required": "模型名称为必填项"
+  "init.error.model.required": "模型名称为必填项",
+
+  "settings.window.title": "设置",
+  "settings.header": "设置",
+  "settings.save": "保存",
+  "settings.category.general": "通用",
+  "settings.category.appearance": "外观",
+  "settings.category.language": "语言",
+  "settings.transparency.auto": "自动",
+  "settings.transparency.full": "完全透明",
+  "settings.transparency.light": "浅色背景",
+  "settings.transparency.dark": "深色背景",
+  "settings.appearance.theme": "主题",
+  "settings.appearance.transparency": "透明度模式",
+  "settings.language.select": "选择语言",
+  "settings.general.username": "用户名"
+
 }

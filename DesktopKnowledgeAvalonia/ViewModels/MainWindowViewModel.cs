@@ -150,7 +150,9 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private void OpenSettings()
     {
-        // TODO...
-        // To be implemented
+        SettingWindow window = new SettingWindow();
+        IsWindowsVisible = false;
+        window.Show();
+        window.Closed += (s, e) => IsWindowsVisible = true;
     }
 }

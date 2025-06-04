@@ -1,0 +1,125 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DesktopKnowledgeAvalonia.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:loc="using:DesktopKnowledgeAvalonia.Localization"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="550"
+        x:Class="DesktopKnowledgeAvalonia.Views.SettingWindow"
+        x:DataType="vm:SettingWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        ExtendClientAreaToDecorationsHint="True"
+        Title="{loc:Translate Key=settings.window.title}"
+        Width="800" Height="550"
+        MinWidth="700" MinHeight="450"
+        WindowStartupLocation="CenterScreen">
+
+    <Design.DataContext>
+        <vm:SettingWindowViewModel/>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*" Margin="20,40,20,20">
+        <!-- Header -->
+        <TextBlock Grid.Row="0" 
+                   Text="{loc:Translate Key=settings.header}" 
+                   FontSize="24" 
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,20"/>
+
+        <!-- Main Content (230)-->
+        <Grid Grid.Row="1" ColumnDefinitions="230,*">
+            <!-- Left Side: Categories -->
+            <Border Grid.Column="0"
+                    BorderBrush="#20FFFFFF"
+                    BorderThickness="0,0,1,0"
+                    Margin="0,0,20,0">
+                <ListBox ItemsSource="{Binding Categories}"
+                         SelectedItem="{Binding SelectedCategory}"
+                         Background="Transparent"
+                         Padding="0">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="Auto,*" Margin="10" Height="40">
+                                <PathIcon Grid.Column="0"
+                                          Width="22"
+                                          Height="22"
+                                          Margin="0,0,15,0"
+                                          Data="{Binding IconPath}"
+                                          Foreground="#569AFF"/>
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding DisplayName}"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+
+            <!-- Right Side: Settings Content -->
+            <Grid Grid.Column="1" Margin="20,0,0,0" RowDefinitions="*,Auto">
+                <!-- Settings Content -->
+                <ContentControl Grid.Row="0" Content="{Binding SelectedCategory.Content}">
+                    <ContentControl.DataTemplates>
+                        <!-- General Settings Template -->
+                        <DataTemplate DataType="vm:GeneralSettingsViewModel">
+                            <StackPanel Spacing="15">
+                                <TextBlock Text="{loc:Translate Key=settings.general.username}" 
+                                           FontWeight="SemiBold" 
+                                           Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding UserName}" MaxLength="50"/>
+                            </StackPanel>
+                        </DataTemplate>
+                        
+                        <!-- Appearance Settings Template -->
+                        <DataTemplate DataType="vm:AppearanceSettingsViewModel">
+                            <StackPanel Spacing="15">
+                                <StackPanel>
+                                    <TextBlock Text="{loc:Translate Key=settings.appearance.theme}" 
+                                               FontWeight="SemiBold" 
+                                               Margin="0,0,0,5"/>
+                                    <ComboBox ItemsSource="{Binding ThemeOptions}" 
+                                              SelectedItem="{Binding SelectedTheme}"
+                                              Width="200"
+                                              HorizontalAlignment="Left"/>
+                                </StackPanel>
+                                
+                                <StackPanel>
+                                    <TextBlock Text="{loc:Translate Key=settings.appearance.transparency}" 
+                                               FontWeight="SemiBold" 
+                                               Margin="0,0,0,5"/>
+                                    <ComboBox ItemsSource="{Binding TransparencyOptions}" 
+                                              SelectedItem="{Binding SelectedTransparency}"
+                                              Width="200"
+                                              HorizontalAlignment="Left"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </DataTemplate>
+                        
+                        <!-- Language Settings Template -->
+                        <DataTemplate DataType="vm:LanguageSettingsViewModel">
+                            <StackPanel Spacing="15">
+                                <TextBlock Text="{loc:Translate Key=settings.language.select}" 
+                                           FontWeight="SemiBold" 
+                                           Margin="0,0,0,5"/>
+                                <ComboBox ItemsSource="{Binding AvailableLanguages}" 
+                                          SelectedItem="{Binding SelectedLanguage}"
+                                          Width="200"
+                                          HorizontalAlignment="Left"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ContentControl.DataTemplates>
+                </ContentControl>
+
+                <!-- Save Button -->
+                <Button Grid.Row="1"
+                        Content="{loc:Translate Key=settings.save}"
+                        HorizontalAlignment="Right"
+                        Margin="0,20,0,0"
+                        Classes="Primary"
+                        Command="{Binding SaveCommand}"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
