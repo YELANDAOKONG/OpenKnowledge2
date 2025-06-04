@@ -122,9 +122,9 @@ public class Question
     public List<(string, string)>? Options { get; set; } = new List<(string, string)>();
     public double Score { get; set; } = 1.0;
 
-    public string[]? UserAnswer;
-    public string[] Answer;
-    public string[]? ReferenceAnswer;
+    public string[]? UserAnswer { get; set; }
+    public string[] Answer { get; set; }
+    public string[]? ReferenceAnswer { get; set; }
   
     public ReferenceMaterial[]? ReferenceMaterials { get; set; } = new ReferenceMaterial[] { };
   
