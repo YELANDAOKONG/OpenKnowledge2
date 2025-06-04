@@ -69,6 +69,33 @@
   "settings.ai.test.button": "Test Connection",
   "settings.ai.test.success": "Connection successful! Your configuration is working.",
   "settings.ai.test.error": "Connection failed",
-  "settings.ai.test.fill.all.fields": "Please fill in all required fields before testing."
-  
+  "settings.ai.test.fill.all.fields": "Please fill in all required fields before testing.",
+
+  "exam.title": "Examination",
+  "exam.time.remaining": "Time remaining: {0}",
+  "exam.submit": "Submit Examination",
+  "exam.back": "Back",
+  "exam.sections.questions": "Sections & Questions",
+  "exam.question": "Question {0}",
+  "exam.question.type.single": "Single Choice",
+  "exam.question.type.multiple": "Multiple Choice",
+  "exam.question.type.judgment": "True/False",
+  "exam.question.type.fill": "Fill in the Blank",
+  "exam.question.type.math": "Mathematics",
+  "exam.question.type.essay": "Essay",
+  "exam.question.type.short": "Short Answer",
+  "exam.question.type.calculation": "Calculation",
+  "exam.question.type.complex": "Complex",
+  "exam.question.type.other": "Other",
+  "exam.points": "({0} points)",
+  "exam.reference": "Reference Materials",
+  "exam.answer.placeholder": "Enter your answer here...",
+  "exam.prev": "Previous",
+  "exam.next": "Next",
+  "exam.progress": "Examination Progress",
+  "exam.question.of": "{0} of {1}",
+  "exam.save": "Save Progress",
+  "exam.save.success": "Progress saved successfully",
+  "exam.save.error": "Error saving progress"
+
 }

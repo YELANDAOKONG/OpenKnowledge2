@@ -11,9 +11,9 @@ public class Question
     public List<(string, string)>? Options { get; set; } = new List<(string, string)>();
     public double Score { get; set; } = 1.0; // 分数
 
-    public string[]? UserAnswer; // 用户答案
-    public string[] Answer; // 标准答案
-    public string[]? ReferenceAnswer; // 参考答案
+    public string[]? UserAnswer { get; set; } // 用户答案
+    public string[] Answer { get; set; } // 标准答案
+    public string[]? ReferenceAnswer { get; set; } // 参考答案
     
     public ReferenceMaterial[]? ReferenceMaterials { get; set; } = new ReferenceMaterial[] { }; // 参考资料
     

@@ -69,6 +69,33 @@
   "settings.ai.test.button": "测试连接",
   "settings.ai.test.success": "连接成功！您的配置正常工作。",
   "settings.ai.test.error": "连接失败",
-  "settings.ai.test.fill.all.fields": "请在测试前填写所有必填字段。"
-  
+  "settings.ai.test.fill.all.fields": "请在测试前填写所有必填字段。",
+
+  "exam.title": "考试",
+  "exam.time.remaining": "剩余时间: {0}",
+  "exam.submit": "提交考试",
+  "exam.back": "返回",
+  "exam.sections.questions": "章节与题目",
+  "exam.question": "题目 {0}",
+  "exam.question.type.single": "单选题",
+  "exam.question.type.multiple": "多选题",
+  "exam.question.type.judgment": "判断题",
+  "exam.question.type.fill": "填空题",
+  "exam.question.type.math": "数学题",
+  "exam.question.type.essay": "作文题",
+  "exam.question.type.short": "简答题",
+  "exam.question.type.calculation": "计算题",
+  "exam.question.type.complex": "复合题",
+  "exam.question.type.other": "其他题型",
+  "exam.points": "({0}分)",
+  "exam.reference": "参考资料",
+  "exam.answer.placeholder": "请在此输入解题过程和答案...",
+  "exam.prev": "上一题",
+  "exam.next": "下一题",
+  "exam.progress": "考试进度",
+  "exam.question.of": "{0} / {1}",
+  "exam.save": "保存进度",
+  "exam.save.success": "进度已成功保存",
+  "exam.save.error": "保存进度时出错"
+
 }

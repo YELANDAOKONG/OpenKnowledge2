@@ -21,12 +21,20 @@ public class QuestionPromptTools
         {
             foreach (var referenceMaterial in question.ReferenceMaterials)
             {
-                if (referenceMaterial != null && referenceMaterial.Materials.Length > 0)
+                var counter = new List<ReferenceMaterial>();
+                if (referenceMaterial != null)
                 {
-                    foreach (var material in referenceMaterial.Materials)
+                    foreach (var material in counter)
                     {
-                        materials.Add(material);
-                        materials.Add(", ");
+                        counter.Add(material);
+                    }
+                    if (counter.Count > 0)
+                    {
+                        foreach (var material in referenceMaterial.Materials)
+                        {
+                            materials.Add(material);
+                            materials.Add(", ");
+                        }
                     }
                 }
             }
@@ -68,11 +76,19 @@ public class QuestionPromptTools
             prompt.AppendLine("\"\"\"");
             foreach (var referenceMaterial in question.ReferenceMaterials)
             {
-                if (referenceMaterial != null && referenceMaterial.Materials.Length > 0)
+                var counter = new List<ReferenceMaterial>();
+                if (referenceMaterial != null)
                 {
-                    foreach (var material in referenceMaterial.Materials)
+                    foreach (var material in counter)
                     {
-                        prompt.AppendLine(material.Replace("\"", "\\\"").Replace("'", "\\'").Replace("`", "\\`"));
+                        counter.Add(material);
+                    }
+                    if (counter.Count > 0)
+                    {
+                        foreach (var material in referenceMaterial.Materials)
+                        {
+                            prompt.AppendLine(material.Replace("\"", "\\\"").Replace("'", "\\'").Replace("`", "\\`"));
+                        }
                     }
                 }
             }
