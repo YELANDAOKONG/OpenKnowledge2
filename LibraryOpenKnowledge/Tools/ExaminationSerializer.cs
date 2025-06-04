@@ -1,13 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using LibraryOpenKnowledge.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace LibraryOpenKnowledge.Tools
 {
     public class ExaminationSerializer
     {
+        // Static JsonSerializerSettings to ensure consistent settings across all serialization operations
+        private static readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
+        {
+            Formatting = Formatting.Indented,
+            Converters = new List<JsonConverter> { new TupleListJsonConverter() },
+            NullValueHandling = NullValueHandling.Include
+        };
+
         /// <summary>
         /// Serializes an examination to a file
         /// </summary>
@@ -23,8 +33,8 @@ namespace LibraryOpenKnowledge.Tools
                 Examination examToSave = includeUserAnswers ? 
                     examination : CreateCopyWithoutUserAnswers(examination);
 
-                // Convert to JSON with formatting for readability
-                string jsonData = JsonConvert.SerializeObject(examToSave, Formatting.Indented);
+                // Convert to JSON with custom settings
+                string jsonData = JsonConvert.SerializeObject(examToSave, _serializerSettings);
                 
                 // Write to file
                 File.WriteAllText(filePath, jsonData, Encoding.UTF8);
@@ -50,8 +60,8 @@ namespace LibraryOpenKnowledge.Tools
                 // Read all text from file
                 string jsonData = File.ReadAllText(filePath, Encoding.UTF8);
                 
-                // Deserialize the JSON data
-                Examination? examination = JsonConvert.DeserializeObject<Examination>(jsonData);
+                // Deserialize the JSON data with custom settings
+                Examination? examination = JsonConvert.DeserializeObject<Examination>(jsonData, _serializerSettings);
                 
                 // If user answers should not be included, clear them
                 if (!includeUserAnswers && examination != null)
@@ -82,8 +92,8 @@ namespace LibraryOpenKnowledge.Tools
                 Examination examToSave = includeUserAnswers ? 
                     examination : CreateCopyWithoutUserAnswers(examination);
 
-                // Convert to JSON with formatting for readability
-                return JsonConvert.SerializeObject(examToSave, Formatting.Indented);
+                // Convert to JSON with custom settings
+                return JsonConvert.SerializeObject(examToSave, _serializerSettings);
             }
             catch (Exception ex)
             {
@@ -102,8 +112,8 @@ namespace LibraryOpenKnowledge.Tools
         {
             try
             {
-                // Deserialize the JSON data
-                Examination? examination = JsonConvert.DeserializeObject<Examination>(jsonData);
+                // Deserialize the JSON data with custom settings
+                Examination? examination = JsonConvert.DeserializeObject<Examination>(jsonData, _serializerSettings);
                 
                 // If user answers should not be included, clear them
                 if (!includeUserAnswers && examination != null)
@@ -125,9 +135,9 @@ namespace LibraryOpenKnowledge.Tools
         /// </summary>
         private static Examination CreateCopyWithoutUserAnswers(Examination original)
         {
-            // Create a deep copy using JSON serialization
-            string jsonData = JsonConvert.SerializeObject(original);
-            Examination copy = JsonConvert.DeserializeObject<Examination>(jsonData)!;
+            // Create a deep copy using JSON serialization with custom settings
+            string jsonData = JsonConvert.SerializeObject(original, _serializerSettings);
+            Examination copy = JsonConvert.DeserializeObject<Examination>(jsonData, _serializerSettings)!;
             
             // Clear all user answers
             ClearUserAnswers(copy);
@@ -153,6 +163,77 @@ namespace LibraryOpenKnowledge.Tools
                     question.UserAnswer = null;
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// Custom JSON converter for List<(string, string)> to properly handle serialization of tuples
+    /// </summary>
+    public class TupleListJsonConverter : JsonConverter
+    {
+        public override bool CanConvert(Type objectType)
+        {
+            // Check if the type is List<(string, string)>
+            return objectType == typeof(List<(string, string)>);
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
+        {
+            var result = new List<(string, string)>();
+            
+            // Handle null
+            if (reader.TokenType == JsonToken.Null)
+                return result;
+                
+            // Make sure we're reading an array
+            if (reader.TokenType != JsonToken.StartArray)
+                throw new JsonSerializationException("Expected start of array");
+
+            // Read array using JArray
+            JArray array = JArray.Load(reader);
+            
+            // Process each item in the array
+            foreach (JToken token in array)
+            {
+                if (token.Type == JTokenType.Object)
+                {
+                    // Extract Item1 and Item2 from the object
+                    string item1 = token["Item1"]?.Value<string>() ?? string.Empty;
+                    string item2 = token["Item2"]?.Value<string>() ?? string.Empty;
+                    
+                    result.Add((item1, item2));
+                }
+            }
+            
+            return result;
+        }
+
+        public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
+        {
+            if (value == null)
+            {
+                writer.WriteNull();
+                return;
+            }
+
+            var tupleList = (List<(string, string)>)value;
+            
+            writer.WriteStartArray();
+            
+            foreach (var tuple in tupleList)
+            {
+                writer.WriteStartObject();
+                
+                writer.WritePropertyName("Item1");
+                writer.WriteValue(tuple.Item1);
+                
+                writer.WritePropertyName("Item2");
+                writer.WriteValue(tuple.Item2);
+                
+                writer.WriteEndObject();
+            }
+            
+            writer.WriteEndArray();
         }
     }
 }

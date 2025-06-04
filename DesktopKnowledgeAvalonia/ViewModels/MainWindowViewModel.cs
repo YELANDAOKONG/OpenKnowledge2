@@ -1,6 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows.Input;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -106,15 +111,36 @@ public partial class MainWindowViewModel : ViewModelBase
     }
     
     [RelayCommand]
-    private void OpenExamination()
+    private async Task OpenExamination()
     {
-        ExaminationWindowViewModel model = new(_configureService, App.GetService<LocalizationService>());
-        ExaminationWindow window = new ExaminationWindow();
+        // Create OpenFileDialog to select an examination file
+        var dialog = new OpenFileDialog
+        {
+            Title = "Select File",
+            Filters = new List<FileDialogFilter>
+            {
+                new FileDialogFilter { Name = "Exam", Extensions = new List<string> { "json" } },
+                new FileDialogFilter { Name = "All", Extensions = new List<string> { "*" } }
+            },
+            AllowMultiple = false
+        };
+
+        Window? currentWindow = null;
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            currentWindow = desktop.MainWindow;
+        }
+        // Show the dialog and get the result
+        string[] result = await dialog.ShowAsync(currentWindow!);
+    
+        // Get the selected file path or null if cancelled
+        string? filePath = result?.Length > 0 ? result[0] : null;
+
+        // Create and show the examination window
+        ExaminationWindow window = new ExaminationWindow(filePath, filePath != null);
         IsWindowsVisible = false;
         window.Show();
         window.Closed += (s, e) => IsWindowsVisible = true;
-        // TODO...
-        // To be implemented
     }
     
     [RelayCommand]
