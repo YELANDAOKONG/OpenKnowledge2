@@ -1,16 +1,18 @@
-﻿# OpenKnowledge 考试系统数据交换协议规范
+﻿---
+
+# OpenKnowledge 考试系统数据交换协议规范
 
 ---
 
 ## 0. 协议版本
 
-主版本号：`1`
+主版本号：`2`
 
-次版本号：`0`
+次版本号：`1`
 
 修订代号：`0`
 
-> 当前版本：`1.0.0`
+> 当前版本：`2.1.0`
 
 ---
 
@@ -119,7 +121,7 @@ public class Question
     public string? QuestionId { get; set; } = null;
     public QuestionTypes Type { get; set; } = QuestionTypes.Unknown;
     public string Stem { get; set; } = "Default";
-    public List<(string, string)>? Options { get; set; } = new List<(string, string)>();
+    public List<Option> Options { get; set; } = new List<Option>(); // public List<(string, string)>? Options { get; set; } = new List<(string, string)>();
     public double Score { get; set; } = 1.0;
 
     public string[]? UserAnswer { get; set; }
@@ -234,102 +236,116 @@ public class ScoreRecord
 }
 ```
 
+## 2.12 选项 (Option)
+
+选项是题目的可选答案，用于选择题等题型，提供更结构化的方式替代之前的元组列表格式。
+
+```csharp
+[Serializable]
+public class Option
+{
+    public string Id { get; set; } = string.Empty;
+    public string Text { get; set; } = string.Empty;
+}
+```
+
 ---
 
 ## 3. 数据字段详细规范
 
 ### 3.1 ExaminationVersion
 
-| 字段   | 类型 | 必需 | 描述                                         |
-|--------|------|------|----------------------------------------------|
-| Major  | int  | 是   | 主版本号，不兼容变更时递增                   |
-| Minor  | int  | 是   | 次版本号，向后兼容的功能性变更时递增         |
-| Patch  | int  | 是   | 修订号，向后兼容的问题修复时递增             |
+| 字段 | 类型 | 必需 |                 描述                 |
+| :-----: | :----: | :----: | :------------------------------------: |
+| Major | int |  是  |      主版本号，不兼容变更时递增      |
+| Minor | int |  是  | 次版本号，向后兼容的功能性变更时递增 |
+| Patch | int |  是  |   修订号，向后兼容的问题修复时递增   |
 
 ### 3.2 ExaminationMetadata
 
-| 字段                | 类型                | 必需 | 描述                                    |
-|---------------------|---------------------|------|----------------------------------------|
-| ExamId              | string              | 否   | 考试唯一标识符，建议使用UUID或自定义ID  |
-| Title               | string              | 是   | 考试标题，默认值为"Default"            |
-| Description         | string              | 否   | 考试详细描述                           |
-| Subject             | string              | 否   | 所属学科或领域                         |
-| Language            | string              | 否   | 语言代码 (如zh-CN, en-US)              |
-| TotalScore          | double              | 是   | 考试总分值，必须为非负数               |
-| ReferenceMaterials  | ReferenceMaterial[] | 否   | 全局参考资料，适用于整个考试           |
+|        字段        |        类型        | 必需 |                  描述                  |
+| :------------------: | :-------------------: | :----: | :--------------------------------------: |
+|       ExamId       |       string       |  否  | 考试唯一标识符，建议使用UUID或自定义ID |
+|       Title       |       string       |  是  |      考试标题，默认值为"Default"      |
+|    Description    |       string       |  否  |              考试详细描述              |
+|      Subject      |       string       |  否  |             所属学科或领域             |
+|      Language      |       string       |  否  |       语言代码 (如zh-CN, en-US)       |
+|     TotalScore     |       double       |  是  |        考试总分值，必须为非负数        |
+| ReferenceMaterials | ReferenceMaterial[] |  否  |      全局参考资料，适用于整个考试      |
 
 ### 3.3 ExaminationSection
 
-| 字段               | 类型                | 必需 | 描述                                  |
-|--------------------|---------------------|------|--------------------------------------|
-| SectionId          | string              | 否   | 章节唯一标识符，建议使用UUID或自定义ID |
-| Title              | string              | 是   | 章节标题，默认值为"Default"          |
-| Description        | string              | 否   | 章节详细描述                         |
-| ReferenceMaterials | ReferenceMaterial[] | 否   | 章节特定的参考资料                   |
-| Score              | double              | 否   | 章节分值，可为null表示使用题目总和   |
-| Questions          | Question[]          | 是   | 题目集合，可以为空数组但不能为null   |
+|        字段        |        类型        | 必需 |                  描述                  |
+| :------------------: | :-------------------: | :----: | :--------------------------------------: |
+|     SectionId     |       string       |  否  | 章节唯一标识符，建议使用UUID或自定义ID |
+|       Title       |       string       |  是  |      章节标题，默认值为"Default"      |
+|    Description    |       string       |  否  |              章节详细描述              |
+| ReferenceMaterials | ReferenceMaterial[] |  否  |           章节特定的参考资料           |
+|       Score       |       double       |  否  |   章节分值，可为null表示使用题目总和   |
+|     Questions     |     Question[]     |  是  |   题目集合，可以为空数组但不能为null   |
 
 ### 3.4 Question
 
-| 字段               | 类型                     | 必需 | 描述                                    |
-|--------------------|--------------------------|------|----------------------------------------|
-| QuestionId         | string                   | 否   | 题目唯一标识符                         |
-| Type               | QuestionTypes            | 是   | 题目类型枚举值                         |
-| Stem               | string                   | 是   | 题干文本，默认值为"Default"            |
-| Options            | List<(string, string)>   | 否   | 选项列表，格式为(选项ID, 选项内容)      |
-| Score              | double                   | 是   | 题目分值，默认为1.0                    |
-| UserAnswer         | string[]                 | 否   | 用户提交的答案                         |
-| Answer             | string[]                 | 是   | 标准答案                               |
-| ReferenceAnswer    | string[]                 | 否   | 参考答案或解析                         |
-| ReferenceMaterials | ReferenceMaterial[]      | 否   | 题目特定的参考资料                     |
-| IsAiJudge          | bool                     | 是   | 是否需要AI辅助评分                     |
-| Commits            | string[]                 | 否   | AI评分提示或解题步骤                   |
-| SubQuestions       | Question[]               | 否   | 子题目集合，用于复合题型               |
+|        字段        |        类型        | 必需 |                描述                |
+| :------------------: | :-------------------: | :----: | :-----------------------------------: |
+|     QuestionId     |       string       |  否  |           题目唯一标识符           |
+|        Type        |    QuestionTypes    |  是  |           题目类型枚举值           |
+|        Stem        |       string       |  是  |         题干文本，默认值为 `"Default"`         |
+|      Options      |    List<Option>    |  否  | 选项列表，格式为 (选项ID, 选项内容) |
+|       Score       |       double       |  是  |          题目分值，默认为 `1.0`          |
+|     UserAnswer     |      string[]      |  否  |           用户提交的答案           |
+|       Answer       |      string[]      |  是  |              标准答案              |
+|  ReferenceAnswer  |      string[]      |  否  |           参考答案或解析           |
+| ReferenceMaterials | ReferenceMaterial[] |  否  |         题目特定的参考资料         |
+|     IsAiJudge     |        bool        |  是  |         是否需要AI辅助评分         |
+|      Commits      |      string[]      |  否  |        AI评分提示或解题步骤        |
+|    SubQuestions    |     Question[]     |  否  |      子题目集合，用于复合题型      |
 
 ### 3.5 ReferenceMaterial
 
-| 字段       | 类型                     | 必需 | 描述                           |
-|------------|--------------------------|------|--------------------------------|
-| Materials  | string[]                 | 是   | 文本材料集合，可以为空数组     |
-| Images     | ReferenceMaterialImage[] | 否   | 图片材料集合，可为null         |
+|   字段   |           类型           | 必需 |            描述            |
+| :---------: | :------------------------: | :----: | :--------------------------: |
+| Materials |         string[]         |  是  | 文本材料集合，可以为空数组 |
+|  Images  | ReferenceMaterialImage[] |  否  |   图片材料集合，可为null   |
 
 ### 3.6 ReferenceMaterialImage
 
-| 字段  | 类型                       | 必需 | 描述                                  |
-|-------|----------------------------|------|--------------------------------------|
-| Type  | ReferenceMaterialImageTypes | 是   | 图片类型枚举值                       |
-| Uri   | string                     | 否   | 图片资源定位符，适用于远程和本地资源  |
-| Image | byte[]                     | 否   | 嵌入式图片二进制数据                 |
+| 字段 |            类型            | 必需 |                 描述                 |
+| :-----: | :---------------------------: | :----: | :------------------------------------: |
+| Type | ReferenceMaterialImageTypes |  是  |            图片类型枚举值            |
+|  Uri  |           string           |  否  | 图片资源定位符，适用于远程和本地资源 |
+| Image |           byte[]           |  否  |         嵌入式图片二进制数据         |
 
 ### 3.7 QuestionScore
 
-| 字段          | 类型    | 必需 | 描述                               |
-|---------------|---------|------|-----------------------------------|
-| QuestionId    | string  | 是   | 题目唯一标识符                     |
-| MaxScore      | double  | 是   | 题目满分值                         |
-| ObtainedScore | double  | 是   | 实际得分                          |
-| IsCorrect     | bool    | 是   | 是否完全正确                       |
+|     字段     |  类型  | 必需 |      描述      |
+| :-------------: | :------: | :----: | :--------------: |
+|  QuestionId  | string |  是  | 题目唯一标识符 |
+|   MaxScore   | double |  是  |   题目满分值   |
+| ObtainedScore | double |  是  |    实际得分    |
+|   IsCorrect   |  bool  |  是  |  是否完全正确  |
 
 ### 3.8 ScoreRecord
 
-| 字段             | 类型                                     | 必需 | 描述                                |
-|------------------|------------------------------------------|------|-------------------------------------|
-| Id               | string                                   | 是   | 记录唯一标识符，默认为GUID          |
-| ExamId           | string                                   | 是   | 关联考试ID                          |
-| ExamTitle        | string                                   | 是   | 考试标题                            |
-| UserId           | string                                   | 是   | 用户ID                             |
-| UserName         | string                                   | 是   | 用户名                             |
-| Timestamp        | DateTime                                 | 是   | 记录时间戳，默认为当前时间          |
-| TotalScore       | double                                   | 是   | 考试总分                            |
-| ObtainedScore    | double                                   | 是   | 实际获得总分                        |
-| SectionScores    | Dictionary<string, double>               | 是   | 章节得分映射表                      |
-| QuestionScores   | Dictionary<string, Dictionary<string, QuestionScore>> | 是 | 题目得分嵌套映射表          |
+|      字段      |                         类型                         | 必需 |            描述            |
+| :--------------: | :-----------------------------------------------------: | :----: | :--------------------------: |
+|       Id       |                        string                        |  是  | 记录唯一标识符，默认为GUID |
+|     ExamId     |                        string                        |  是  |         关联考试ID         |
+|   ExamTitle   |                        string                        |  是  |          考试标题          |
+|     UserId     |                        string                        |  是  |           用户ID           |
+|    UserName    |                        string                        |  是  |           用户名           |
+|   Timestamp   |                       DateTime                       |  是  | 记录时间戳，默认为当前时间 |
+|   TotalScore   |                        double                        |  是  |          考试总分          |
+| ObtainedScore |                        double                        |  是  |        实际获得总分        |
+| SectionScores |              Dictionary<string, double>              |  是  |       章节得分映射表       |
+| QuestionScores | Dictionary<string, Dictionary<string, QuestionScore>> |  是  |     题目得分嵌套映射表     |
 
 ---
 
 ## 4. 数据序列化规范
 
 ### 4.1 JSON序列化规则
+
 - 属性名保持Pascal命名法（首字母大写）
 - 枚举值序列化为数值
 - 日期时间使用ISO 8601格式 (yyyy-MM-ddTHH:mm:ss.fffZ)
@@ -337,18 +353,21 @@ public class ScoreRecord
 - 可选字段为null时可省略
 
 ### 4.2 版本兼容性
+
 - 实现必须忽略未知字段
 - 解析旧版本数据时，新增字段使用默认值
 - 格式版本号增加规则:
-    - 主版本号：不兼容的数据结构变更
-    - 次版本号：向后兼容的功能性变更
-    - 修订号：格式修复或细节调整
+
+  - 主版本号：不兼容的数据结构变更
+  - 次版本号：向后兼容的功能性变更
+  - 修订号：格式修复或细节调整
 
 ---
 
 ## 5. 数据验证规则
 
 实现必须验证以下规则:
+
 - 版本号各部分必须为非负整数
 - 分数值必须为非负数
 - 必填字段不能为null或空字符串
@@ -362,8 +381,8 @@ public class ScoreRecord
 ```json
 {
   "ExaminationVersion": {
-    "Major": 1,
-    "Minor": 0,
+    "Major": 2,
+    "Minor": 1,
     "Patch": 0
   },
   "ExaminationMetadata": {
@@ -388,16 +407,16 @@ public class ScoreRecord
           "Stem": "1 + 1 = ?",
           "Options": [
             {
-              "Item1": "A",
-              "Item2": "1"
+              "Id": "A",
+              "Text": "1"
             },
             {
-              "Item1": "B",
-              "Item2": "2"
+              "Id": "B",
+              "Text": "2"
             },
             {
-              "Item1": "C",
-              "Item2": "3"
+              "Id": "C",
+              "Text": "3"
             }
           ],
           "Score": 10.0,
@@ -411,4 +430,37 @@ public class ScoreRecord
     }
   ]
 }
+```
+
+---
+
+## 7. 版本兼容性说明
+
+### 7.1 版本 `2.1.0` 的主要变更
+
+> 协议版本：`1.0.0` => `2.1.0`
+
+主要变更点：
+
+- 新增Option类替代之前的元组列表结构
+- 添加双向隐式转换以确保与旧版本的兼容性
+- 保留 `Item1` / `Item2` 属性以兼容之前使用元组解构的代码
+- 添加OptionConverter支持JSON序列化时的格式控制
+
+对于处理旧版本数据的实现者，需要注意：
+
+- 旧版本使用元组格式的数据依然可以被正确解析
+- 新的Option类提供了更丰富的功能和更清晰的数据结构
+- 序列化时应使用OptionConverter以确保正确的JSON格式输出
+
+处理新旧版本数据的转换代码示例：
+
+```csharp
+// 旧格式到新格式
+List<(string, string)> oldOptions = GetOldFormatOptions();
+List<Option> newOptions = oldOptions.Select(o => new Option(o.Item1, o.Item2)).ToList();
+
+// 新格式到旧格式
+List<Option> options = GetOptions();
+List<(string, string)> tuples = options.Select(o => (o.Id, o.Text)).ToList();
 ```
