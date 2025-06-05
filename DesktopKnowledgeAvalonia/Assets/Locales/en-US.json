@@ -72,6 +72,7 @@
   "settings.ai.test.fill.all.fields": "Please fill in all required fields before testing.",
 
   "exam.title": "Examination",
+  "exam.time": "Time: {0}",
   "exam.time.remaining": "Time remaining: {0}",
   "exam.submit": "Submit Examination",
   "exam.back": "Back",

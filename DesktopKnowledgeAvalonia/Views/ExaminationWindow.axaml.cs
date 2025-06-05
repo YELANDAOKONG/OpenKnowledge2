@@ -133,7 +133,7 @@ public partial class ExaminationWindow : AppWindowBase
             string timeFormat = $"{timeSpan.Hours:00}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}";
             _viewModel.TimeRemaining = timeFormat;
             
-            TimeRemainingText.Text = string.Format(_localizationService["exam.time.remaining"], timeFormat);
+            TimeRemainingText.Text = string.Format(_localizationService["exam.time"], timeFormat);
         }
     }
     

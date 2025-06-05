@@ -72,6 +72,7 @@
   "settings.ai.test.fill.all.fields": "请在测试前填写所有必填字段。",
 
   "exam.title": "考试",
+  "exam.time": "时间: {0}",
   "exam.time.remaining": "剩余时间: {0}",
   "exam.submit": "提交考试",
   "exam.back": "返回",
