@@ -1,21 +1,18 @@
 ﻿using System.Text.Json;
-
-namespace DesktopKnowledgeAvalonia.Services;
-
 using System;
 using System.IO;
 using System.Threading.Tasks;
 using LibraryOpenKnowledge.Models;
 using DesktopKnowledgeAvalonia.Models;
 
+namespace DesktopKnowledgeAvalonia.Services;
+
 public class ConfigureService
 {
-    private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions 
+    private readonly JsonSerializerOptions _jsonOptions = new() 
     { 
         WriteIndented = true,
-        PropertyNamingPolicy = null,
-        // MaxDepth = 64, // Increase max depth for complex objects
-        // ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve // Handle circular references
+        PropertyNamingPolicy = null
     };
     
     private readonly string _configFilePath;
@@ -25,13 +22,11 @@ public class ConfigureService
     public ApplicationConfig AppConfig { get; private set; } = new();
     public ApplicationData AppData { get; private set; } = new();
     
-    // Constructor with optional path
     public ConfigureService(string? configFilePath = null, string? dataFilePath = null)
     {
         _configFilePath = configFilePath ?? GetDefaultConfigPath();
         _dataFilePath = dataFilePath ?? GetDefaultAppDataPath();
         
-        // Load synchronously but safely
         try
         {
             LoadConfigSync();
@@ -39,20 +34,17 @@ public class ConfigureService
         catch (Exception ex)
         {
             Console.WriteLine($"Critical error loading configuration: {ex}");
-            // Fallback to defaults
             SystemConfig = new SystemConfig();
             AppConfig = new ApplicationConfig();
             AppData = new ApplicationData();
         }
     }
     
-    // Get the default configuration file path
     private static string GetDefaultConfigPath()
     {
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         var configFolder = Path.Combine(appDataPath, "OpenKnowledge", "Desktop");
         
-        // Create directory if it doesn't exist
         if (!Directory.Exists(configFolder))
             Directory.CreateDirectory(configFolder);
             
@@ -64,14 +56,12 @@ public class ConfigureService
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         var dataFolder = Path.Combine(appDataPath, "OpenKnowledge", "Desktop");
         
-        // Create directory if it doesn't exist
         if (!Directory.Exists(dataFolder))
             Directory.CreateDirectory(dataFolder);
             
         return Path.Combine(dataFolder, "Data.json");
     }
     
-    // Configuration model that combines both configs
     private class CombinedConfig
     {
         public SystemConfig System { get; set; } = new();
@@ -80,7 +70,6 @@ public class ConfigureService
     
     private void LoadConfigSync()
     {
-        // Load config
         if (File.Exists(_configFilePath))
         {
             try
@@ -97,10 +86,9 @@ public class ConfigureService
             catch (Exception ex)
             {
                 Console.WriteLine($"Error loading config file: {ex.Message}");
-                // Keep defaults
             }
         }
-        // Load app data
+        
         if (File.Exists(_dataFilePath))
         {
             try
@@ -109,19 +97,15 @@ public class ConfigureService
                 var data = JsonSerializer.Deserialize<ApplicationData>(dataJson, _jsonOptions);
                 
                 if (data != null)
-                {
                     AppData = data;
-                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error loading app data file: {ex.Message}");
-                // Keep default AppData
             }
         }
     }
     
-    // Load configuration from file asynchronously (for later use)
     private async Task LoadConfigAsync()
     {
         try
@@ -137,25 +121,23 @@ public class ConfigureService
                     AppConfig = config.App ?? new ApplicationConfig();
                 }
             }
+            
             if (File.Exists(_dataFilePath))
             {
                 await using var stream = File.OpenRead(_dataFilePath);
                 var data = await JsonSerializer.DeserializeAsync<ApplicationData>(stream, _jsonOptions);
                 
                 if (data != null)
-                {
                     AppData = data;
-                }
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading configuration: {ex.Message}");
-            // Keep defaults
         }
     }
     
-    // Save configuration to file asynchronously
+    // Fixed file saving logic to avoid locking issues
     private async Task SaveConfigAsync()
     {
         // Save config file
@@ -171,25 +153,26 @@ public class ConfigureService
             if (!string.IsNullOrEmpty(configDir) && !Directory.Exists(configDir))
                 Directory.CreateDirectory(configDir);
         
-            // Save config
-            await using (var stream = File.Create(_configFilePath))
-            {
-                await JsonSerializer.SerializeAsync(stream, config, _jsonOptions);
-            }
+            // Use atomic file writing pattern to avoid locking issues
+            var configJson = JsonSerializer.Serialize(config, _jsonOptions);
+            var tempConfigPath = Path.GetTempFileName();
+            await File.WriteAllTextAsync(tempConfigPath, configJson);
+            File.Copy(tempConfigPath, _configFilePath, true);
+            File.Delete(tempConfigPath);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error saving configuration: {ex.Message}");
         }
         
-        // Save data file separately
+        // Save data file separately with the same pattern
         try
         {
-            // Save app data
-            await using (var appdata = File.Create(_dataFilePath))
-            {
-                await JsonSerializer.SerializeAsync(appdata, AppData, _jsonOptions);
-            }
+            var appDataJson = JsonSerializer.Serialize(AppData, _jsonOptions);
+            var tempDataPath = Path.GetTempFileName();
+            await File.WriteAllTextAsync(tempDataPath, appDataJson);
+            File.Copy(tempDataPath, _dataFilePath, true);
+            File.Delete(tempDataPath);
         }
         catch (Exception ex)
         {
@@ -197,7 +180,6 @@ public class ConfigureService
         }
     }
     
-    // AI configuration update methods with automatic saving
     public async Task UpdateAiApiUrlAsync(string? url)
     {
         SystemConfig.OpenAiApiUrl = url;
@@ -222,7 +204,6 @@ public class ConfigureService
         await SaveConfigAsync();
     }
     
-    // Update entire configs
     public async Task UpdateSystemConfigAsync(SystemConfig config)
     {
         SystemConfig = config;
@@ -241,9 +222,5 @@ public class ConfigureService
         await SaveConfigAsync();
     }
     
-    // Manual save for when multiple properties are changed
-    public async Task SaveChangesAsync()
-    {
-        await SaveConfigAsync();
-    }
+    public async Task SaveChangesAsync() => await SaveConfigAsync();
 }
