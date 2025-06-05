@@ -11,7 +11,7 @@ using CommunityToolkit.Mvvm.Input;
 using DesktopKnowledgeAvalonia.Services;
 using LibraryOpenKnowledge.Tools;
 
-public partial class ExaminationDialogViewModel : ViewModelBase
+public partial class ExaminationDialogWindowViewModel : ViewModelBase
 {
     private readonly ConfigureService _configService;
     private readonly LocalizationService _localizationService;
@@ -61,7 +61,7 @@ public partial class ExaminationDialogViewModel : ViewModelBase
     public event EventHandler? LoadNewExamRequested;
     public event EventHandler? DeleteCurrentExamRequested;
     
-    public ExaminationDialogViewModel(ConfigureService configService, LocalizationService localizationService)
+    public ExaminationDialogWindowViewModel(ConfigureService configService, LocalizationService localizationService)
     {
         _configService = configService;
         _localizationService = localizationService;

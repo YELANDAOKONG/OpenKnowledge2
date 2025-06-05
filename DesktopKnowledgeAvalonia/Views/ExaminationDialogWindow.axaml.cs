@@ -18,7 +18,7 @@ using DesktopKnowledgeAvalonia.Services;
 
 public partial class ExaminationDialogWindow : AppWindowBase
 {
-    private readonly ExaminationDialogViewModel _viewModel;
+    private readonly ExaminationDialogWindowViewModel _windowViewModel;
     private readonly LocalizationService _localizationService;
     
     public ExaminationDialogWindow()
@@ -29,14 +29,14 @@ public partial class ExaminationDialogWindow : AppWindowBase
         var configService = App.GetService<ConfigureService>();
         _localizationService = App.GetService<LocalizationService>();
         
-        _viewModel = new ExaminationDialogViewModel(configService, _localizationService);
-        DataContext = _viewModel;
+        _windowViewModel = new ExaminationDialogWindowViewModel(configService, _localizationService);
+        DataContext = _windowViewModel;
         
         // Subscribe to events
-        _viewModel.CloseRequested += (s, e) => Close();
-        _viewModel.ContinueExamRequested += OnContinueExam;
-        _viewModel.LoadNewExamRequested += OnLoadNewExam;
-        _viewModel.DeleteCurrentExamRequested += OnDeleteCurrentExam;
+        _windowViewModel.CloseRequested += (s, e) => Close();
+        _windowViewModel.ContinueExamRequested += OnContinueExam;
+        _windowViewModel.LoadNewExamRequested += OnLoadNewExam;
+        _windowViewModel.DeleteCurrentExamRequested += OnDeleteCurrentExam;
     }
     
     private void InitializeComponent()
@@ -47,12 +47,12 @@ public partial class ExaminationDialogWindow : AppWindowBase
     private void OnContinueExam(object? sender, EventArgs e)
     {
         // Check if we're starting a new exam or continuing
-        bool startingNewExam = _viewModel.IsExamLoadedButNotStarted;
+        bool startingNewExam = _windowViewModel.IsExamLoadedButNotStarted;
         
         // Update the IsTheExaminationStarted flag
         if (startingNewExam)
         {
-            _viewModel.MarkExamAsStarted();
+            _windowViewModel.MarkExamAsStarted();
         }
         
         // Open the examination window
@@ -64,7 +64,7 @@ public partial class ExaminationDialogWindow : AppWindowBase
     private async void OnLoadNewExam(object? sender, EventArgs e)
     {
         // Show confirmation dialog if there's an active exam
-        if (_viewModel.HasActiveExam)
+        if (_windowViewModel.HasActiveExam)
         {
             bool confirmed = await ShowConfirmationDialogAsync(
                 _localizationService["exam.dialog.load.new.confirm.title"],
@@ -104,7 +104,7 @@ public partial class ExaminationDialogWindow : AppWindowBase
             var filePath = file.Path.LocalPath;
             
             // Load the examination but don't start it
-            _viewModel.LoadExamination(filePath);
+            _windowViewModel.LoadExamination(filePath);
         }
     }
     
@@ -116,7 +116,7 @@ public partial class ExaminationDialogWindow : AppWindowBase
             
         if (confirmed)
         {
-            _viewModel.ConfirmDeleteCurrentExam();
+            _windowViewModel.ConfirmDeleteCurrentExam();
         }
     }
     
