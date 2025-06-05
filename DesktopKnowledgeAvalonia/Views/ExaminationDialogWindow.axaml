@@ -1,0 +1,135 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DesktopKnowledgeAvalonia.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:loc="using:DesktopKnowledgeAvalonia.Localization"
+        mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="450"
+        x:Class="DesktopKnowledgeAvalonia.Views.ExaminationDialogWindow"
+        x:DataType="vm:ExaminationDialogViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        ExtendClientAreaToDecorationsHint="True"
+        Title="{loc:Translate Key=exam.dialog.title}"
+        Width="550" Height="550"
+        MinWidth="500" MinHeight="400"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="20,40,20,20">
+        <!-- Header -->
+        <Grid Grid.Row="0" RowDefinitions="Auto,Auto" Margin="0,0,0,20">
+            <!-- Exam Status Title -->
+            <TextBlock Grid.Row="0" 
+                       Text="{Binding ExamStatusTitle}" 
+                       FontSize="24" 
+                       FontWeight="SemiBold" 
+                       TextTrimming="CharacterEllipsis"
+                       Margin="0,0,0,10"/>
+                       
+            <!-- Exam Title (if present) -->
+            <TextBlock Grid.Row="1" 
+                       Text="{Binding TruncatedExamTitle}" 
+                       FontSize="16"
+                       Opacity="0.8"
+                       IsVisible="{Binding HasActiveExam}"/>
+        </Grid>
+        
+        <!-- Exam Details -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="15" IsVisible="{Binding HasActiveExam}">
+                <!-- Exam ID -->
+                <StackPanel IsVisible="{Binding !!ExamId}">
+                    <TextBlock Text="{loc:Translate Key=exam.dialog.id}" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,5"/>
+                    <TextBlock Text="{Binding ExamId}" 
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+                
+                <!-- Exam Description -->
+                <StackPanel IsVisible="{Binding !!ExamDescription}">
+                    <TextBlock Text="{loc:Translate Key=exam.dialog.description}" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,5"/>
+                    <TextBlock Text="{Binding ExamDescription}" 
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+                
+                <!-- Exam Subject -->
+                <StackPanel IsVisible="{Binding !!ExamSubject}">
+                    <TextBlock Text="{loc:Translate Key=exam.dialog.subject}" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,5"/>
+                    <TextBlock Text="{Binding ExamSubject}" 
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+                
+                <!-- Exam Language -->
+                <StackPanel IsVisible="{Binding !!ExamLanguage}">
+                    <TextBlock Text="{loc:Translate Key=exam.dialog.language}" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,5"/>
+                    <TextBlock Text="{Binding ExamLanguage}" 
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+                
+                <!-- Exam Total Score -->
+                <StackPanel IsVisible="{Binding !!ExamTotalScore}">
+                    <TextBlock Text="{loc:Translate Key=exam.dialog.total.score}" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,5"/>
+                    <TextBlock Text="{Binding ExamTotalScore}" 
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+        
+        <!-- Status Message -->
+        <Border Grid.Row="2" 
+                Background="#1AFFFFFF"
+                CornerRadius="4"
+                Padding="10"
+                Margin="0,10,0,15"
+                IsVisible="{Binding ShowStatusMessage}">
+            <TextBlock Text="{Binding StatusMessage}"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"/>
+        </Border>
+        
+        <!-- Action Buttons -->
+        <Grid Grid.Row="3" ColumnDefinitions="*,*,*" Margin="0,10,0,0" ColumnSpacing="10">
+            <!-- Continue Exam Button -->
+            <Button Grid.Column="0" 
+                    Content="{loc:Translate Key=exam.dialog.continue}" 
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Command="{Binding ContinueExamCommand}"
+                    IsEnabled="{Binding HasActiveExam}"
+                    Classes="Primary"
+                    Height="45"/>
+                    
+            <!-- Load New Exam Button -->
+            <Button Grid.Column="1"
+                    Content="{loc:Translate Key=exam.dialog.load.new}" 
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Command="{Binding LoadNewExamCommand}"
+                    Background="#569AFF"
+                    Foreground="White"
+                    Height="45"/>
+                    
+            <!-- Save Current Exam Button -->
+            <Button Grid.Column="2"
+                    Content="{loc:Translate Key=exam.dialog.save.current}" 
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Command="{Binding SaveCurrentExamCommand}"
+                    IsEnabled="{Binding HasActiveExam}"
+                    Height="45"/>
+        </Grid>
+    </Grid>
+</Window>

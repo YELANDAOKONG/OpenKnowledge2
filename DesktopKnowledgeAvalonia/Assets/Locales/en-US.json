@@ -97,6 +97,21 @@
   "exam.question.of": "{0} of {1}",
   "exam.save": "Save Progress",
   "exam.save.success": "Progress saved successfully",
-  "exam.save.error": "Error saving progress"
+  "exam.save.error": "Error saving progress",
+
+  "exam.dialog.title": "Examination Options",
+  "exam.dialog.status.ongoing": "Unfinished Examination",
+  "exam.dialog.status.none": "No Active Examination",
+  "exam.dialog.id": "Examination ID:",
+  "exam.dialog.description": "Description:",
+  "exam.dialog.subject": "Subject:",
+  "exam.dialog.language": "Language:",
+  "exam.dialog.total.score": "Total Score:",
+  "exam.dialog.continue": "Continue Examination",
+  "exam.dialog.load.new": "Load New Examination",
+  "exam.dialog.save.current": "Save Current Examination",
+  "exam.dialog.save.title": "Save Examination",
+  "exam.dialog.save.success": "Examination Saved Successfully",
+  "exam.dialog.save.error": "Error Saving Examination"
 
 }

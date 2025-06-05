@@ -111,36 +111,13 @@ public partial class MainWindowViewModel : ViewModelBase
     }
     
     [RelayCommand]
-    private async Task OpenExamination()
+    private void OpenExamination()
     {
-        // Create OpenFileDialog to select an examination file
-        var dialog = new OpenFileDialog
-        {
-            Title = "Select File",
-            Filters = new List<FileDialogFilter>
-            {
-                new FileDialogFilter { Name = "Exam", Extensions = new List<string> { "json" } },
-                new FileDialogFilter { Name = "All", Extensions = new List<string> { "*" } }
-            },
-            AllowMultiple = false
-        };
-
-        Window? currentWindow = null;
-        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            currentWindow = desktop.MainWindow;
-        }
-        // Show the dialog and get the result
-        string[] result = await dialog.ShowAsync(currentWindow!);
-    
-        // Get the selected file path or null if cancelled
-        string? filePath = result?.Length > 0 ? result[0] : null;
-
-        // Create and show the examination window
-        ExaminationWindow window = new ExaminationWindow(filePath, filePath != null);
+        // Simply open the examination dialog window
+        var dialog = new ExaminationDialogWindow();
         IsWindowsVisible = false;
-        window.Show();
-        window.Closed += (s, e) => IsWindowsVisible = true;
+        dialog.Closed += (s, e) => IsWindowsVisible = true;
+        dialog.Show();
     }
     
     [RelayCommand]

@@ -97,6 +97,21 @@
   "exam.question.of": "{0} / {1}",
   "exam.save": "保存进度",
   "exam.save.success": "进度已成功保存",
-  "exam.save.error": "保存进度时出错"
+  "exam.save.error": "保存进度时出错",
+
+  "exam.dialog.title": "考试选项",
+  "exam.dialog.status.ongoing": "未完成的考试",
+  "exam.dialog.status.none": "没有正在进行的考试",
+  "exam.dialog.id": "考试ID：",
+  "exam.dialog.description": "描述：",
+  "exam.dialog.subject": "学科：",
+  "exam.dialog.language": "语言：",
+  "exam.dialog.total.score": "总分：",
+  "exam.dialog.continue": "继续考试",
+  "exam.dialog.load.new": "加载新试卷",
+  "exam.dialog.save.current": "保存当前试卷",
+  "exam.dialog.save.title": "保存考试",
+  "exam.dialog.save.success": "考试保存成功",
+  "exam.dialog.save.error": "保存考试时出错"
 
 }
