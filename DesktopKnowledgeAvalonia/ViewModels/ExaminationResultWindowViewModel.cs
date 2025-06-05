@@ -46,6 +46,9 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
     private double _aiScoringProgress;
     
     [ObservableProperty]
+    private string _currentScoringQuestion = string.Empty;
+    
+    [ObservableProperty]
     private bool _canExportScore = false;
     
     [ObservableProperty]
@@ -61,10 +64,18 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
     private Examination _examination;
     
     [ObservableProperty] 
-    private ObservableCollection<QuestionScoreViewModel> _questionScores = new();
-
+    private ObservableCollection<SectionScoreViewModel> _sectionScores = new();
+    
+    // Add this property to control window visibility
     [ObservableProperty] 
-    private bool _isWindowsVisible = true;
+    private bool _isWindowVisible = true;
+    
+    // Make sure this property is used to control window visibility
+    public bool ShowMainWindow { get; set; } = false;
+    
+    // Event to request saving the examination
+    public event EventHandler<SaveExaminationEventArgs> SaveExaminationRequested;
+    public event EventHandler ExitRequested;
     
     public ExaminationResultWindowViewModel(ConfigureService configService, LocalizationService localizationService)
     {
@@ -80,6 +91,9 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
         Examination = examination;
         ScoreRecord = scoreRecord;
         
+        // Ensure all AI-judged questions without scores are counted as 0
+        RecalculateScoreWithAiJudgedAsZero();
+        
         ObtainedScore = scoreRecord.ObtainedScore;
         TotalScore = scoreRecord.TotalScore;
         ScorePercentage = TotalScore > 0 ? (ObtainedScore / TotalScore * 100) : 0;
@@ -93,6 +107,32 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
         
         // Initialize question scores collection
         InitializeQuestionScores();
+    }
+    
+    // New method to ensure AI judged questions without scores are counted as 0
+    private void RecalculateScoreWithAiJudgedAsZero()
+    {
+        if (Examination == null || ScoreRecord == null)
+            return;
+            
+        // This will ensure the CalculateScores method treats unscored AI questions as 0
+        foreach (var section in Examination.ExaminationSections)
+        {
+            if (section.Questions == null)
+                continue;
+                
+            foreach (var question in section.Questions)
+            {
+                if (question.IsAiJudge && (question.UserAnswer == null || question.UserAnswer.Length == 0))
+                {
+                    // Set unscored AI questions to 0 temporarily
+                    question.Score = 0;
+                }
+            }
+        }
+        
+        // Recalculate scores
+        ScoreRecord.CalculateScores(Examination);
     }
     
     private void UpdateResultStatusText()
@@ -136,11 +176,11 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
     private void InitializeQuestionScores()
     {
         // Create a new collection to trigger property changed notification
-        var newScores = new ObservableCollection<QuestionScoreViewModel>();
+        var newSections = new ObservableCollection<SectionScoreViewModel>();
         
         if (Examination == null || ScoreRecord == null) 
         {
-            QuestionScores = newScores;
+            SectionScores = newSections;
             return;
         }
         
@@ -151,7 +191,15 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
         int questionNumber = 1;
         foreach (var section in Examination.ExaminationSections)
         {
-            if (section.Questions == null) continue;
+            if (section.Questions == null || section.Questions.Length == 0) 
+                continue;
+            
+            var sectionVM = new SectionScoreViewModel
+            {
+                SectionId = section.SectionId ?? string.Empty,
+                SectionTitle = section.Title,
+                Questions = new ObservableCollection<QuestionScoreViewModel>()
+            };
             
             foreach (var question in section.Questions)
             {
@@ -166,7 +214,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                         correctAnswer = string.Join(", ", question.Answer);
                     }
 
-                    newScores.Add(new QuestionScoreViewModel
+                    sectionVM.Questions.Add(new QuestionScoreViewModel
                     {
                         QuestionNumber = questionNumber++,
                         SectionTitle = section.Title,
@@ -176,6 +224,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                         MaxScore = score.MaxScore,
                         ObtainedScore = score.ObtainedScore,
                         IsCorrect = score.IsCorrect,
+                        IsAiJudged = question.IsAiJudge,
                         UserAnswer = question.UserAnswer != null && question.UserAnswer.Length > 0 
                             ? string.Join(", ", question.UserAnswer) 
                             : _localizationService["exam.result.no.answer"],
@@ -183,10 +232,16 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                     });
                 }
             }
+            
+            // Only add sections that have questions
+            if (sectionVM.Questions.Count > 0)
+            {
+                newSections.Add(sectionVM);
+            }
         }
         
         // Set the new collection to trigger property changed notification
-        QuestionScores = newScores;
+        SectionScores = newSections;
     }
     
     [RelayCommand]
@@ -210,6 +265,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             CanDownloadExam = true;
             CanExit = true;
             IsAiScoringNeeded = false; // No longer needed after completion
+            CurrentScoringQuestion = string.Empty;
             
             // Update status text
             UpdateResultStatusText();
@@ -251,6 +307,9 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             {
                 if (question.IsAiJudge && question.UserAnswer != null && question.UserAnswer.Length > 0)
                 {
+                    // Update the currently scoring question text
+                    CurrentScoringQuestion = $"{section.Title}: {question.Stem.Substring(0, Math.Min(50, question.Stem.Length))}...";
+                    
                     // Generate prompt for AI scoring
                     string prompt = PromptTemplateManager.GenerateGradingPrompt(
                         question, 
@@ -274,6 +333,14 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                         
                         // Update UI for this question
                         UpdateQuestionScore(question.QuestionId, result.Score, result.IsCorrect);
+                        
+                        // Recalculate scores after each question to show progress
+                        ScoreRecord.CalculateScores(Examination);
+                        
+                        // Update UI with new scores
+                        ObtainedScore = ScoreRecord.ObtainedScore;
+                        ScorePercentage = TotalScore > 0 ? (ObtainedScore / TotalScore * 100) : 0;
+                        IsPassed = ScorePercentage >= 60;
                     }
                     
                     // Update progress
@@ -283,7 +350,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             }
         }
         
-        // Recalculate scores
+        // Final recalculation (should be redundant but ensures consistency)
         ScoreRecord.CalculateScores(Examination);
         
         // Update UI with new scores
@@ -299,69 +366,25 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
     {
         if (string.IsNullOrEmpty(questionId)) return;
         
-        var questionVm = QuestionScores.FirstOrDefault(q => q.QuestionId == questionId);
-        if (questionVm != null)
+        foreach (var section in SectionScores)
         {
-            questionVm.ObtainedScore = score;
-            questionVm.IsCorrect = isCorrect;
+            var questionVm = section.Questions.FirstOrDefault(q => q.QuestionId == questionId);
+            if (questionVm != null)
+            {
+                questionVm.ObtainedScore = score;
+                questionVm.IsCorrect = isCorrect;
+                return;
+            }
         }
     }
     
     [RelayCommand]
-    private async Task SaveExaminationAsync()
+    private void SaveExamination()
     {
         if (Examination == null || !CanDownloadExam) return;
         
-        try
-        {
-            // Create file picker options
-            var options = new Avalonia.Platform.Storage.FilePickerSaveOptions
-            {
-                Title = _localizationService["exam.dialog.save.title"],
-                SuggestedFileName = $"exam_{DateTime.Now:yyyyMMdd_HHmmss}.json",
-                DefaultExtension = "json",
-                FileTypeChoices = new[]
-                {
-                    new Avalonia.Platform.Storage.FilePickerFileType("JSON")
-                    {
-                        Patterns = new[] { "*.json" },
-                        MimeTypes = new[] { "application/json" }
-                    },
-                    new Avalonia.Platform.Storage.FilePickerFileType("All Files")
-                    {
-                        Patterns = new[] { "*.*" },
-                        MimeTypes = new[] { "*/*" }
-                    }
-                }
-            };
-            
-            // Get active window from app lifecycle
-            var window = Avalonia.Application.Current?.ApplicationLifetime is 
-                Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop 
-                ? desktop.MainWindow : null;
-            
-            if (window == null) return;
-            
-            // Show save dialog
-            var result = await window.StorageProvider.SaveFilePickerAsync(options);
-            
-            if (result != null)
-            {
-                // Get file path
-                var filePath = result.Path.LocalPath;
-                
-                // Save examination with user answers
-                ExaminationSerializer.SerializeToFile(
-                    Examination,
-                    filePath,
-                    includeUserAnswers: true);
-            }
-        }
-        catch (Exception ex)
-        {
-            // Handle error
-            Console.WriteLine($"Error saving examination: {ex.Message}");
-        }
+        // Raise event to be handled by the code-behind
+        SaveExaminationRequested?.Invoke(this, new SaveExaminationEventArgs(Examination));
     }
     
     [RelayCommand]
@@ -370,19 +393,133 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
         if (!CanExit) return;
         
         // Clear current examination data
-        _configService.AppData.CurrentExamination = Examination;
-        _configService.AppData.IsInExamination = true;
+        _configService.AppData.CurrentExamination = null;
+        _configService.AppData.IsInExamination = false;
         _configService.AppData.IsTheExaminationStarted = false;
         _configService.AppData.ExaminationTimer = null;
+        
+        // Set flag to prevent main window from showing
+        ShowMainWindow = false;
+        
+        // Save changes
         _configService.SaveChangesAsync();
         
-        // Close window (handled by view)
-        IsWindowsVisible = false;
+        // Notify view to close window
+        ExitRequested?.Invoke(this, EventArgs.Empty);
+    }
+    
+    [RelayCommand]
+    private async Task RescoreQuestionAsync(string questionId)
+    {
+        if (Examination == null || string.IsNullOrEmpty(questionId) || IsAiScoringInProgress)
+            return;
+            
+        // Find the question
+        Question? questionToScore = null;
+        string sectionTitle = string.Empty;
+        
+        foreach (var section in Examination.ExaminationSections)
+        {
+            if (section.Questions == null) continue;
+            
+            var question = section.Questions.FirstOrDefault(q => q.QuestionId == questionId);
+            if (question != null)
+            {
+                questionToScore = question;
+                sectionTitle = section.Title;
+                break;
+            }
+        }
+        
+        if (questionToScore == null || !questionToScore.IsAiJudge || 
+            questionToScore.UserAnswer == null || questionToScore.UserAnswer.Length == 0)
+            return;
+            
+        // Start scoring just this question
+        IsAiScoringInProgress = true;
+        CanDownloadExam = false;
+        CanExit = false;
+        AiScoringProgress = 0;
+        ResultStatusText = _localizationService["exam.result.scoring.in.progress"];
+        CurrentScoringQuestion = $"{sectionTitle}: {questionToScore.Stem.Substring(0, Math.Min(50, questionToScore.Stem.Length))}...";
+        
+        try
+        {
+            // Get AI client
+            var aiClient = AiTools.CreateOpenAiClient(_configService.SystemConfig);
+            
+            // Generate prompt for AI scoring
+            string prompt = PromptTemplateManager.GenerateGradingPrompt(
+                questionToScore, 
+                _configService.AppConfig.PromptGradingTemplate,
+                true,
+                _localizationService.CurrentLanguage);
+            
+            // Send to AI for scoring
+            string? response = await AiTools.SendChatMessageAsync(
+                aiClient,
+                _configService.SystemConfig,
+                prompt);
+            
+            if (!string.IsNullOrEmpty(response))
+            {
+                // Parse AI response
+                var result = PromptTemplateManager.ParseAIResponse(response);
+                
+                // Update question score
+                questionToScore.Score = result.Score;
+                
+                // Update UI for this question
+                UpdateQuestionScore(questionId, result.Score, result.IsCorrect);
+                
+                // Recalculate scores
+                ScoreRecord.CalculateScores(Examination);
+                
+                // Update UI with new scores
+                ObtainedScore = ScoreRecord.ObtainedScore;
+                ScorePercentage = TotalScore > 0 ? (ObtainedScore / TotalScore * 100) : 0;
+                IsPassed = ScorePercentage >= 60;
+                
+                // Refresh question scores
+                InitializeQuestionScores();
+            }
+            
+            AiScoringProgress = 100;
+        }
+        finally
+        {
+            IsAiScoringInProgress = false;
+            CanDownloadExam = true;
+            CanExit = true;
+            CurrentScoringQuestion = string.Empty;
+            
+            // Update status text
+            UpdateResultStatusText();
+        }
     }
 }
 
+// Event args for save examination request
+public class SaveExaminationEventArgs : EventArgs
+{
+    public Examination Examination { get; }
+    
+    public SaveExaminationEventArgs(Examination examination)
+    {
+        Examination = examination;
+    }
+}
+
+// Helper class for section organization
+public class SectionScoreViewModel : ViewModelBase
+{
+    public string SectionId { get; set; } = string.Empty;
+    public string SectionTitle { get; set; } = string.Empty;
+    public ObservableCollection<QuestionScoreViewModel> Questions { get; set; } = new();
+}
+
 // Helper class for question score display
-public class QuestionScoreViewModel
+public class QuestionScoreViewModel : ViewModelBase
 {
     public int QuestionNumber { get; set; }
     public string SectionTitle { get; set; } = string.Empty;
@@ -392,6 +529,8 @@ public class QuestionScoreViewModel
     public double MaxScore { get; set; }
     public double ObtainedScore { get; set; }
     public bool IsCorrect { get; set; }
+    public bool IsAiJudged { get; set; }
     public string UserAnswer { get; set; } = string.Empty;
     public string CorrectAnswer { get; set; } = string.Empty;
 }
+

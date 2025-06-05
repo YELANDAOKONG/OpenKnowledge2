@@ -125,20 +125,31 @@
             </Grid>
         </Border>
         
-        <!-- Questions details - Dynamically generated in code-behind -->
+        <!-- Questions details organized by sections -->
         <ScrollViewer Grid.Row="2" Margin="0,0,0,10">
-            <StackPanel x:Name="QuestionsPanel"/>
+            <StackPanel x:Name="QuestionsPanel" Spacing="15">
+                <!-- This will be filled dynamically in the code-behind -->
+            </StackPanel>
         </ScrollViewer>
         
         <!-- AI scoring progress bar (if in progress) -->
         <StackPanel Grid.Row="3" Spacing="5" IsVisible="{Binding IsAiScoringInProgress}">
-            <TextBlock Text="{loc:Translate Key=exam.result.ai.scoring.progress}"
+            <TextBlock Text="{Binding CurrentScoringQuestion}"
                        HorizontalAlignment="Center"
+                       TextWrapping="Wrap"
+                       TextTrimming="CharacterEllipsis"
                        Margin="0,0,0,5"/>
-            <ProgressBar Value="{Binding AiScoringProgress}" 
+            <Grid ColumnDefinitions="*,Auto">
+                <ProgressBar Grid.Column="0" Value="{Binding AiScoringProgress}" 
                          Minimum="0" 
                          Maximum="100"
                          Height="10"/>
+                <TextBlock Grid.Column="1" 
+                           Text="{Binding AiScoringProgress, StringFormat={}{0:F0}%}"
+                           VerticalAlignment="Center"
+                           Margin="10,0,0,0"/>
+            </Grid>
         </StackPanel>
     </Grid>
 </Window>
+
