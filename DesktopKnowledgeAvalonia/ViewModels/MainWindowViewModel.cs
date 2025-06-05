@@ -116,7 +116,14 @@ public partial class MainWindowViewModel : ViewModelBase
         // Simply open the examination dialog window
         var dialog = new ExaminationDialogWindow();
         IsWindowsVisible = false;
-        dialog.Closed += (s, e) => IsWindowsVisible = true;
+        dialog.Closed += (s, e) =>
+        {
+            // IsWindowsVisible = true;
+            // WindowCloseRequested?.Invoke(this, EventArgs.Empty);
+            MainWindow newWindows = new MainWindow();
+            WindowCloseRequested?.Invoke(this, EventArgs.Empty);
+            newWindows.Show();
+        };
         dialog.Show();
     }
     

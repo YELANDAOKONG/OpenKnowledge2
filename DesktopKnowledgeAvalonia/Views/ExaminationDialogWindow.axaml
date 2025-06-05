@@ -11,6 +11,8 @@
         TransparencyLevelHint="AcrylicBlur"
         Background="Transparent"
         ExtendClientAreaToDecorationsHint="True"
+        IsVisible="{Binding IsWindowsVisible}"
+        ShowInTaskbar="{Binding IsWindowsVisible}"
         Title="{loc:Translate Key=exam.dialog.title}"
         Width="650" Height="550"
         MinWidth="600" MinHeight="400"

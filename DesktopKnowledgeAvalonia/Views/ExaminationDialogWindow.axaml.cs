@@ -37,6 +37,7 @@ public partial class ExaminationDialogWindow : AppWindowBase
         _windowViewModel.ContinueExamRequested += OnContinueExam;
         _windowViewModel.LoadNewExamRequested += OnLoadNewExam;
         _windowViewModel.DeleteCurrentExamRequested += OnDeleteCurrentExam;
+        _windowViewModel.WindowCloseRequested += (s, e) => Close();
     }
     
     private void InitializeComponent()
@@ -55,10 +56,15 @@ public partial class ExaminationDialogWindow : AppWindowBase
             _windowViewModel.MarkExamAsStarted();
         }
         
+        _windowViewModel.IsWindowsVisible = false;
         // Open the examination window
         ExaminationWindow window = new ExaminationWindow(null, false);
+        window.Closed += (o, args) =>
+        {
+            Close();
+        };
         window.Show();
-        Close(); // Close this dialog when opening the examination window
+        // Close(); // Close this dialog when opening the examination window
     }
     
     private async void OnLoadNewExam(object? sender, EventArgs e)

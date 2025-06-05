@@ -55,16 +55,22 @@ public partial class ExaminationDialogWindowViewModel : ViewModelBase
     
     public bool IsExamLoadedButNotStarted => 
         _hasActiveExam && !_configService.AppData.IsTheExaminationStarted;
-    
+
+    [ObservableProperty] 
+    private bool _isWindowsVisible = true;
+
     public event EventHandler? CloseRequested;
     public event EventHandler? ContinueExamRequested;
     public event EventHandler? LoadNewExamRequested;
     public event EventHandler? DeleteCurrentExamRequested;
     
+    public event EventHandler? WindowCloseRequested;
+    
     public ExaminationDialogWindowViewModel(ConfigureService configService, LocalizationService localizationService)
     {
         _configService = configService;
         _localizationService = localizationService;
+        _isWindowsVisible = true;
         
         // Setup status message timer
         _statusMessageTimer = new DispatcherTimer
