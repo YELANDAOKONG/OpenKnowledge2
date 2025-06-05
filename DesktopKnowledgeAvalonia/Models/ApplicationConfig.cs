@@ -12,7 +12,7 @@ public class ApplicationConfig
     public string? PreferredLanguage { get; set; } = null;
     public string UserName { get; set; } = "Default";
 
-    public string PromptGradingTemplate = PromptTemplateManager.DefaultGradingTemplate;
-    public string PromptExplanationTemplate = PromptTemplateManager.DefaultExplanationTemplate;
-    public string PromptCheckTemplate = PromptTemplateManager.DefaultErrorCheckTemplate;
+    public string PromptGradingTemplate { get; set; }  = PromptTemplateManager.DefaultGradingTemplate;
+    public string PromptExplanationTemplate { get; set; }  = PromptTemplateManager.DefaultExplanationTemplate;
+    public string PromptCheckTemplate { get; set; }  = PromptTemplateManager.DefaultErrorCheckTemplate;
 }
