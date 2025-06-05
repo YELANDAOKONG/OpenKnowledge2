@@ -144,6 +144,23 @@
   "settings.ai.test.both.success": "连接成功！主模型和辅助模型均正常工作。",
   "settings.ai.test.main.success.assist.fail": "主模型连接成功，但辅助模型连接失败",
   "init.test.connection.both.success": "连接成功！主模型和辅助模型均正常工作。",
-  "init.test.connection.main.success.assist.fail": "主模型连接成功，但辅助模型连接失败"
+  "init.test.connection.main.success.assist.fail": "主模型连接成功，但辅助模型连接失败",
+
+  "exam.result.title": "考试结果",
+  "exam.result.passed": "考试通过",
+  "exam.result.failed": "考试未通过",
+  "exam.result.thank.you": "感谢使用 OpenKnowledge 学习系统",
+  "exam.result.scoring.in.progress": "正在智能评分中...",
+  "exam.result.export.score": "导出分数",
+  "exam.result.download.exam": "下载试卷",
+  "exam.result.exit": "退出",
+  "exam.result.ai.scoring.needed": "需要智能检查",
+  "exam.result.ai.scoring.description": "部分试题需要智能评估。请启动智能检查过程以完成您的分数评定。",
+  "exam.result.ai.scoring.start": "开始智能检查",
+  "exam.result.ai.scoring.progress": "智能检查进度",
+  "exam.result.your.answer": "您的答案：",
+  "exam.result.correct.answer": "正确答案：",
+  "exam.result.no.answer": "未提供答案"
+
 
 }

@@ -144,7 +144,24 @@
   "settings.ai.test.both.success": "Connection successful! Both main and assistant models are working.",
   "settings.ai.test.main.success.assist.fail": "Main model connection successful, but assistant model failed",
   "init.test.connection.both.success": "Connection successful! Both main and assistant models are working.",
-  "init.test.connection.main.success.assist.fail": "Main model connection successful, but assistant model failed"
+  "init.test.connection.main.success.assist.fail": "Main model connection successful, but assistant model failed",
+
+  "exam.result.title": "Examination Results",
+  "exam.result.passed": "Examination Passed",
+  "exam.result.failed": "Examination Failed",
+  "exam.result.thank.you": "Thank you for using OpenKnowledge learning system",
+  "exam.result.scoring.in.progress": "Smart Checking in Progress...",
+  "exam.result.export.score": "Export Score",
+  "exam.result.download.exam": "Download Examination",
+  "exam.result.exit": "Exit",
+  "exam.result.ai.scoring.needed": "Smart Checking Required",
+  "exam.result.ai.scoring.description": "Some questions require intelligent assessment. Please start the smart checking process to complete your score.",
+  "exam.result.ai.scoring.start": "Start Smart Checking",
+  "exam.result.ai.scoring.progress": "Smart Checking Progress",
+  "exam.result.your.answer": "Your Answer:",
+  "exam.result.correct.answer": "Correct Answer:",
+  "exam.result.no.answer": "No answer provided"
+
 
 
 }
