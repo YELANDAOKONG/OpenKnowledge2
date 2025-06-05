@@ -8,11 +8,11 @@
 
 主版本号：`2`
 
-次版本号：`1`
+次版本号：`2`
 
 修订代号：`0`
 
-> 当前版本：`2.1.0`
+> 当前版本：`2.2.0`
 
 ---
 
@@ -89,6 +89,9 @@ public class ExaminationMetadata
     public string? Subject { get; set; } = null;
     public string? Language { get; set; } = null;
     public double TotalScore { get; set; } = 0;
+    public long? ExamTime { get; set; } = null;
+    public long? MinimumExamTime { get; set; } = null;
+    public long? MaximumExamTime { get; set; } = null;
     public ReferenceMaterial[]? ReferenceMaterials { get; set; } = new ReferenceMaterial[] { };
 }
 ```
@@ -134,6 +137,10 @@ public class Question
     public string[]? Commits { get; set; } = new string[] { };
   
     public Question[]? SubQuestions { get; set; } = new Question[] { };
+
+    public double? ObtainedScore { get; set; } = null;
+    public bool IsAiEvaluated { get; set; } = true;
+    public string? AiFeedback { get; set; } = null;
 }
 ```
 
@@ -271,6 +278,9 @@ public class Option
 |      Subject      |       string       |  否  |             所属学科或领域             |
 |      Language      |       string       |  否  |       语言代码 (如zh-CN, en-US)       |
 |     TotalScore     |       double       |  是  |        考试总分值，必须为非负数        |
+|      ExamTime      |        long        |  否  |                考试时间                |
+|  MinimumExamTime  |        long        |  否  |              最小考试时间              |
+|  MaximumExamTime  |        long        |  否  |              最大考试时间              |
 | ReferenceMaterials | ReferenceMaterial[] |  否  |      全局参考资料，适用于整个考试      |
 
 ### 3.3 ExaminationSection
@@ -300,6 +310,9 @@ public class Option
 |     IsAiJudge     |        bool        |  是  |         是否需要AI辅助评分         |
 |      Commits      |      string[]      |  否  |        AI评分提示或解题步骤        |
 |    SubQuestions    |     Question[]     |  否  |      子题目集合，用于复合题型      |
+|   ObtainedScore   |        long        |  否  |              用户得分              |
+|   IsAiEvaluated   |        bool        |  是  |           是否已由AI评分           |
+|     AiFeedback     |       string       |  否  |             AI评分反馈             |
 
 ### 3.5 ReferenceMaterial
 
@@ -436,7 +449,16 @@ public class Option
 
 ## 7. 版本兼容性说明
 
-### 7.1 版本 `2.1.0` 的主要变更
+### 7.1 版本 `2.2.0` 的主要变更
+
+> 协议版本：`2.1.0` => `2.1.0`
+
+主要变更点：
+
+- 在 `Question` 结构中新增 `ObtainedScore` `IsAiEvaluated` `AiFeedback` 字段
+- 在 `ExaminationMetadata` 结构中新增 `ExamTime` `MinimumExamTime` `MaximumExamTime` 字段
+
+### 7.2 版本 `2.1.0` 的主要变更
 
 > 协议版本：`1.0.0` => `2.1.0`
 
