@@ -135,10 +135,16 @@
   "settings.prompts.reset": "Reset to Default",
 
   "settings.ai.assistmodel": "AI Assistant Model (Optional)",
-  "settings.ai.assistmodel.placeholder": "Enter assistant model name (e.g., deepseek-response)",
+  "settings.ai.assistmodel.placeholder": "Enter assistant model name (e.g., deepseek-reasoner)",
   "settings.ai.assistmodel.optional": "This model is optional and can be left blank",
   "init.assistmodel": "AI Assistant Model",
-  "init.assistmodel.placeholder": "Enter assistant model name (e.g., deepseek-response)",
-  "init.assistmodel.optional": "This model is optional and can be left blank"
+  "init.assistmodel.placeholder": "Enter assistant model name (e.g., deepseek-reasoner)",
+  "init.assistmodel.optional": "This model is optional and can be left blank",
+
+  "settings.ai.test.both.success": "Connection successful! Both main and assistant models are working.",
+  "settings.ai.test.main.success.assist.fail": "Main model connection successful, but assistant model failed",
+  "init.test.connection.both.success": "Connection successful! Both main and assistant models are working.",
+  "init.test.connection.main.success.assist.fail": "Main model connection successful, but assistant model failed"
+
 
 }

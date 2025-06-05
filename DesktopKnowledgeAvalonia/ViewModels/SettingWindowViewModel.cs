@@ -338,9 +338,9 @@ public partial class AISettingsViewModel : SettingsViewModelBase
             IsConnectionTested = true;
             return;
         }
-    
+
         IsTestingConnection = true;
-    
+
         try
         {
             // Create a temporary SystemConfig with current values
@@ -349,13 +349,14 @@ public partial class AISettingsViewModel : SettingsViewModelBase
                 OpenAiApiUrl = ApiUrl,
                 OpenAiApiKey = ApiKey,
                 OpenAiModel = Model,
+                OpenAiAssistModel = AssistModel,
                 OpenAiModelTemperature = Temperature
             };
         
             // Create OpenAI client using the SDK
             var client = LibraryOpenKnowledge.Tools.AiTools.CreateOpenAiClient(tempConfig);
         
-            // Send a test message
+            // Test the main model
             var response = await LibraryOpenKnowledge.Tools.AiTools.SendChatMessageAsync(
                 client,
                 tempConfig,
@@ -363,12 +364,48 @@ public partial class AISettingsViewModel : SettingsViewModelBase
                 throwExceptions: true
             );
         
-            // If we get here, the connection was successful
-            ConnectionStatus = _localizationService["settings.ai.test.success"];
-            ConnectionStatusBackground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#2ECC71"));
+            // If main model is successful and assistant model is specified, test the assistant model
+            if (!string.IsNullOrWhiteSpace(AssistModel))
+            {
+                // Temporary config with assistant model as main model for testing
+                var assistConfig = new LibraryOpenKnowledge.Models.SystemConfig
+                {
+                    OpenAiApiUrl = ApiUrl,
+                    OpenAiApiKey = ApiKey,
+                    OpenAiModel = AssistModel,  // Use the assistant model here
+                    OpenAiModelTemperature = Temperature
+                };
+                
+                try
+                {
+                    var assistResponse = await LibraryOpenKnowledge.Tools.AiTools.SendChatMessageAsync(
+                        client,
+                        assistConfig,
+                        "Hello, this is a test message for the assistant model.",
+                        throwExceptions: true
+                    );
+                    
+                    // Both models tested successfully
+                    ConnectionStatus = _localizationService["settings.ai.test.both.success"];
+                    ConnectionStatusBackground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#2ECC71"));
+                }
+                catch (Exception ex)
+                {
+                    // Main model succeeded but assistant model failed
+                    ConnectionStatus = _localizationService["settings.ai.test.main.success.assist.fail"] + $": {ex.Message}";
+                    ConnectionStatusBackground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#F39C12"));
+                }
+            }
+            else
+            {
+                // Only main model was tested (no assistant model specified)
+                ConnectionStatus = _localizationService["settings.ai.test.success"];
+                ConnectionStatusBackground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#2ECC71"));
+            }
         }
         catch (Exception ex)
         {
+            // Main model test failed
             ConnectionStatus = $"{_localizationService["settings.ai.test.error"]}: {ex.Message}";
             ConnectionStatusBackground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#E74C3C"));
         }
@@ -378,6 +415,7 @@ public partial class AISettingsViewModel : SettingsViewModelBase
             IsConnectionTested = true;
         }
     }
+
 }
 
 public partial class PromptTemplatesViewModel : SettingsViewModelBase

@@ -135,11 +135,15 @@
   "settings.prompts.reset": "重置为默认值",
 
   "settings.ai.assistmodel": "AI 辅助模型（可选）",
-  "settings.ai.assistmodel.placeholder": "输入辅助模型名称（例如：deepseek-response）",
+  "settings.ai.assistmodel.placeholder": "输入辅助模型名称（例如：deepseek-reasoner）",
   "settings.ai.assistmodel.optional": "此模型为可选项，可以留空",
   "init.assistmodel": "AI 辅助模型",
-  "init.assistmodel.placeholder": "输入辅助模型名称（例如：deepseek-response）",
-  "init.assistmodel.optional": "此模型为可选项，可以留空"
+  "init.assistmodel.placeholder": "输入辅助模型名称（例如：deepseek-reasoner）",
+  "init.assistmodel.optional": "此模型为可选项，可以留空",
 
+  "settings.ai.test.both.success": "连接成功！主模型和辅助模型均正常工作。",
+  "settings.ai.test.main.success.assist.fail": "主模型连接成功，但辅助模型连接失败",
+  "init.test.connection.both.success": "连接成功！主模型和辅助模型均正常工作。",
+  "init.test.connection.main.success.assist.fail": "主模型连接成功，但辅助模型连接失败"
 
 }
