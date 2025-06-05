@@ -162,6 +162,12 @@ namespace LibraryOpenKnowledge.Tools
                 {
                     question.UserAnswer = null;
                 }
+                
+                foreach (var question in section.Questions)
+                {
+                    question.ObtainedScore = null;
+                    question.AiFeedback = null;
+                }
             }
         }
     }
