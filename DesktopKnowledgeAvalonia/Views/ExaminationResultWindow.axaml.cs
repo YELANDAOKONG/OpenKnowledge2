@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
@@ -342,17 +343,31 @@ public partial class ExaminationResultWindow : AppWindowBase
                     var rescoreButton = new Button
                     {
                         Content = _localizationService["exam.result.rescore"],
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        Padding = new Thickness(10, 5, 10, 5),
-                        CommandParameter = questionScore.QuestionId
+                        HorizontalAlignment = HorizontalAlignment.Right
                     };
-                    // Bind the command - enabled when not currently scoring
                     rescoreButton.Command = _viewModel.RescoreQuestionCommand;
-                    rescoreButton.Bind(Button.IsEnabledProperty, new Avalonia.Data.Binding
+                    rescoreButton.CommandParameter = questionScore.QuestionId;
+    
+                    // 控制按钮启用状态：必须有答案且已进行过初始评分
+                    bool hasAnswer = !questionScore.UserAnswer.Equals(_localizationService["exam.result.no.answer"]);
+    
+                    // 基础状态设置 - 只有当有答案且完成初始AI评分时才启用
+                    var binding = new MultiBinding
                     {
-                        Path = "!IsAiScoringInProgress",
-                        Mode = Avalonia.Data.BindingMode.OneWay
-                    });
+                        Converter = new BooleanMultiConverter()
+                    };
+    
+                    binding.Bindings.Add(new Binding("HasPerformedInitialAiScoring"));
+                    binding.Bindings.Add(new Binding("!IsAiScoringInProgress"));
+    
+                    // 如果没有答案，直接禁用
+                    rescoreButton.IsEnabled = hasAnswer; 
+    
+                    // 只有当有答案时才应用其他条件绑定
+                    if (hasAnswer)
+                    {
+                        rescoreButton.Bind(Button.IsEnabledProperty, binding);
+                    }
                     rightStack.Children.Add(rescoreButton);
                 }
                 Grid.SetColumn(rightStack, 2);

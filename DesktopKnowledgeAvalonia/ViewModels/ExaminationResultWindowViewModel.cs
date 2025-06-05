@@ -74,6 +74,9 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
 
     [ObservableProperty] 
     private bool _isWindowVisible = true;
+    
+    [ObservableProperty]
+    private bool _hasPerformedInitialAiScoring = false;
 
     // Flag to control main window visibility
     public bool ShowMainWindow { get; set; } = false;
@@ -130,6 +133,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             
             foreach (var question in section.Questions)
             {
+                // 只看 IsAiJudge 标记，不考虑题目类型
                 if (question.IsAiJudge)
                 {
                     // Check if this AI question has been evaluated
@@ -306,6 +310,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
         {
             await PerformAiScoring();
             IsAiScoringNeeded = false; // No longer needed after completion
+            HasPerformedInitialAiScoring = true; // 设置已完成初始AI评分
         }
         finally
         {
@@ -444,7 +449,8 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task RescoreQuestionAsync(string questionId)
     {
-        if (Examination == null || string.IsNullOrEmpty(questionId) || IsAiScoringInProgress)
+        if (Examination == null || string.IsNullOrEmpty(questionId) || 
+            IsAiScoringInProgress || !HasPerformedInitialAiScoring)
             return;
         
         // Find the question
@@ -470,7 +476,9 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                 break;
         }
     
-        if (questionToScore == null || !questionToScore.IsAiJudge)
+        // 验证题目可以被重新评分：必须是AI评分题且有答案
+        if (questionToScore == null || !questionToScore.IsAiJudge || 
+            questionToScore.UserAnswer == null || questionToScore.UserAnswer.Length == 0)
             return;
         
         // Start rescoring
@@ -545,7 +553,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task RescoreAllAsync()
     {
-        if (Examination == null || IsAiScoringInProgress) 
+        if (Examination == null || IsAiScoringInProgress || !HasPerformedInitialAiScoring) 
             return;
     
         // Reset all AI questions to unevaluated state
