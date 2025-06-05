@@ -482,14 +482,14 @@ public partial class ExaminationResultWindow : AppWindowBase
     
         Close();
     
-        Task.Delay(100).ContinueWith(_ =>
-        {
-            Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                var mainWindow = new MainWindow();
-                mainWindow.Show();
-            });
-        });
+        // Task.Delay(100).ContinueWith(_ =>
+        // {
+        //     Dispatcher.UIThread.InvokeAsync(() =>
+        //     {
+        //         var mainWindow = new MainWindow();
+        //         mainWindow.Show();
+        //     });
+        // });
     }
     
     protected override void OnOpened(EventArgs e)
