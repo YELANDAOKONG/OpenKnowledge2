@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Avalonia;
@@ -34,6 +34,13 @@ public partial class ExaminationResultWindow : AppWindowBase
         _configService = App.GetService<ConfigureService>();
         _localizationService = App.GetService<LocalizationService>();
         _themeService = App.GetService<ThemeService>();
+        
+        // Prevent main window from showing by setting the flag in AppData
+        if (_configService.AppData != null)
+        {
+            _configService.AppData.IsInExamination = true;
+            _configService.SaveChangesAsync();
+        }
         
         // Set up the view model
         _viewModel = new ExaminationResultWindowViewModel(_configService, _localizationService);
@@ -71,6 +78,7 @@ public partial class ExaminationResultWindow : AppWindowBase
         await _viewModel.InitializeAsync(examination, scoreRecord);
     }
     
+    // Handle property changes from the view model
     private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(ExaminationResultWindowViewModel.SectionScores))
@@ -79,10 +87,35 @@ public partial class ExaminationResultWindow : AppWindowBase
         }
     }
     
+    // Generate question controls based on the view model data
     private void GenerateQuestionControls()
     {
         // Clear existing controls
         _questionsPanel.Children.Clear();
+        
+        // Add a master expander to collapse all questions
+        var masterExpander = new Expander
+        {
+            Header = _localizationService["exam.sections.questions"],
+            IsExpanded = _viewModel.IsQuestionsPanelExpanded,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            Margin = new Thickness(0, 0, 0, 15)
+        };
+        
+        // Bind the IsExpanded property to the view model
+        masterExpander.Bind(Expander.IsExpandedProperty, new Avalonia.Data.Binding
+        {
+            Path = nameof(ExaminationResultWindowViewModel.IsQuestionsPanelExpanded),
+            Mode = Avalonia.Data.BindingMode.TwoWay
+        });
+        
+        // Create a container for all sections
+        var sectionsPanel = new StackPanel
+        {
+            Spacing = 15,
+            Margin = new Thickness(0, 10, 0, 0),
+            HorizontalAlignment = HorizontalAlignment.Stretch
+        };
         
         // Process each section
         foreach (var section in _viewModel.SectionScores)
@@ -92,14 +125,16 @@ public partial class ExaminationResultWindow : AppWindowBase
             {
                 Header = section.SectionTitle,
                 IsExpanded = true, // Default to expanded
-                Margin = new Thickness(0, 0, 0, 10)
+                Margin = new Thickness(0, 0, 0, 10),
+                HorizontalAlignment = HorizontalAlignment.Stretch
             };
             
             // Create section content panel
             var sectionContent = new StackPanel
             {
                 Spacing = 10,
-                Margin = new Thickness(0, 10, 0, 0)
+                Margin = new Thickness(0, 10, 0, 0),
+                HorizontalAlignment = HorizontalAlignment.Stretch
             };
             
             // Loop through questions in this section
@@ -111,7 +146,8 @@ public partial class ExaminationResultWindow : AppWindowBase
                     Background = new SolidColorBrush(Color.Parse("#10FFFFFF")),
                     CornerRadius = new CornerRadius(4),
                     Padding = new Thickness(15),
-                    Margin = new Thickness(0, 0, 0, 5)
+                    Margin = new Thickness(0, 0, 0, 5),
+                    HorizontalAlignment = HorizontalAlignment.Stretch
                 };
                 
                 // Create grid with three columns
@@ -168,10 +204,11 @@ public partial class ExaminationResultWindow : AppWindowBase
                 // Center column: Question details
                 var centerStack = new StackPanel
                 {
-                    Spacing = 5
+                    Spacing = 5,
+                    HorizontalAlignment = HorizontalAlignment.Stretch
                 };
                 
-                // Question type badge - FIX: Use Border + TextBlock instead of TextBlock with CornerRadius
+                // Question type badge - Using Border + TextBlock
                 var typeBorder = new Border
                 {
                     Background = new SolidColorBrush(Color.Parse("#15569AFF")),
@@ -192,7 +229,7 @@ public partial class ExaminationResultWindow : AppWindowBase
                 // AI Judged badge if applicable
                 if (questionScore.IsAiJudged)
                 {
-                    // FIX: Use Border + TextBlock instead of TextBlock with CornerRadius
+                    // Using Border + TextBlock
                     var aiJudgedBorder = new Border
                     {
                         Background = new SolidColorBrush(Color.Parse("#15FF8C00")),
@@ -203,7 +240,8 @@ public partial class ExaminationResultWindow : AppWindowBase
                     
                     var aiJudgedText = new TextBlock
                     {
-                        Text = "AI Scored",
+                        // Use localization for "AI Scored" text
+                        Text = _localizationService["exam.result.ai.scored"],
                         Opacity = 0.9,
                         FontSize = 12,
                         Foreground = new SolidColorBrush(Color.Parse("#FF8C00"))
@@ -305,7 +343,20 @@ public partial class ExaminationResultWindow : AppWindowBase
                     HorizontalAlignment = HorizontalAlignment.Center
                 };
                 
-                if (questionScore.IsCorrect)
+                // Check if the question has been evaluated and is correct
+                if (questionScore.IsAiJudged && !questionScore.IsEvaluated)
+                {
+                    // Question mark icon for unevaluated AI questions
+                    var questionMarkIcon = new PathIcon
+                    {
+                        Data = Geometry.Parse("M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-0.5-10.5v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-3.5c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5zM12 17c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1z"),
+                        Width = 24,
+                        Height = 24,
+                        Foreground = new SolidColorBrush(Color.Parse("#FFA500")) // Orange color for question mark
+                    };
+                    resultPanel.Children.Add(questionMarkIcon);
+                }
+                else if (questionScore.IsCorrect)
                 {
                     // Correct check icon
                     var checkIcon = new PathIcon
@@ -337,7 +388,8 @@ public partial class ExaminationResultWindow : AppWindowBase
                 {
                     var rescoreButton = new Button
                     {
-                        Content = "Rescore",
+                        // Use localization for "Rescore" text
+                        Content = _localizationService["exam.result.rescore"],
                         HorizontalAlignment = HorizontalAlignment.Center,
                         Padding = new Thickness(10, 5, 10, 5),
                         CommandParameter = questionScore.QuestionId
@@ -362,17 +414,32 @@ public partial class ExaminationResultWindow : AppWindowBase
             // Set section content
             sectionHeader.Content = sectionContent;
             
-            // Add section to questions panel
-            _questionsPanel.Children.Add(sectionHeader);
+            // Add section to sections panel
+            sectionsPanel.Children.Add(sectionHeader);
         }
-    }
         
+        // Set sections panel as the content of the master expander
+        masterExpander.Content = sectionsPanel;
+        
+        // Add master expander to questions panel
+        _questionsPanel.Children.Add(masterExpander);
+    }
+    
     private void OnWindowClosing(object sender, WindowClosingEventArgs e)
     {
         // Prevent closing if AI scoring is in progress (matches Exit button behavior)
         if (_viewModel.IsAiScoringInProgress)
         {
             e.Cancel = true;
+        }
+        else
+        {
+            // Ensure main window doesn't appear
+            if (_configService.AppData != null)
+            {
+                _configService.AppData.IsInExamination = false;
+                _configService.SaveChangesAsync();
+            }
         }
     }
     
@@ -435,10 +502,24 @@ public partial class ExaminationResultWindow : AppWindowBase
         if (_configService.AppData != null)
         {
             _configService.AppData.IsInExamination = false;
+            _configService.SaveChangesAsync();
         }
         
         // Close the window
         Close();
+    }
+    
+    // Make sure main window doesn't appear when this window is opened
+    protected override void OnOpened(EventArgs e)
+    {
+        base.OnOpened(e);
+        
+        // Ensure the main window is not shown
+        if (_configService.AppData != null)
+        {
+            _configService.AppData.IsInExamination = true;
+            _configService.SaveChangesAsync();
+        }
     }
     
     // Public method to update the sub-status text (for future customization)
@@ -456,6 +537,7 @@ public partial class ExaminationResultWindow : AppWindowBase
         if (_configService.AppData != null)
         {
             _configService.AppData.IsInExamination = false;
+            _configService.SaveChangesAsync();
         }
         
         base.OnClosed(e);
@@ -469,4 +551,3 @@ public partial class ExaminationResultWindow : AppWindowBase
         }
     }
 }
-

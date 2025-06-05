@@ -97,6 +97,12 @@
                         <TextBlock Text="{loc:Translate Key=exam.result.exit}"/>
                     </StackPanel>
                 </Button>
+                
+                <!-- Toggle questions panel button -->
+                <Button Command="{Binding ToggleQuestionsPanelCommand}"
+                        ToolTip.Tip="{loc:Translate Key=exam.result.toggle.questions}">
+                    <PathIcon Data="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z" Width="16" Height="16"/>
+                </Button>
             </StackPanel>
         </Grid>
         
@@ -134,11 +140,14 @@
         
         <!-- AI scoring progress bar (if in progress) -->
         <StackPanel Grid.Row="3" Spacing="5" IsVisible="{Binding IsAiScoringInProgress}">
-            <TextBlock Text="{Binding CurrentScoringQuestion}"
-                       HorizontalAlignment="Center"
-                       TextWrapping="Wrap"
-                       TextTrimming="CharacterEllipsis"
-                       Margin="0,0,0,5"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,5">
+                <TextBlock Text="{Binding CurrentScoringQuestionNumber, StringFormat={}#{0}:}"
+                           FontWeight="Bold"
+                           Margin="0,0,5,0"/>
+                <TextBlock Text="{Binding CurrentScoringQuestion}"
+                           TextWrapping="Wrap"
+                           TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
             <Grid ColumnDefinitions="*,Auto">
                 <ProgressBar Grid.Column="0" Value="{Binding AiScoringProgress}" 
                          Minimum="0" 
@@ -152,4 +161,3 @@
         </StackPanel>
     </Grid>
 </Window>
-

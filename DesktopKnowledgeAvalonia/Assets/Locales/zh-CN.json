@@ -160,7 +160,13 @@
   "exam.result.ai.scoring.progress": "智能检查进度",
   "exam.result.your.answer": "您的答案：",
   "exam.result.correct.answer": "正确答案：",
-  "exam.result.no.answer": "未提供答案"
+  "exam.result.no.answer": "未提供答案",
+
+  "exam.result.ai.scored": "AI 评分",
+  "exam.result.rescore": "重新评分",
+  "exam.result.toggle.questions": "切换题目面板",
+  "exam.result.unevaluated": "未评估"
+
 
 
 }

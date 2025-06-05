@@ -160,7 +160,13 @@
   "exam.result.ai.scoring.progress": "Smart Checking Progress",
   "exam.result.your.answer": "Your Answer:",
   "exam.result.correct.answer": "Correct Answer:",
-  "exam.result.no.answer": "No answer provided"
+  "exam.result.no.answer": "No answer provided",
+
+  "exam.result.ai.scored": "AI Scored",
+  "exam.result.rescore": "Rescore",
+  "exam.result.toggle.questions": "Toggle Questions Panel",
+  "exam.result.unevaluated": "Not Evaluated"
+
 
 
 
