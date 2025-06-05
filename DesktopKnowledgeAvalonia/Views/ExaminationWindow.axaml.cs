@@ -823,15 +823,15 @@ public partial class ExaminationWindow : AppWindowBase
             _autoSaveTimer.Stop();
             
             // Show completion message
-            StatusMessageText.Text = "Examination submitted successfully!";
-            StatusOverlay.IsVisible = true;
-            StatusProgressBar.IsVisible = false;
-            
-            await Task.Delay(2000);
-            StatusOverlay.IsVisible = false;
-            
-            // TODO: Navigate to results page or close window
-            Close();
+            // StatusMessageText.Text = "Examination submitted successfully!";
+            // StatusOverlay.IsVisible = true;
+            // StatusProgressBar.IsVisible = false;
+            //
+            // await Task.Delay(2000);
+            // StatusOverlay.IsVisible = false;
+            //
+            // Navigate to results page or close window
+            // Close();
         }
         catch (Exception ex)
         {
