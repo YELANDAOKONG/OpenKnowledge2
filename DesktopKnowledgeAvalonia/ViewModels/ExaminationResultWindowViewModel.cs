@@ -317,7 +317,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             IsAiScoringInProgress = false;
             CanDownloadExam = true;
             CanExit = true;
-            CanExportScore = true;
+            // CanExportScore = true;
             CurrentScoringQuestion = string.Empty;
             CurrentScoringQuestionProgress = string.Empty;
         
@@ -542,7 +542,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             IsAiScoringInProgress = false;
             CanDownloadExam = true;
             CanExit = true;
-            CanExportScore = true;
+            // CanExportScore = true;
             CurrentScoringQuestion = string.Empty;
             CurrentScoringQuestionProgress = string.Empty;
         
