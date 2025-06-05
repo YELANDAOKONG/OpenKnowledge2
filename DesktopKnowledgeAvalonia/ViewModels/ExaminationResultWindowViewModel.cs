@@ -119,9 +119,6 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
         
         // Initialize question scores collection
         InitializeQuestionScores();
-        
-        // Can export score initially (may change based on AI scoring needs)
-        CanExportScore = true;
     }
     
     // Method to initialize unevaluated AI questions
