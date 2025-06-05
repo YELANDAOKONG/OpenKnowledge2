@@ -89,6 +89,16 @@
                     </StackPanel>
                 </Button>
                 
+                <!-- Add Rescore All button -->
+                <Button Command="{Binding RescoreAllCommand}"
+                        ToolTip.Tip="{loc:Translate Key=exam.result.rescore.all}"
+                        IsEnabled="{Binding !IsAiScoringInProgress}">
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <PathIcon Data="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8c-.45-.83-.7-1.79-.7-2.8 0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" Width="16" Height="16"/>
+                        <TextBlock Text="{loc:Translate Key=exam.result.rescore.all}"/>
+                    </StackPanel>
+                </Button>
+                
                 <Button Command="{Binding ExitCommand}"
                         ToolTip.Tip="{loc:Translate Key=exam.result.exit}"
                         IsEnabled="{Binding CanExit}">
@@ -96,12 +106,6 @@
                         <PathIcon Data="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" Width="16" Height="16"/>
                         <TextBlock Text="{loc:Translate Key=exam.result.exit}"/>
                     </StackPanel>
-                </Button>
-                
-                <!-- Toggle questions panel button -->
-                <Button Command="{Binding ToggleQuestionsPanelCommand}"
-                        ToolTip.Tip="{loc:Translate Key=exam.result.toggle.questions}">
-                    <PathIcon Data="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z" Width="16" Height="16"/>
                 </Button>
             </StackPanel>
         </Grid>
@@ -141,9 +145,9 @@
         <!-- AI scoring progress bar (if in progress) -->
         <StackPanel Grid.Row="3" Spacing="5" IsVisible="{Binding IsAiScoringInProgress}">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,5">
-                <TextBlock Text="{Binding CurrentScoringQuestionNumber, StringFormat={}#{0}:}"
+                <TextBlock Text="{Binding CurrentScoringQuestionProgress}"
                            FontWeight="Bold"
-                           Margin="0,0,5,0"/>
+                           Margin="0,0,10,0"/>
                 <TextBlock Text="{Binding CurrentScoringQuestion}"
                            TextWrapping="Wrap"
                            TextTrimming="CharacterEllipsis"/>

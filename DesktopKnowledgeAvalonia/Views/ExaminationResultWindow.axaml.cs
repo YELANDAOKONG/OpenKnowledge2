@@ -8,6 +8,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Threading;
 using DesktopKnowledgeAvalonia.Converters;
 using DesktopKnowledgeAvalonia.Services;
 using DesktopKnowledgeAvalonia.ViewModels;
@@ -299,6 +300,32 @@ public partial class ExaminationResultWindow : AppWindowBase
                 centerStack.Children.Add(stemText);
                 centerStack.Children.Add(userAnswerStack);
                 
+                // AI Feedback (if available)
+                if (questionScore.IsAiJudged && !string.IsNullOrEmpty(questionScore.AiFeedback))
+                {
+                    var aiFeedbackStack = new StackPanel();
+    
+                    var aiFeedbackLabel = new TextBlock
+                    {
+                        Text = _localizationService["exam.result.ai.feedback"],
+                        FontWeight = FontWeight.SemiBold,
+                        FontSize = 12,
+                        Margin = new Thickness(0, 5, 0, 2)
+                    };
+    
+                    var aiFeedbackText = new TextBlock
+                    {
+                        Text = questionScore.AiFeedback,
+                        TextWrapping = TextWrapping.Wrap,
+                        Opacity = 0.9
+                    };
+    
+                    aiFeedbackStack.Children.Add(aiFeedbackLabel);
+                    aiFeedbackStack.Children.Add(aiFeedbackText);
+    
+                    centerStack.Children.Add(aiFeedbackStack);
+                }
+                
                 // Correct answer (if available)
                 if (!string.IsNullOrEmpty(questionScore.CorrectAnswer))
                 {
@@ -498,16 +525,27 @@ public partial class ExaminationResultWindow : AppWindowBase
     // Handle exit request
     private void OnExitRequested(object sender, EventArgs e)
     {
-        // Ensure main window doesn't appear
+        // Set flag to show main window
         if (_configService.AppData != null)
         {
             _configService.AppData.IsInExamination = false;
             _configService.SaveChangesAsync();
         }
-        
-        // Close the window
+    
+        // Close the window first
         Close();
+    
+        // Show MainWindow after a delay to ensure proper cleanup
+        Task.Delay(100).ContinueWith(_ =>
+        {
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                var mainWindow = new MainWindow();
+                mainWindow.Show();
+            });
+        });
     }
+
     
     // Make sure main window doesn't appear when this window is opened
     protected override void OnOpened(EventArgs e)

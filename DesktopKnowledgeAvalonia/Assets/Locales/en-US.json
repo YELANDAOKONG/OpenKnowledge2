@@ -161,11 +161,14 @@
   "exam.result.your.answer": "Your Answer:",
   "exam.result.correct.answer": "Correct Answer:",
   "exam.result.no.answer": "No answer provided",
-
+  
   "exam.result.ai.scored": "AI Scored",
   "exam.result.rescore": "Rescore",
+  "exam.result.rescore.all": "Rescore All",
   "exam.result.toggle.questions": "Toggle Questions Panel",
-  "exam.result.unevaluated": "Not Evaluated"
+  "exam.result.unevaluated": "Not Evaluated",
+  "exam.result.ai.feedback": "AI Feedback:"
+
 
 
 

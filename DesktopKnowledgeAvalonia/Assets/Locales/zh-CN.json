@@ -164,9 +164,9 @@
 
   "exam.result.ai.scored": "AI 评分",
   "exam.result.rescore": "重新评分",
+  "exam.result.rescore.all": "全部重新评分",
   "exam.result.toggle.questions": "切换题目面板",
-  "exam.result.unevaluated": "未评估"
-
-
+  "exam.result.unevaluated": "未评估",
+  "exam.result.ai.feedback": "AI 评分反馈:"
 
 }

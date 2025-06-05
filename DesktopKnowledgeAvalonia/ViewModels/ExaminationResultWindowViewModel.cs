@@ -49,7 +49,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
     private string _currentScoringQuestion = string.Empty;
     
     [ObservableProperty]
-    private int _currentScoringQuestionNumber = 0;
+    private string _currentScoringQuestionProgress = string.Empty;
     
     [ObservableProperty]
     private bool _canExportScore = false;
@@ -96,8 +96,8 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
         Examination = examination;
         ScoreRecord = scoreRecord;
         
-        // Ensure all AI-judged questions without scores are counted as 0
-        RecalculateScoreWithAiJudgedAsZero();
+        // For unevaluated AI questions, set their score to 0
+        SetUnevaluatedAiQuestionsToZero();
         
         ObtainedScore = scoreRecord.ObtainedScore;
         TotalScore = scoreRecord.TotalScore;
@@ -114,13 +114,12 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
         InitializeQuestionScores();
     }
     
-    // Method to ensure AI judged questions without scores are counted as 0
-    private void RecalculateScoreWithAiJudgedAsZero()
+    // Method to set unevaluated AI questions to 0
+    private void SetUnevaluatedAiQuestionsToZero()
     {
         if (Examination == null || ScoreRecord == null)
             return;
             
-        // This will ensure the CalculateScores method treats unscored AI questions as 0
         foreach (var section in Examination.ExaminationSections)
         {
             if (section.Questions == null)
@@ -128,10 +127,9 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                 
             foreach (var question in section.Questions)
             {
-                // Check if it's an AI-judged question that needs scoring
+                // For AI judged questions that haven't been evaluated, set score to 0
                 if (question.IsAiJudge && question.Score == null)
                 {
-                    // Set unscored AI questions to 0 temporarily
                     question.Score = 0;
                 }
             }
@@ -163,9 +161,9 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             
             foreach (var question in section.Questions)
             {
-                if (question.IsAiJudge && question.UserAnswer != null && question.UserAnswer.Length > 0)
+                if (question.IsAiJudge && question.UserAnswer != null && question.UserAnswer.Length > 0 && question.Score == null)
                 {
-                    // If user provided an answer for an AI-judged question
+                    // If user provided an answer for an AI-judged question that hasn't been evaluated
                     return true;
                 }
             }
@@ -227,11 +225,14 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                         correctAnswer = string.Join(", ", question.Answer);
                     }
 
-                    // Important change: Set IsEvaluated flag to indicate if AI has evaluated this question
+                    // Determine if the question has been evaluated
                     bool isEvaluated = true;
                     if (question.IsAiJudge && question.Score == null)
                     {
                         isEvaluated = false;
+                        // For unevaluated AI questions, show 0.0 as obtained score
+                        score.ObtainedScore = 0.0;
+                        score.IsCorrect = false;
                     }
 
                     sectionVM.Questions.Add(new QuestionScoreViewModel
@@ -245,11 +246,12 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                         ObtainedScore = score.ObtainedScore,
                         IsCorrect = score.IsCorrect,
                         IsAiJudged = question.IsAiJudge,
-                        IsEvaluated = isEvaluated, // New property to track evaluation status
+                        IsEvaluated = isEvaluated,
                         UserAnswer = question.UserAnswer != null && question.UserAnswer.Length > 0 
                             ? string.Join(", ", question.UserAnswer) 
                             : _localizationService["exam.result.no.answer"],
-                        CorrectAnswer = correctAnswer
+                        CorrectAnswer = correctAnswer,
+                        AiFeedback = string.Empty // Will be populated after AI scoring
                     });
                 }
             }
@@ -287,7 +289,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             CanExit = true;
             IsAiScoringNeeded = false; // No longer needed after completion
             CurrentScoringQuestion = string.Empty;
-            CurrentScoringQuestionNumber = 0;
+            CurrentScoringQuestionProgress = string.Empty;
             
             // Update status text
             UpdateResultStatusText();
@@ -311,7 +313,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             
             foreach (var question in section.Questions)
             {
-                if (question.IsAiJudge && question.UserAnswer != null && question.UserAnswer.Length > 0)
+                if (question.IsAiJudge && question.UserAnswer != null && question.UserAnswer.Length > 0 && question.Score == null)
                 {
                     totalAiQuestions++;
                 }
@@ -321,23 +323,23 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
         if (totalAiQuestions == 0) return;
         
         // Process each question needing AI scoring
-        int currentQuestionNumber = 1;
         foreach (var section in Examination.ExaminationSections)
         {
             if (section.Questions == null) continue;
             
             foreach (var question in section.Questions)
             {
-                if (question.IsAiJudge && question.UserAnswer != null && question.UserAnswer.Length > 0)
+                if (question.IsAiJudge && question.UserAnswer != null && question.UserAnswer.Length > 0 && question.Score == null)
                 {
-                    // Update the currently scoring question text and number
-                    // Format the question stem to handle line breaks properly
+                    processedQuestions++;
+                    
+                    // Update the currently scoring question text and progress
                     string cleanStem = question.Stem
                         .Replace("\r\n", " ")
                         .Replace("\n", " ")
                         .Replace("\r", " ");
                         
-                    CurrentScoringQuestionNumber = currentQuestionNumber;
+                    CurrentScoringQuestionProgress = $"{processedQuestions} ({_localizationService["exam.result.ai.scored"]}) / {totalAiQuestions} ({_localizationService["exam.result.ai.scored"]})";
                     CurrentScoringQuestion = $"{section.Title}: {cleanStem.Substring(0, Math.Min(50, cleanStem.Length))}...";
                     
                     // Generate prompt for AI scoring
@@ -362,7 +364,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                         question.Score = result.Score;
                         
                         // Update UI for this question
-                        UpdateQuestionScore(question.QuestionId, result.Score, result.IsCorrect, true);
+                        UpdateQuestionScore(question.QuestionId, result.Score, result.IsCorrect, true, result.Feedback);
                         
                         // Recalculate scores after each question to show progress
                         ScoreRecord.CalculateScores(Examination);
@@ -374,12 +376,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                     }
                     
                     // Update progress
-                    processedQuestions++;
                     AiScoringProgress = (double)processedQuestions / totalAiQuestions * 100;
-                }
-                
-                if (question.IsAiJudge) {
-                    currentQuestionNumber++;
                 }
             }
         }
@@ -396,7 +393,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
         InitializeQuestionScores();
     }
     
-    private void UpdateQuestionScore(string? questionId, double score, bool isCorrect, bool isEvaluated = true)
+    private void UpdateQuestionScore(string? questionId, double score, bool isCorrect, bool isEvaluated = true, string aiFeedback = "")
     {
         if (string.IsNullOrEmpty(questionId)) return;
         
@@ -408,6 +405,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                 questionVm.ObtainedScore = score;
                 questionVm.IsCorrect = isCorrect;
                 questionVm.IsEvaluated = isEvaluated;
+                questionVm.AiFeedback = aiFeedback;
                 return;
             }
         }
@@ -433,8 +431,8 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
         _configService.AppData.IsTheExaminationStarted = false;
         _configService.AppData.ExaminationTimer = null;
         
-        // Set flag to prevent main window from showing
-        ShowMainWindow = false;
+        // Set flag to show main window after closing
+        ShowMainWindow = true;
         
         // Save changes
         _configService.SaveChangesAsync();
@@ -452,7 +450,6 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
         // Find the question
         Question? questionToScore = null;
         string sectionTitle = string.Empty;
-        int questionNumber = 0;
         
         foreach (var section in Examination.ExaminationSections)
         {
@@ -460,11 +457,6 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             
             foreach (var question in section.Questions)
             {
-                if (question.IsAiJudge)
-                {
-                    questionNumber++;
-                }
-                
                 if (question.QuestionId == questionId)
                 {
                     questionToScore = question;
@@ -484,7 +476,6 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
         IsAiScoringInProgress = true;
         CanDownloadExam = false;
         CanExit = false;
-        AiScoringProgress = 0;
         ResultStatusText = _localizationService["exam.result.scoring.in.progress"];
         
         // Format the question stem to handle line breaks properly
@@ -493,7 +484,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             .Replace("\n", " ")
             .Replace("\r", " ");
             
-        CurrentScoringQuestionNumber = questionNumber;
+        CurrentScoringQuestionProgress = $"1 ({_localizationService["exam.result.rescore"]}) / 1 ({_localizationService["exam.result.rescore"]})";
         CurrentScoringQuestion = $"{sectionTitle}: {cleanStem.Substring(0, Math.Min(50, cleanStem.Length))}...";
         
         try
@@ -523,7 +514,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                 questionToScore.Score = result.Score;
                 
                 // Update UI for this question
-                UpdateQuestionScore(questionId, result.Score, result.IsCorrect, true);
+                UpdateQuestionScore(questionId, result.Score, result.IsCorrect, true, result.Feedback);
                 
                 // Recalculate scores
                 ScoreRecord.CalculateScores(Examination);
@@ -545,10 +536,50 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             CanDownloadExam = true;
             CanExit = true;
             CurrentScoringQuestion = string.Empty;
-            CurrentScoringQuestionNumber = 0;
+            CurrentScoringQuestionProgress = string.Empty;
             
             // Update status text
             UpdateResultStatusText();
+        }
+    }
+
+    [RelayCommand]
+    private async Task RescoreAllAsync()
+    {
+        if (Examination == null || IsAiScoringInProgress) return;
+        
+        // Reset all AI questions to unscored state
+        foreach (var section in Examination.ExaminationSections)
+        {
+            if (section.Questions == null) continue;
+            
+            foreach (var question in section.Questions)
+            {
+                if (question.IsAiJudge && question.UserAnswer != null && question.UserAnswer.Length > 0)
+                {
+                    question.Score = 0.0d; // Reset to unscored
+                }
+            }
+        }
+        
+        // Recalculate scores with reset values
+        SetUnevaluatedAiQuestionsToZero();
+        
+        // Update UI
+        ObtainedScore = ScoreRecord.ObtainedScore;
+        ScorePercentage = TotalScore > 0 ? (ObtainedScore / TotalScore * 100) : 0;
+        IsPassed = ScorePercentage >= 60;
+        
+        // Check if scoring is needed again
+        IsAiScoringNeeded = CheckIfAiScoringNeeded();
+        
+        // Refresh question scores
+        InitializeQuestionScores();
+        
+        // Start AI scoring if needed
+        if (IsAiScoringNeeded)
+        {
+            await StartAiScoringAsync();
         }
     }
 }
@@ -587,4 +618,5 @@ public class QuestionScoreViewModel : ViewModelBase
     public bool IsEvaluated { get; set; } = true; // Added property to track if AI has evaluated this question
     public string UserAnswer { get; set; } = string.Empty;
     public string CorrectAnswer { get; set; } = string.Empty;
+    public string AiFeedback { get; set; } = string.Empty; // Add AI feedback property
 }
