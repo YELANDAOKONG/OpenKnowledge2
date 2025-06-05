@@ -82,6 +82,20 @@
                                IsVisible="{Binding !!ModelError}"/>
                 </StackPanel>
                 
+                <!-- Assistant Model (Optional) -->
+                <StackPanel>
+                    <TextBlock Text="{loc:Translate Key=init.assistmodel}" 
+                               Margin="0,0,0,5"/>
+                    <TextBox Text="{Binding AssistModel}" 
+                             Watermark="{loc:Translate Key=init.assistmodel.placeholder}"
+                             MaxLength="50"/>
+                    <TextBlock Text="{loc:Translate Key=init.assistmodel.optional}" 
+                               Opacity="0.7"
+                               FontSize="12"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+
+                
                 <!-- Temperature -->
                 <StackPanel>
                     <Grid ColumnDefinitions="*,Auto">

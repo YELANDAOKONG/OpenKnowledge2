@@ -132,6 +132,14 @@
   "settings.prompts.grading": "评分模板",
   "settings.prompts.explanation": "解释模板",
   "settings.prompts.check": "错误检查模板",
-  "settings.prompts.reset": "重置为默认值"
-  
+  "settings.prompts.reset": "重置为默认值",
+
+  "settings.ai.assistmodel": "AI 辅助模型（可选）",
+  "settings.ai.assistmodel.placeholder": "输入辅助模型名称（例如：deepseek-response）",
+  "settings.ai.assistmodel.optional": "此模型为可选项，可以留空",
+  "init.assistmodel": "AI 辅助模型",
+  "init.assistmodel.placeholder": "输入辅助模型名称（例如：deepseek-response）",
+  "init.assistmodel.optional": "此模型为可选项，可以留空"
+
+
 }

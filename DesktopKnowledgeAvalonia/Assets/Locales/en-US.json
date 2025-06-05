@@ -132,5 +132,13 @@
   "settings.prompts.grading": "Grading Template",
   "settings.prompts.explanation": "Explanation Template",
   "settings.prompts.check": "Error Check Template",
-  "settings.prompts.reset": "Reset to Default"
+  "settings.prompts.reset": "Reset to Default",
+
+  "settings.ai.assistmodel": "AI Assistant Model (Optional)",
+  "settings.ai.assistmodel.placeholder": "Enter assistant model name (e.g., deepseek-response)",
+  "settings.ai.assistmodel.optional": "This model is optional and can be left blank",
+  "init.assistmodel": "AI Assistant Model",
+  "init.assistmodel.placeholder": "Enter assistant model name (e.g., deepseek-response)",
+  "init.assistmodel.optional": "This model is optional and can be left blank"
+
 }

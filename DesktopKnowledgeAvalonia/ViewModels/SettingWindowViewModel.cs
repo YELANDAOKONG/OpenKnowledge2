@@ -265,6 +265,9 @@ public partial class AISettingsViewModel : SettingsViewModelBase
     private string _model = "";
     
     [ObservableProperty]
+    private string _assistModel = "";
+    
+    [ObservableProperty]
     private double _temperature = 0.7;
     
     [ObservableProperty]
@@ -299,6 +302,7 @@ public partial class AISettingsViewModel : SettingsViewModelBase
         ApiUrl = _configService.SystemConfig.OpenAiApiUrl ?? "https://api.deepseek.com/v1";
         ApiKey = _configService.SystemConfig.OpenAiApiKey ?? "";
         Model = _configService.SystemConfig.OpenAiModel ?? "deepseek-chat";
+        AssistModel = _configService.SystemConfig.OpenAiAssistModel ?? "";
         Temperature = _configService.SystemConfig.OpenAiModelTemperature ?? 0.7;
     }
 
@@ -315,6 +319,7 @@ public partial class AISettingsViewModel : SettingsViewModelBase
         _configService.SystemConfig.OpenAiApiUrl = ApiUrl;
         _configService.SystemConfig.OpenAiApiKey = ApiKey;
         _configService.SystemConfig.OpenAiModel = Model;
+        _configService.SystemConfig.OpenAiAssistModel = AssistModel;
         _configService.SystemConfig.OpenAiModelTemperature = Temperature;
         
         await Task.CompletedTask;

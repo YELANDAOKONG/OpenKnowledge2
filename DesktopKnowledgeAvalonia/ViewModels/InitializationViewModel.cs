@@ -28,6 +28,9 @@ public partial class InitializationViewModel : ViewModelBase
     private string _model = "deepseek-chat";
     
     [ObservableProperty]
+    private string _assistModel = "";
+    
+    [ObservableProperty]
     private double _temperature = 0.7;
     
     [ObservableProperty]
@@ -77,6 +80,9 @@ public partial class InitializationViewModel : ViewModelBase
             
         if (!string.IsNullOrEmpty(_configureService.SystemConfig.OpenAiModel))
             Model = _configureService.SystemConfig.OpenAiModel;
+        
+        if (!string.IsNullOrEmpty(_configureService.SystemConfig.OpenAiAssistModel))
+            AssistModel = _configureService.SystemConfig.OpenAiAssistModel;
             
         if (_configureService.SystemConfig.OpenAiModelTemperature.HasValue)
             Temperature = _configureService.SystemConfig.OpenAiModelTemperature.Value;
@@ -141,6 +147,7 @@ public partial class InitializationViewModel : ViewModelBase
         _configureService.SystemConfig.OpenAiApiUrl = ApiUrl;
         _configureService.SystemConfig.OpenAiApiKey = ApiKey;
         _configureService.SystemConfig.OpenAiModel = Model;
+        _configureService.SystemConfig.OpenAiAssistModel = AssistModel;
         _configureService.SystemConfig.OpenAiModelTemperature = Temperature;
         
         await _configureService.SaveChangesAsync();

@@ -161,6 +161,21 @@
                                                  MaxLength="50"/>
                                     </StackPanel>
                                     
+                                    <!-- Assistant Model (Optional) -->
+                                    <StackPanel>
+                                        <TextBlock Text="{loc:Translate Key=settings.ai.assistmodel}" 
+                                                   FontWeight="SemiBold"
+                                                   Margin="0,0,0,5"/>
+                                        <TextBox Text="{Binding AssistModel}" 
+                                                 Watermark="{loc:Translate Key=settings.ai.assistmodel.placeholder}"
+                                                 MaxLength="50"/>
+                                        <TextBlock Text="{loc:Translate Key=settings.ai.assistmodel.optional}" 
+                                                   Opacity="0.7"
+                                                   FontSize="12"
+                                                   Margin="0,4,0,0"/>
+                                    </StackPanel>
+
+                                    
                                     <!-- Temperature -->
                                     <StackPanel>
                                         <Grid ColumnDefinitions="*,Auto">
