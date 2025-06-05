@@ -53,6 +53,7 @@ public partial class ExaminationDialogViewModel : ViewModelBase
     public event EventHandler? CloseRequested;
     public event EventHandler? ContinueExamRequested;
     public event EventHandler? LoadNewExamRequested;
+    public event EventHandler? DeleteCurrentExamRequested;
     
     public ExaminationDialogViewModel(ConfigureService configService, LocalizationService localizationService)
     {
@@ -200,5 +201,34 @@ public partial class ExaminationDialogViewModel : ViewModelBase
             // Show error message
             ShowTemporaryStatusMessage(_localizationService["exam.dialog.save.error"]);
         }
+    }
+    
+    [RelayCommand]
+    private void DeleteCurrentExam()
+    {
+        if (!HasActiveExam)
+            return;
+            
+        DeleteCurrentExamRequested?.Invoke(this, EventArgs.Empty);
+    }
+    
+    public void ConfirmDeleteCurrentExam()
+    {
+        if (!HasActiveExam)
+            return;
+            
+        // Clear the current examination
+        _configService.AppData.CurrentExamination = null;
+        _configService.AppData.IsInExamination = false;
+        _configService.AppData.ExaminationTimer = null;
+        
+        // Save changes to config
+        _configService.SaveChangesAsync();
+        
+        // Update the UI
+        UpdateExamInfo();
+        
+        // Show success message
+        ShowTemporaryStatusMessage(_localizationService["exam.dialog.delete.success"]);
     }
 }

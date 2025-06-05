@@ -112,6 +112,15 @@
   "exam.dialog.save.current": "Save Current Examination",
   "exam.dialog.save.title": "Save Examination",
   "exam.dialog.save.success": "Examination Saved Successfully",
-  "exam.dialog.save.error": "Error Saving Examination"
+  "exam.dialog.save.error": "Error Saving Examination",
+
+  "exam.dialog.delete.current": "Delete Current Exam",
+  "exam.dialog.delete.confirm.title": "Confirm Deletion",
+  "exam.dialog.delete.confirm.message": "Are you sure you want to delete the current examination? This action cannot be undone.",
+  "exam.dialog.delete.success": "Examination has been deleted successfully",
+  "exam.dialog.load.new.confirm.title": "Load New Examination",
+  "exam.dialog.load.new.confirm.message": "Loading a new examination will replace the current one. Do you want to continue?",
+  "common.confirm": "Confirm",
+  "common.cancel": "Cancel"
 
 }

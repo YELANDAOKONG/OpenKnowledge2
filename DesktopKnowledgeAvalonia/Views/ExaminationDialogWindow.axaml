@@ -97,10 +97,10 @@
                        TextWrapping="Wrap"/>
         </Border>
         
-        <!-- Action Buttons -->
-        <Grid Grid.Row="3" ColumnDefinitions="*,*,*" Margin="0,10,0,0" ColumnSpacing="10">
+        <!-- Action Buttons - arranged in a 2x2 grid for better balance -->
+        <Grid Grid.Row="3" RowDefinitions="Auto,Auto" ColumnDefinitions="*,*" Margin="0,10,0,0" RowSpacing="10" ColumnSpacing="10">
             <!-- Continue Exam Button -->
-            <Button Grid.Column="0" 
+            <Button Grid.Row="0" Grid.Column="0" 
                     Content="{loc:Translate Key=exam.dialog.continue}" 
                     HorizontalAlignment="Stretch"
                     HorizontalContentAlignment="Center"
@@ -111,7 +111,7 @@
                     Height="45"/>
                     
             <!-- Load New Exam Button -->
-            <Button Grid.Column="1"
+            <Button Grid.Row="0" Grid.Column="1"
                     Content="{loc:Translate Key=exam.dialog.load.new}" 
                     HorizontalAlignment="Stretch"
                     HorizontalContentAlignment="Center"
@@ -122,13 +122,25 @@
                     Height="45"/>
                     
             <!-- Save Current Exam Button -->
-            <Button Grid.Column="2"
+            <Button Grid.Row="1" Grid.Column="0"
                     Content="{loc:Translate Key=exam.dialog.save.current}" 
                     HorizontalAlignment="Stretch"
                     HorizontalContentAlignment="Center"
                     VerticalContentAlignment="Center"
                     Command="{Binding SaveCurrentExamCommand}"
                     IsEnabled="{Binding HasActiveExam}"
+                    Height="45"/>
+                    
+            <!-- Delete Current Exam Button -->
+            <Button Grid.Row="1" Grid.Column="1"
+                    Content="{loc:Translate Key=exam.dialog.delete.current}" 
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Command="{Binding DeleteCurrentExamCommand}"
+                    IsEnabled="{Binding HasActiveExam}"
+                    Background="#E74C3C"
+                    Foreground="White"
                     Height="45"/>
         </Grid>
     </Grid>

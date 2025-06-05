@@ -112,6 +112,15 @@
   "exam.dialog.save.current": "保存当前试卷",
   "exam.dialog.save.title": "保存考试",
   "exam.dialog.save.success": "考试保存成功",
-  "exam.dialog.save.error": "保存考试时出错"
+  "exam.dialog.save.error": "保存考试时出错",
+
+  "exam.dialog.delete.current": "删除当前试卷",
+  "exam.dialog.delete.confirm.title": "确认删除",
+  "exam.dialog.delete.confirm.message": "您确定要删除当前考试吗？此操作无法撤消。",
+  "exam.dialog.delete.success": "考试已成功删除",
+  "exam.dialog.load.new.confirm.title": "加载新试卷",
+  "exam.dialog.load.new.confirm.message": "加载新试卷将替换当前试卷。您要继续吗？",
+  "common.confirm": "确认",
+  "common.cancel": "取消"
 
 }

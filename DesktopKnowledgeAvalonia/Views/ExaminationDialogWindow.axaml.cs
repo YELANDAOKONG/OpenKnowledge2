@@ -15,6 +15,7 @@ using DesktopKnowledgeAvalonia.Services;
 public partial class ExaminationDialogWindow : AppWindowBase
 {
     private readonly ExaminationDialogViewModel _viewModel;
+    private readonly LocalizationService _localizationService;
     
     public ExaminationDialogWindow()
     {
@@ -22,15 +23,16 @@ public partial class ExaminationDialogWindow : AppWindowBase
         
         // Create and set the view model
         var configService = App.GetService<ConfigureService>();
-        var localizationService = App.GetService<LocalizationService>();
+        _localizationService = App.GetService<LocalizationService>();
         
-        _viewModel = new ExaminationDialogViewModel(configService, localizationService);
+        _viewModel = new ExaminationDialogViewModel(configService, _localizationService);
         DataContext = _viewModel;
         
         // Subscribe to events
         _viewModel.CloseRequested += (s, e) => Close();
         _viewModel.ContinueExamRequested += OnContinueExam;
         _viewModel.LoadNewExamRequested += OnLoadNewExam;
+        _viewModel.DeleteCurrentExamRequested += OnDeleteCurrentExam;
     }
     
     private void InitializeComponent()
@@ -48,6 +50,17 @@ public partial class ExaminationDialogWindow : AppWindowBase
     
     private async void OnLoadNewExam(object? sender, EventArgs e)
     {
+        // Show confirmation dialog if there's an active exam
+        if (_viewModel.HasActiveExam)
+        {
+            bool confirmed = await ShowConfirmationDialogAsync(
+                _localizationService["exam.dialog.load.new.confirm.title"],
+                _localizationService["exam.dialog.load.new.confirm.message"]);
+                
+            if (!confirmed)
+                return;
+        }
+        
         // Create file picker options
         var options = new FilePickerOpenOptions
         {
@@ -82,5 +95,101 @@ public partial class ExaminationDialogWindow : AppWindowBase
             window.Show();
             Close(); // Close this dialog when opening the examination window
         }
+    }
+    
+    private async void OnDeleteCurrentExam(object? sender, EventArgs e)
+    {
+        bool confirmed = await ShowConfirmationDialogAsync(
+            _localizationService["exam.dialog.delete.confirm.title"],
+            _localizationService["exam.dialog.delete.confirm.message"]);
+            
+        if (confirmed)
+        {
+            _viewModel.ConfirmDeleteCurrentExam();
+        }
+    }
+    
+    private async Task<bool> ShowConfirmationDialogAsync(string title, string message)
+    {
+        // Create confirmation dialog window
+        var dialog = new Window
+        {
+            Title = title,
+            SizeToContent = SizeToContent.WidthAndHeight,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Width = 400,
+            MinWidth = 400,
+            MinHeight = 150,
+            MaxWidth = 600,
+            MaxHeight = 250,
+            TransparencyLevelHint = TransparencyLevelHint = new[] { Avalonia.Controls.WindowTransparencyLevel.AcrylicBlur },
+            Background = Avalonia.Media.Brushes.Transparent,
+            ExtendClientAreaToDecorationsHint = true
+        };
+
+        var grid = new Grid
+        {
+            Margin = new Avalonia.Thickness(20, 40, 20, 20),
+            RowDefinitions = new Avalonia.Controls.RowDefinitions("*, Auto")
+        };
+
+        var messageTextBlock = new TextBlock
+        {
+            Text = message,
+            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+            Margin = new Avalonia.Thickness(0, 0, 0, 20),
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+        };
+
+        var buttonPanel = new StackPanel
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            Spacing = 10
+        };
+
+        var cancelButton = new Button
+        {
+            Content = _localizationService["common.cancel"],
+            Width = 100,
+            Height = 35
+        };
+
+        var confirmButton = new Button
+        {
+            Content = _localizationService["common.confirm"],
+            Width = 100,
+            Height = 35,
+            Classes = { "Primary" }
+        };
+
+        var result = false;
+
+        cancelButton.Click += (s, e) =>
+        {
+            result = false;
+            dialog.Close();
+        };
+
+        confirmButton.Click += (s, e) =>
+        {
+            result = true;
+            dialog.Close();
+        };
+
+        buttonPanel.Children.Add(cancelButton);
+        buttonPanel.Children.Add(confirmButton);
+
+        Grid.SetRow(messageTextBlock, 0);
+        Grid.SetRow(buttonPanel, 1);
+
+        grid.Children.Add(messageTextBlock);
+        grid.Children.Add(buttonPanel);
+
+        dialog.Content = grid;
+
+        await dialog.ShowDialog(this);
+        
+        return result;
     }
 }
