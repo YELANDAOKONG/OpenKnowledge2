@@ -121,6 +121,11 @@
   "exam.dialog.load.new.confirm.title": "Load New Examination",
   "exam.dialog.load.new.confirm.message": "Loading a new examination will replace the current one. Do you want to continue?",
   "common.confirm": "Confirm",
-  "common.cancel": "Cancel"
+  "common.cancel": "Cancel",
+  
+  "exam.dialog.status.loaded": "Examination Ready",
+  "exam.dialog.start": "Start Examination",
+  "exam.dialog.load.success": "Examination loaded successfully",
+  "exam.dialog.load.error": "Error loading examination"
 
 }

@@ -50,6 +50,12 @@ public partial class ExaminationDialogViewModel : ViewModelBase
     [ObservableProperty]
     private bool _showStatusMessage;
     
+    [ObservableProperty]
+    private string _continueButtonText;
+    
+    public bool IsExamLoadedButNotStarted => 
+        _hasActiveExam && !_configService.AppData.IsTheExaminationStarted;
+    
     public event EventHandler? CloseRequested;
     public event EventHandler? ContinueExamRequested;
     public event EventHandler? LoadNewExamRequested;
@@ -82,7 +88,18 @@ public partial class ExaminationDialogViewModel : ViewModelBase
         if (HasActiveExam && _configService.AppData.CurrentExamination != null)
         {
             var exam = _configService.AppData.CurrentExamination;
-            ExamStatusTitle = _localizationService["exam.dialog.status.ongoing"];
+            
+            // Set the appropriate status title and button text based on whether the exam has been started
+            if (_configService.AppData.IsTheExaminationStarted)
+            {
+                ExamStatusTitle = _localizationService["exam.dialog.status.ongoing"];
+                ContinueButtonText = _localizationService["exam.dialog.continue"];
+            }
+            else
+            {
+                ExamStatusTitle = _localizationService["exam.dialog.status.loaded"];
+                ContinueButtonText = _localizationService["exam.dialog.start"];
+            }
             
             // Set examination properties
             ExamId = exam.ExaminationMetadata.ExamId;
@@ -96,6 +113,7 @@ public partial class ExaminationDialogViewModel : ViewModelBase
         else
         {
             ExamStatusTitle = _localizationService["exam.dialog.status.none"];
+            ContinueButtonText = _localizationService["exam.dialog.continue"];
             TruncatedExamTitle = "";
             
             // Clear examination properties
@@ -137,6 +155,57 @@ public partial class ExaminationDialogViewModel : ViewModelBase
     private async Task LoadNewExamAsync()
     {
         LoadNewExamRequested?.Invoke(this, EventArgs.Empty);
+    }
+    
+    public void LoadExamination(string filePath)
+    {
+        try
+        {
+            // Deserialize the examination from the file
+            var examination = ExaminationSerializer.DeserializeFromFile(filePath);
+            
+            if (examination != null)
+            {
+                // Set the current examination in the app data
+                _configService.AppData.CurrentExamination = examination;
+                _configService.AppData.IsInExamination = true;
+                _configService.AppData.IsTheExaminationStarted = false; // Mark as loaded but not started
+                
+                // Save changes to config
+                _configService.SaveChangesAsync();
+                
+                // Update the UI
+                UpdateExamInfo();
+                
+                // Show success message
+                ShowTemporaryStatusMessage(_localizationService["exam.dialog.load.success"]);
+            }
+            else
+            {
+                // Show error message
+                ShowTemporaryStatusMessage(_localizationService["exam.dialog.load.error"]);
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log the error
+            Console.WriteLine($"Error loading examination: {ex.Message}");
+            
+            // Show error message
+            ShowTemporaryStatusMessage(_localizationService["exam.dialog.load.error"]);
+        }
+    }
+    
+    public void MarkExamAsStarted()
+    {
+        if (!HasActiveExam)
+            return;
+            
+        // Mark the examination as started
+        _configService.AppData.IsTheExaminationStarted = true;
+        
+        // Save changes to config
+        _configService.SaveChangesAsync();
     }
     
     [RelayCommand]
@@ -220,6 +289,7 @@ public partial class ExaminationDialogViewModel : ViewModelBase
         // Clear the current examination
         _configService.AppData.CurrentExamination = null;
         _configService.AppData.IsInExamination = false;
+        _configService.AppData.IsTheExaminationStarted = false;
         _configService.AppData.ExaminationTimer = null;
         
         // Save changes to config

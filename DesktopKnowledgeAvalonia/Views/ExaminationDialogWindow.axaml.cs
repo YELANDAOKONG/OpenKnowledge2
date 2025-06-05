@@ -1,14 +1,18 @@
-﻿namespace DesktopKnowledgeAvalonia.Views;
+﻿using Avalonia.Layout;
+
+namespace DesktopKnowledgeAvalonia.Views;
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using DesktopKnowledgeAvalonia.ViewModels;
 using DesktopKnowledgeAvalonia.Services;
 
@@ -42,7 +46,16 @@ public partial class ExaminationDialogWindow : AppWindowBase
     
     private void OnContinueExam(object? sender, EventArgs e)
     {
-        // Open the examination window with the current examination
+        // Check if we're starting a new exam or continuing
+        bool startingNewExam = _viewModel.IsExamLoadedButNotStarted;
+        
+        // Update the IsTheExaminationStarted flag
+        if (startingNewExam)
+        {
+            _viewModel.MarkExamAsStarted();
+        }
+        
+        // Open the examination window
         ExaminationWindow window = new ExaminationWindow(null, false);
         window.Show();
         Close(); // Close this dialog when opening the examination window
@@ -90,10 +103,8 @@ public partial class ExaminationDialogWindow : AppWindowBase
             var file = result[0];
             var filePath = file.Path.LocalPath;
             
-            // Create and show the examination window
-            ExaminationWindow window = new ExaminationWindow(filePath, true);
-            window.Show();
-            Close(); // Close this dialog when opening the examination window
+            // Load the examination but don't start it
+            _viewModel.LoadExamination(filePath);
         }
     }
     
@@ -122,29 +133,30 @@ public partial class ExaminationDialogWindow : AppWindowBase
             MinHeight = 150,
             MaxWidth = 600,
             MaxHeight = 250,
-            TransparencyLevelHint = TransparencyLevelHint = new[] { Avalonia.Controls.WindowTransparencyLevel.AcrylicBlur },
-            Background = Avalonia.Media.Brushes.Transparent,
+            TransparencyLevelHint = new[] { Avalonia.Controls.WindowTransparencyLevel.AcrylicBlur },
+            Background = Brushes.Transparent,
             ExtendClientAreaToDecorationsHint = true
         };
 
         var grid = new Grid
         {
-            Margin = new Avalonia.Thickness(20, 40, 20, 20),
-            RowDefinitions = new Avalonia.Controls.RowDefinitions("*, Auto")
+            Margin = new Thickness(20, 40, 20, 20),
+            RowDefinitions = new RowDefinitions("*, Auto")
         };
 
         var messageTextBlock = new TextBlock
         {
             Text = message,
-            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-            Margin = new Avalonia.Thickness(0, 0, 0, 20),
-            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+            TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(0, 0, 0, 20),
+            VerticalAlignment = VerticalAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Center
         };
 
         var buttonPanel = new StackPanel
         {
-            Orientation = Avalonia.Layout.Orientation.Horizontal,
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Center,
             Spacing = 10
         };
 
@@ -160,7 +172,7 @@ public partial class ExaminationDialogWindow : AppWindowBase
             Content = _localizationService["common.confirm"],
             Width = 100,
             Height = 35,
-            Classes = { "Primary" }
+            Classes = { "accent" }
         };
 
         var result = false;

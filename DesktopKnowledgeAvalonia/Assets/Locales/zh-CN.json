@@ -121,6 +121,11 @@
   "exam.dialog.load.new.confirm.title": "加载新试卷",
   "exam.dialog.load.new.confirm.message": "加载新试卷将替换当前试卷。您要继续吗？",
   "common.confirm": "确认",
-  "common.cancel": "取消"
+  "common.cancel": "取消",
+
+  "exam.dialog.status.loaded": "考试已准备就绪",
+  "exam.dialog.start": "开始考试",
+  "exam.dialog.load.success": "考试加载成功",
+  "exam.dialog.load.error": "加载考试时出错"
 
 }
