@@ -1,4 +1,5 @@
-﻿using LibraryOpenKnowledge;
+﻿using DesktopKnowledgeAvalonia.Tools;
+using LibraryOpenKnowledge;
 using LibraryOpenKnowledge.Extensions;
 using LibraryOpenKnowledge.Models;
 using LibraryOpenKnowledge.Tools;
@@ -191,6 +192,30 @@ class Program
         // var client = AiTools.CreateOpenAiClient(config);
         // var chat = AiTools.SendChatMessageAsync(client, config, "Hello, world!").Result;
         // Console.WriteLine(chat);
-        
+
+
+        var prompt = PromptTemplateManager.GenerateExplanationPrompt(
+            new Question()
+            {
+                QuestionId = "TEST-QUESTION-ID-3",
+                Type = QuestionTypes.Math,
+                Stem = "1 + 114514 + 2 * 3 = (?), **must with calculation processing**",
+                Score = 10.0,
+                IsAiJudge = true,
+                Commits = new string[]
+                {
+                    "1 + 114514 + 2 * 3 = 1 + 114514 + 6",
+                    "1 + 114514 + 2 * 3 = 114515 + 6",
+                    "1 + 114514 + 2 * 3 = 114521",
+                    "Tips: If the student don't provide the calculation process, score -8.0"
+                },
+                Answer = new string[]
+                {
+                    "114521"
+                }
+            }
+        );
+        Console.WriteLine(prompt);
+
     }
 }
