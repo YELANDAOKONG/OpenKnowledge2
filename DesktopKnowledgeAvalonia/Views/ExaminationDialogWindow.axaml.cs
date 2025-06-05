@@ -134,9 +134,12 @@ public partial class ExaminationDialogWindow : AppWindowBase
             MaxWidth = 600,
             MaxHeight = 250,
             TransparencyLevelHint = new[] { Avalonia.Controls.WindowTransparencyLevel.AcrylicBlur },
-            Background = Brushes.Transparent,
             ExtendClientAreaToDecorationsHint = true
         };
+
+        // Apply theme service for consistent styling
+        var themeService = App.GetService<ThemeService>();
+        themeService.ApplyTransparencyToWindow(dialog);
 
         var grid = new Grid
         {
@@ -150,7 +153,8 @@ public partial class ExaminationDialogWindow : AppWindowBase
             TextWrapping = TextWrapping.Wrap,
             Margin = new Thickness(0, 0, 0, 20),
             VerticalAlignment = VerticalAlignment.Center,
-            HorizontalAlignment = HorizontalAlignment.Center
+            HorizontalAlignment = HorizontalAlignment.Center,
+            TextAlignment = TextAlignment.Center
         };
 
         var buttonPanel = new StackPanel
@@ -164,7 +168,9 @@ public partial class ExaminationDialogWindow : AppWindowBase
         {
             Content = _localizationService["common.cancel"],
             Width = 100,
-            Height = 35
+            Height = 35,
+            HorizontalContentAlignment = HorizontalAlignment.Center,
+            VerticalContentAlignment = VerticalAlignment.Center
         };
 
         var confirmButton = new Button
@@ -172,7 +178,9 @@ public partial class ExaminationDialogWindow : AppWindowBase
             Content = _localizationService["common.confirm"],
             Width = 100,
             Height = 35,
-            Classes = { "accent" }
+            Classes = { "accent" },
+            HorizontalContentAlignment = HorizontalAlignment.Center,
+            VerticalContentAlignment = VerticalAlignment.Center
         };
 
         var result = false;
@@ -204,4 +212,5 @@ public partial class ExaminationDialogWindow : AppWindowBase
         
         return result;
     }
+
 }
