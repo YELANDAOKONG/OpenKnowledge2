@@ -76,7 +76,7 @@ public partial class ExaminationResultWindow : AppWindowBase
     private void GenerateQuestionControls()
     {
         _questionsPanel.Children.Clear();
-        
+
         var masterExpander = new Expander
         {
             Header = _localizationService["exam.sections.questions"],
@@ -84,20 +84,20 @@ public partial class ExaminationResultWindow : AppWindowBase
             HorizontalAlignment = HorizontalAlignment.Stretch,
             Margin = new Thickness(0, 0, 0, 15)
         };
-        
+
         masterExpander.Bind(Expander.IsExpandedProperty, new Avalonia.Data.Binding
         {
             Path = nameof(ExaminationResultWindowViewModel.IsQuestionsPanelExpanded),
             Mode = Avalonia.Data.BindingMode.TwoWay
         });
-        
+
         var sectionsPanel = new StackPanel
         {
             Spacing = 15,
             Margin = new Thickness(0, 10, 0, 0),
             HorizontalAlignment = HorizontalAlignment.Stretch
         };
-        
+
         foreach (var section in _viewModel.SectionScores)
         {
             var sectionHeader = new Expander
@@ -107,14 +107,14 @@ public partial class ExaminationResultWindow : AppWindowBase
                 Margin = new Thickness(0, 0, 0, 10),
                 HorizontalAlignment = HorizontalAlignment.Stretch
             };
-            
+
             var sectionContent = new StackPanel
             {
                 Spacing = 10,
                 Margin = new Thickness(0, 10, 0, 0),
                 HorizontalAlignment = HorizontalAlignment.Stretch
             };
-            
+
             foreach (var questionScore in section.Questions)
             {
                 var border = new Border
@@ -125,81 +125,81 @@ public partial class ExaminationResultWindow : AppWindowBase
                     Margin = new Thickness(0, 0, 0, 5),
                     HorizontalAlignment = HorizontalAlignment.Stretch
                 };
-                
+
                 var grid = new Grid();
                 grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
                 grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
                 grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-                
+
                 // Left column: Question number and score
                 var leftStack = new StackPanel
                 {
                     Margin = new Thickness(0, 0, 15, 0)
                 };
-                
+
                 var questionNumberText = new TextBlock
                 {
                     Text = $"#{questionScore.QuestionNumber}",
                     FontWeight = FontWeight.SemiBold,
                     FontSize = 18
                 };
-                
+
                 var scoreStack = new StackPanel
                 {
                     Orientation = Orientation.Horizontal,
                     Spacing = 5
                 };
-                
+
                 var obtainedScoreText = new TextBlock
                 {
                     Text = $"{questionScore.ObtainedScore:F1}",
                     Foreground = (IBrush)_correctColorConverter.Convert(questionScore.IsCorrect, typeof(IBrush), null, null)
                 };
-                
+
                 var slashText = new TextBlock { Text = "/" };
                 var maxScoreText = new TextBlock { Text = $"{questionScore.MaxScore:F1}" };
-                
+
                 scoreStack.Children.Add(obtainedScoreText);
                 scoreStack.Children.Add(slashText);
                 scoreStack.Children.Add(maxScoreText);
-                
+
                 leftStack.Children.Add(questionNumberText);
                 leftStack.Children.Add(scoreStack);
-                
+
                 Grid.SetColumn(leftStack, 0);
                 grid.Children.Add(leftStack);
-                
+
                 // Center column: Question details
                 var centerStack = new StackPanel
                 {
                     Spacing = 5,
                     HorizontalAlignment = HorizontalAlignment.Stretch
                 };
-                
+
                 // Question type and AI judged badges
                 var badgesStack = new StackPanel
                 {
                     Orientation = Orientation.Horizontal,
                     Spacing = 5
                 };
-                
+
                 var typeBorder = new Border
                 {
                     Background = new SolidColorBrush(Color.Parse("#15569AFF")),
                     CornerRadius = new CornerRadius(3),
                     Padding = new Thickness(5, 2, 5, 2)
                 };
-                
+
                 var typeText = new TextBlock
                 {
                     Text = (string)_questionTypeConverter.Convert(questionScore.QuestionType, typeof(string), null, null),
                     Opacity = 0.7,
                     FontSize = 12
                 };
-                
+
                 typeBorder.Child = typeText;
                 badgesStack.Children.Add(typeBorder);
-                
+
                 if (questionScore.IsAiJudged)
                 {
                     var aiJudgedBorder = new Border
@@ -208,7 +208,7 @@ public partial class ExaminationResultWindow : AppWindowBase
                         CornerRadius = new CornerRadius(3),
                         Padding = new Thickness(5, 2, 5, 2)
                     };
-                    
+
                     var aiJudgedText = new TextBlock
                     {
                         Text = _localizationService["exam.result.ai.scored"],
@@ -216,10 +216,10 @@ public partial class ExaminationResultWindow : AppWindowBase
                         FontSize = 12,
                         Foreground = new SolidColorBrush(Color.Parse("#FF8C00"))
                     };
-                    
+
                     aiJudgedBorder.Child = aiJudgedText;
                     badgesStack.Children.Add(aiJudgedBorder);
-                    
+
                     // Add unevaluated badge if not evaluated
                     if (!questionScore.IsEvaluated)
                     {
@@ -229,7 +229,7 @@ public partial class ExaminationResultWindow : AppWindowBase
                             CornerRadius = new CornerRadius(3),
                             Padding = new Thickness(5, 2, 5, 2)
                         };
-                        
+
                         var unevaluatedText = new TextBlock
                         {
                             Text = _localizationService["exam.result.unevaluated"],
@@ -237,14 +237,14 @@ public partial class ExaminationResultWindow : AppWindowBase
                             FontSize = 12,
                             Foreground = new SolidColorBrush(Color.Parse("#FFA500"))
                         };
-                        
+
                         unevaluatedBorder.Child = unevaluatedText;
                         badgesStack.Children.Add(unevaluatedBorder);
                     }
                 }
-                
+
                 centerStack.Children.Add(badgesStack);
-                
+
                 // Question stem
                 var stemText = new TextBlock
                 {
@@ -252,7 +252,7 @@ public partial class ExaminationResultWindow : AppWindowBase
                     TextWrapping = TextWrapping.Wrap,
                     Margin = new Thickness(0, 5, 0, 5)
                 };
-                
+
                 // User answer
                 var userAnswerStack = new StackPanel();
                 var userAnswerLabel = new TextBlock
@@ -262,22 +262,22 @@ public partial class ExaminationResultWindow : AppWindowBase
                     FontSize = 12,
                     Margin = new Thickness(0, 5, 0, 2)
                 };
-                
+
                 var userAnswerText = new TextBlock
                 {
                     Text = questionScore.UserAnswer,
                     TextWrapping = TextWrapping.Wrap,
                     Opacity = 0.9
                 };
-                
+
                 userAnswerStack.Children.Add(userAnswerLabel);
                 userAnswerStack.Children.Add(userAnswerText);
-                
+
                 centerStack.Children.Add(stemText);
                 centerStack.Children.Add(userAnswerStack);
-                
-                // AI Feedback (if available)
-                if (questionScore.IsAiJudged && !string.IsNullOrEmpty(questionScore.AiFeedback))
+
+                // AI Feedback (if available and evaluated)
+                if (questionScore.IsAiJudged && questionScore.IsEvaluated && !string.IsNullOrEmpty(questionScore.AiFeedback))
                 {
                     var aiFeedbackStack = new StackPanel();
                     var aiFeedbackLabel = new TextBlock
@@ -287,19 +287,19 @@ public partial class ExaminationResultWindow : AppWindowBase
                         FontSize = 12,
                         Margin = new Thickness(0, 5, 0, 2)
                     };
-                    
+
                     var aiFeedbackText = new TextBlock
                     {
                         Text = questionScore.AiFeedback,
                         TextWrapping = TextWrapping.Wrap,
                         Opacity = 0.9
                     };
-                    
+
                     aiFeedbackStack.Children.Add(aiFeedbackLabel);
                     aiFeedbackStack.Children.Add(aiFeedbackText);
                     centerStack.Children.Add(aiFeedbackStack);
                 }
-                
+
                 // Correct answer (if available)
                 if (!string.IsNullOrEmpty(questionScore.CorrectAnswer))
                 {
@@ -311,36 +311,36 @@ public partial class ExaminationResultWindow : AppWindowBase
                         FontSize = 12,
                         Margin = new Thickness(0, 5, 0, 2)
                     };
-                    
+
                     var correctAnswerText = new TextBlock
                     {
                         Text = questionScore.CorrectAnswer,
                         TextWrapping = TextWrapping.Wrap,
                         Opacity = 0.9
                     };
-                    
+
                     correctAnswerStack.Children.Add(correctAnswerLabel);
                     correctAnswerStack.Children.Add(correctAnswerText);
                     centerStack.Children.Add(correctAnswerStack);
                 }
-                
+
                 Grid.SetColumn(centerStack, 1);
                 grid.Children.Add(centerStack);
-                
+
                 // Right column: Result indicator and Rescore button
                 var rightStack = new StackPanel
                 {
                     Spacing = 10,
                     Margin = new Thickness(10, 0, 0, 0)
                 };
-                
+
                 var resultPanel = new Panel
                 {
                     Width = 32,
                     Height = 32,
                     HorizontalAlignment = HorizontalAlignment.Center
                 };
-                
+
                 // Show appropriate icon based on evaluation state
                 if (questionScore.IsAiJudged && !questionScore.IsEvaluated)
                 {
@@ -376,10 +376,10 @@ public partial class ExaminationResultWindow : AppWindowBase
                     };
                     resultPanel.Children.Add(xIcon);
                 }
-                
+
                 rightStack.Children.Add(resultPanel);
-                
-                // Add rescore button for AI-judged questions (only available after initial scoring)
+
+                // Add rescore button for AI-judged questions
                 if (questionScore.IsAiJudged)
                 {
                     var rescoreButton = new Button
@@ -389,33 +389,33 @@ public partial class ExaminationResultWindow : AppWindowBase
                         Padding = new Thickness(10, 5, 10, 5),
                         CommandParameter = questionScore.QuestionId
                     };
-                    
-                    // Bind the command and enable state
+
+                    // Bind the command - enabled when not currently scoring
                     rescoreButton.Command = _viewModel.RescoreQuestionCommand;
                     rescoreButton.Bind(Button.IsEnabledProperty, new Avalonia.Data.Binding
                     {
-                        Path = nameof(ExaminationResultWindowViewModel.HasPerformedInitialAiScoring),
+                        Path = "!IsAiScoringInProgress",
                         Mode = Avalonia.Data.BindingMode.OneWay
                     });
-                    
+
                     rightStack.Children.Add(rescoreButton);
                 }
-                
+
                 Grid.SetColumn(rightStack, 2);
                 grid.Children.Add(rightStack);
-                
+
                 border.Child = grid;
                 sectionContent.Children.Add(border);
             }
-            
+
             sectionHeader.Content = sectionContent;
             sectionsPanel.Children.Add(sectionHeader);
         }
-        
+
         masterExpander.Content = sectionsPanel;
         _questionsPanel.Children.Add(masterExpander);
     }
-    
+        
     private void OnWindowClosing(object sender, WindowClosingEventArgs e)
     {
         if (_viewModel.IsAiScoringInProgress)

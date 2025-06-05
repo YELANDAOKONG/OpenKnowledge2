@@ -24,4 +24,10 @@ public class Question
     public string[]? Commits { get; set; } = new string[] { }; // AI提示
     
     public Question[]? SubQuestions { get; set; } = new Question[] { };
+    
+    
+    public double? ObtainedScore { get; set; } = null; // 获得的分数
+    public bool IsAiEvaluated { get; set; } = true; // 是否已评估（对于 AI 题目，默认为 false 直到AI评估完成）
+    public string? AiFeedback { get; set; } = null; // AI评估反馈
+    
 }

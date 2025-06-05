@@ -17,144 +17,159 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
 {
     private readonly ConfigureService _configService;
     private readonly LocalizationService _localizationService;
-    
+
     [ObservableProperty]
     private double _obtainedScore;
-    
+
     [ObservableProperty]
     private double _totalScore;
-    
+
     [ObservableProperty]
     private double _scorePercentage;
-    
+
     [ObservableProperty]
     private bool _isPassed;
-    
+
     [ObservableProperty]
     private string _resultStatusText = string.Empty;
-    
+
     [ObservableProperty]
     private string _subStatusText = string.Empty;
-    
+
     [ObservableProperty]
     private bool _isAiScoringNeeded;
-    
+
     [ObservableProperty]
     private bool _isAiScoringInProgress;
-    
+
     [ObservableProperty]
     private double _aiScoringProgress;
-    
+
     [ObservableProperty]
     private string _currentScoringQuestion = string.Empty;
-    
+
     [ObservableProperty]
     private string _currentScoringQuestionProgress = string.Empty;
-    
+
     [ObservableProperty]
     private bool _canExportScore = false;
-    
+
     [ObservableProperty]
     private bool _canDownloadExam = true;
-    
+
     [ObservableProperty]
     private bool _canExit = true;
-    
+
     [ObservableProperty]
     private ScoreRecord _scoreRecord = new();
-    
+
     [ObservableProperty]
     private Examination _examination = new();
-    
+
     [ObservableProperty] 
     private ObservableCollection<SectionScoreViewModel> _sectionScores = new();
-    
+
     [ObservableProperty] 
     private bool _isQuestionsPanelExpanded = true;
-    
+
     [ObservableProperty] 
     private bool _isWindowVisible = true;
-    
-    // Track if initial AI scoring has been performed
-    [ObservableProperty]
-    private bool _hasPerformedInitialAiScoring = false;
-    
+
     // Flag to control main window visibility
     public bool ShowMainWindow { get; set; } = false;
-    
+
     // Event to request saving the examination
     public event EventHandler<SaveExaminationEventArgs>? SaveExaminationRequested;
     public event EventHandler? ExitRequested;
-    
+
     public ExaminationResultWindowViewModel(ConfigureService configService, LocalizationService localizationService)
     {
         _configService = configService;
         _localizationService = localizationService;
-        
+    
         // Default values
         SubStatusText = _localizationService["exam.result.thank.you"];
     }
-    
+
     public async Task InitializeAsync(Examination examination, ScoreRecord scoreRecord)
     {
         Examination = examination;
         ScoreRecord = scoreRecord;
-        
-        // Initialize unevaluated AI questions to 0 score but mark them as unevaluated
-        InitializeUnevaluatedAiQuestions();
-        
+    
+        // Initialize AI questions evaluation status
+        InitializeAiQuestionsEvaluationStatus();
+    
         // Recalculate scores after initialization
         ScoreRecord.CalculateScores(Examination);
-        
+    
         ObtainedScore = ScoreRecord.ObtainedScore;
         TotalScore = ScoreRecord.TotalScore;
         ScorePercentage = TotalScore > 0 ? (ObtainedScore / TotalScore * 100) : 0;
-        
+    
         // Determine pass/fail status (60% is passing)
         IsPassed = ScorePercentage >= 60;
         UpdateResultStatusText();
-        
+    
         // Check if any questions need AI scoring
         IsAiScoringNeeded = CheckIfAiScoringNeeded();
-        
+    
         // Initialize question scores collection
         InitializeQuestionScores();
     }
-    
-    // Method to initialize unevaluated AI questions
-    private void InitializeUnevaluatedAiQuestions()
+
+    // Method to initialize AI questions evaluation status
+    private void InitializeAiQuestionsEvaluationStatus()
     {
         if (Examination?.ExaminationSections == null)
             return;
-            
+        
         foreach (var section in Examination.ExaminationSections)
         {
             if (section.Questions == null)
                 continue;
-                
+            
             foreach (var question in section.Questions)
             {
-                // For AI judged questions that haven't been evaluated, initialize score to 0
-                // but keep track that they need evaluation
                 if (question.IsAiJudge)
                 {
-                    // If the question has user answer but no score assigned yet
-                    if (question.UserAnswer != null && question.UserAnswer.Length > 0 && 
-                        question.Score == null)
+                    // Check if this AI question has been evaluated
+                    bool hasAnswer = question.UserAnswer != null && question.UserAnswer.Length > 0;
+                    
+                    if (hasAnswer)
                     {
-                        // Set to 0 for calculation purposes but mark as needing evaluation
+                        // If there's AI feedback, consider it evaluated
+                        if (!string.IsNullOrEmpty(question.AiFeedback))
+                        {
+                            question.IsAiEvaluated = true;
+                            // Use ObtainedScore if available, otherwise use Score field
+                            if (question.ObtainedScore.HasValue)
+                            {
+                                question.Score = question.ObtainedScore.Value;
+                            }
+                        }
+                        else
+                        {
+                            // Not yet evaluated by AI
+                            question.IsAiEvaluated = false;
+                            question.Score = 0.0; // Set to 0 for calculation purposes
+                        }
+                    }
+                    else
+                    {
+                        // No answer provided, consider evaluated with 0 score
+                        question.IsAiEvaluated = true;
                         question.Score = 0.0;
                     }
-                    else if (question.UserAnswer == null || question.UserAnswer.Length == 0)
-                    {
-                        // If no answer provided, set to 0 and don't need AI evaluation
-                        question.Score = 0.0;
-                    }
+                }
+                else
+                {
+                    // Non-AI questions are always considered evaluated
+                    question.IsAiEvaluated = true;
                 }
             }
         }
     }
-    
+
     private void UpdateResultStatusText()
     {
         if (IsAiScoringInProgress)
@@ -168,33 +183,33 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                 : _localizationService["exam.result.failed"];
         }
     }
-    
+
     private bool CheckIfAiScoringNeeded()
     {
         if (Examination?.ExaminationSections == null) 
             return false;
-        
+    
         foreach (var section in Examination.ExaminationSections)
         {
             if (section.Questions == null) 
                 continue;
-            
+        
             foreach (var question in section.Questions)
             {
                 // A question needs AI scoring if:
                 // 1. It's marked for AI judging
                 // 2. User provided an answer
-                // 3. It hasn't been evaluated yet (score is exactly 0.0 and we haven't done initial scoring)
+                // 3. It hasn't been evaluated yet
                 if (question.IsAiJudge && 
                     question.UserAnswer != null && 
                     question.UserAnswer.Length > 0 && 
-                    !HasPerformedInitialAiScoring)
+                    !question.IsAiEvaluated)
                 {
                     return true;
                 }
             }
         }
-        
+    
         return false;
     }
 
@@ -204,62 +219,48 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
         // TODO: Implement export functionality
         throw new NotImplementedException();
     }
-    
+
     [RelayCommand]
     private void ToggleQuestionsPanel()
     {
         IsQuestionsPanelExpanded = !IsQuestionsPanelExpanded;
     }
-    
+
     private void InitializeQuestionScores()
     {
         var newSections = new ObservableCollection<SectionScoreViewModel>();
-        
+    
         if (Examination?.ExaminationSections == null || ScoreRecord == null) 
         {
             SectionScores = newSections;
             return;
         }
-        
+    
         var allScores = ScoreRecord.GetAllQuestionScores();
-        
+    
         int questionNumber = 1;
         foreach (var section in Examination.ExaminationSections)
         {
             if (section.Questions == null || section.Questions.Length == 0) 
                 continue;
-            
+        
             var sectionVM = new SectionScoreViewModel
             {
                 SectionId = section.SectionId ?? string.Empty,
                 SectionTitle = section.Title,
                 Questions = new ObservableCollection<QuestionScoreViewModel>()
             };
-            
+        
             foreach (var question in section.Questions)
             {
                 string questionId = question.QuestionId ?? string.Empty;
-                
+            
                 if (allScores.TryGetValue(questionId, out var score))
                 {
                     string correctAnswer = "";
                     if (question.Answer != null && question.Answer.Length > 0)
                     {
                         correctAnswer = string.Join(", ", question.Answer);
-                    }
-
-                    // Determine if the question has been evaluated
-                    bool isEvaluated = true;
-                    if (question.IsAiJudge)
-                    {
-                        // For AI questions, they're unevaluated if we haven't done initial scoring yet
-                        // and they have user answers
-                        if (!HasPerformedInitialAiScoring && 
-                            question.UserAnswer != null && 
-                            question.UserAnswer.Length > 0)
-                        {
-                            isEvaluated = false;
-                        }
                     }
 
                     sectionVM.Questions.Add(new QuestionScoreViewModel
@@ -273,42 +274,41 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                         ObtainedScore = score.ObtainedScore,
                         IsCorrect = score.IsCorrect,
                         IsAiJudged = question.IsAiJudge,
-                        IsEvaluated = isEvaluated,
+                        IsEvaluated = question.IsAiEvaluated, // Use question's evaluation status
                         UserAnswer = question.UserAnswer != null && question.UserAnswer.Length > 0 
                             ? string.Join(", ", question.UserAnswer) 
                             : _localizationService["exam.result.no.answer"],
                         CorrectAnswer = correctAnswer,
-                        AiFeedback = string.Empty
+                        AiFeedback = question.AiFeedback ?? string.Empty // Use question's AI feedback
                     });
                 }
             }
-            
+        
             if (sectionVM.Questions.Count > 0)
             {
                 newSections.Add(sectionVM);
             }
         }
-        
+    
         SectionScores = newSections;
     }
-    
+
     [RelayCommand]
     private async Task StartAiScoringAsync()
     {
         if (!IsAiScoringNeeded || IsAiScoringInProgress) 
             return;
-        
+    
         IsAiScoringInProgress = true;
         CanDownloadExam = false;
         CanExit = false;
         CanExportScore = false;
         AiScoringProgress = 0;
         UpdateResultStatusText();
-        
+    
         try
         {
             await PerformAiScoring();
-            HasPerformedInitialAiScoring = true;
             IsAiScoringNeeded = false; // No longer needed after completion
         }
         finally
@@ -319,55 +319,56 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             CanExportScore = true;
             CurrentScoringQuestion = string.Empty;
             CurrentScoringQuestionProgress = string.Empty;
-            
+        
             UpdateResultStatusText();
         }
     }
-    
+
     private async Task PerformAiScoring()
     {
         if (Examination?.ExaminationSections == null) 
             return;
-        
+    
         var aiClient = AiTools.CreateOpenAiClient(_configService.SystemConfig);
-        
+    
         // Count questions needing AI scoring
         var questionsToScore = new List<(ExaminationSection section, Question question)>();
-        
+    
         foreach (var section in Examination.ExaminationSections)
         {
             if (section.Questions == null) 
                 continue;
-            
+        
             foreach (var question in section.Questions)
             {
                 if (question.IsAiJudge && 
                     question.UserAnswer != null && 
-                    question.UserAnswer.Length > 0)
+                    question.UserAnswer.Length > 0 &&
+                    !question.IsAiEvaluated)
                 {
                     questionsToScore.Add((section, question));
                 }
             }
         }
-        
+    
         if (questionsToScore.Count == 0) 
             return;
-        
+    
         // Process each question
         for (int i = 0; i < questionsToScore.Count; i++)
         {
             var (section, question) = questionsToScore[i];
-            
+        
             // Update progress display
             CurrentScoringQuestionProgress = $"{i + 1} / {questionsToScore.Count}";
-            
+        
             string cleanStem = question.Stem
                 .Replace("\r\n", " ")
                 .Replace("\n", " ")
                 .Replace("\r", " ");
-                
-            CurrentScoringQuestion = $"{section.Title}: {cleanStem.Substring(0, Math.Min(50, cleanStem.Length))}...";
             
+            CurrentScoringQuestion = $"{section.Title}: {cleanStem.Substring(0, Math.Min(50, cleanStem.Length))}...";
+        
             try
             {
                 // Generate prompt for AI scoring
@@ -376,21 +377,24 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                     _configService.AppConfig.PromptGradingTemplate,
                     true,
                     _localizationService.CurrentLanguage);
-                
+            
                 // Send to AI for scoring
                 string? response = await AiTools.SendChatMessageAsync(
                     aiClient,
                     _configService.SystemConfig,
                     prompt);
-                
+            
                 if (!string.IsNullOrEmpty(response))
                 {
                     // Parse AI response
                     var result = PromptTemplateManager.ParseAIResponse(response);
-                    
-                    // Update question score
-                    question.Score = result.Score;
-                    
+                
+                    // Update question with AI results
+                    question.ObtainedScore = result.Score;
+                    question.Score = result.Score; // Also update the Score field for calculation
+                    question.AiFeedback = result.Feedback;
+                    question.IsAiEvaluated = true; // Mark as evaluated
+                
                     // Update UI for this question
                     UpdateQuestionScore(question.QuestionId, result.Score, result.IsCorrect, true, result.Feedback);
                 }
@@ -398,28 +402,30 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             catch (Exception ex)
             {
                 Console.WriteLine($"Error scoring question {question.QuestionId}: {ex.Message}");
-                // Keep the question at 0 score if AI scoring fails
+                // Mark as evaluated even if scoring failed
+                question.IsAiEvaluated = true;
+                question.AiFeedback = "Error occurred during AI evaluation.";
             }
-            
+        
             // Update progress
             AiScoringProgress = (double)(i + 1) / questionsToScore.Count * 100;
-            
+        
             // Recalculate scores after each question
             ScoreRecord.CalculateScores(Examination);
             ObtainedScore = ScoreRecord.ObtainedScore;
             ScorePercentage = TotalScore > 0 ? (ObtainedScore / TotalScore * 100) : 0;
             IsPassed = ScorePercentage >= 60;
         }
-        
+    
         // Final update
         InitializeQuestionScores();
     }
-    
+
     private void UpdateQuestionScore(string? questionId, double score, bool isCorrect, bool isEvaluated = true, string aiFeedback = "")
     {
         if (string.IsNullOrEmpty(questionId)) 
             return;
-        
+    
         foreach (var section in SectionScores)
         {
             var questionVm = section.Questions.FirstOrDefault(q => q.QuestionId == questionId);
@@ -433,51 +439,49 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             }
         }
     }
-    
+
     [RelayCommand]
     private void SaveExamination()
     {
         if (Examination == null || !CanDownloadExam) 
             return;
-        
+    
         SaveExaminationRequested?.Invoke(this, new SaveExaminationEventArgs(Examination));
     }
-    
+
     [RelayCommand]
     private void Exit()
     {
         if (!CanExit) 
             return;
-        
+    
         // Clear current examination data
         _configService.AppData.CurrentExamination = null;
         _configService.AppData.IsInExamination = false;
         _configService.AppData.IsTheExaminationStarted = false;
         _configService.AppData.ExaminationTimer = null;
-        
+    
         ShowMainWindow = true;
         _configService.SaveChangesAsync();
-        
+    
         ExitRequested?.Invoke(this, EventArgs.Empty);
     }
-    
+
     [RelayCommand]
     private async Task RescoreQuestionAsync(string questionId)
     {
-        // Only allow rescoring after initial AI scoring has been performed
-        if (Examination == null || string.IsNullOrEmpty(questionId) || 
-            IsAiScoringInProgress || !HasPerformedInitialAiScoring)
+        if (Examination == null || string.IsNullOrEmpty(questionId) || IsAiScoringInProgress)
             return;
-            
+        
         // Find the question
         Question? questionToScore = null;
         string sectionTitle = string.Empty;
-        
+    
         foreach (var section in Examination.ExaminationSections)
         {
             if (section.Questions == null) 
                 continue;
-            
+        
             foreach (var question in section.Questions)
             {
                 if (question.QuestionId == questionId)
@@ -487,60 +491,64 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                     break;
                 }
             }
-            
+        
             if (questionToScore != null) 
                 break;
         }
-        
-        if (questionToScore == null || !questionToScore.IsAiJudge || 
-            questionToScore.UserAnswer == null || questionToScore.UserAnswer.Length == 0)
+    
+        if (questionToScore == null || !questionToScore.IsAiJudge)
             return;
-            
+        
         // Start rescoring
         IsAiScoringInProgress = true;
         CanDownloadExam = false;
         CanExit = false;
         CanExportScore = false;
         UpdateResultStatusText();
-        
+    
         string cleanStem = questionToScore.Stem
             .Replace("\r\n", " ")
             .Replace("\n", " ")
             .Replace("\r", " ");
-            
+        
         CurrentScoringQuestionProgress = $"1 / 1 ({_localizationService["exam.result.rescore"]})";
         CurrentScoringQuestion = $"{sectionTitle}: {cleanStem.Substring(0, Math.Min(50, cleanStem.Length))}...";
-        
+    
         try
         {
             var aiClient = AiTools.CreateOpenAiClient(_configService.SystemConfig);
-            
+        
             string prompt = PromptTemplateManager.GenerateGradingPrompt(
                 questionToScore, 
                 _configService.AppConfig.PromptGradingTemplate,
                 true,
                 _localizationService.CurrentLanguage);
-            
+        
             string? response = await AiTools.SendChatMessageAsync(
                 aiClient,
                 _configService.SystemConfig,
                 prompt);
-            
+        
             if (!string.IsNullOrEmpty(response))
             {
                 var result = PromptTemplateManager.ParseAIResponse(response);
+                
+                // Update question with new AI results
+                questionToScore.ObtainedScore = result.Score;
                 questionToScore.Score = result.Score;
-                
+                questionToScore.AiFeedback = result.Feedback;
+                questionToScore.IsAiEvaluated = true;
+            
                 UpdateQuestionScore(questionId, result.Score, result.IsCorrect, true, result.Feedback);
-                
+            
                 ScoreRecord.CalculateScores(Examination);
                 ObtainedScore = ScoreRecord.ObtainedScore;
                 ScorePercentage = TotalScore > 0 ? (ObtainedScore / TotalScore * 100) : 0;
                 IsPassed = ScorePercentage >= 60;
-                
+            
                 InitializeQuestionScores();
             }
-            
+        
             AiScoringProgress = 100;
         }
         finally
@@ -551,7 +559,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             CanExportScore = true;
             CurrentScoringQuestion = string.Empty;
             CurrentScoringQuestionProgress = string.Empty;
-            
+        
             UpdateResultStatusText();
         }
     }
@@ -559,16 +567,15 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task RescoreAllAsync()
     {
-        // Only allow rescoring all after initial AI scoring has been performed
-        if (Examination == null || IsAiScoringInProgress || !HasPerformedInitialAiScoring) 
+        if (Examination == null || IsAiScoringInProgress) 
             return;
-        
-        // Reset all AI questions to 0 and mark them as needing rescoring
+    
+        // Reset all AI questions to unevaluated state
         foreach (var section in Examination.ExaminationSections)
         {
             if (section.Questions == null) 
                 continue;
-            
+        
             foreach (var question in section.Questions)
             {
                 if (question.IsAiJudge && 
@@ -576,28 +583,27 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                     question.UserAnswer.Length > 0)
                 {
                     question.Score = 0.0;
+                    question.ObtainedScore = null;
+                    question.AiFeedback = null;
+                    question.IsAiEvaluated = false;
                 }
             }
         }
-        
+    
         // Recalculate scores
         ScoreRecord.CalculateScores(Examination);
         ObtainedScore = ScoreRecord.ObtainedScore;
         ScorePercentage = TotalScore > 0 ? (ObtainedScore / TotalScore * 100) : 0;
         IsPassed = ScorePercentage >= 60;
-        
-        // Temporarily mark as needing AI scoring for the rescoring process
-        var originalNeedScoring = IsAiScoringNeeded;
+    
+        // Set AI scoring as needed
         IsAiScoringNeeded = true;
-        
-        // Refresh question scores to show 0 scores
+    
+        // Refresh question scores to show updated states
         InitializeQuestionScores();
-        
-        // Perform AI scoring
+    
+        // Start AI scoring
         await StartAiScoringAsync();
-        
-        // Restore original state
-        IsAiScoringNeeded = originalNeedScoring;
     }
 }
 
@@ -605,7 +611,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
 public class SaveExaminationEventArgs : EventArgs
 {
     public Examination Examination { get; }
-    
+
     public SaveExaminationEventArgs(Examination examination)
     {
         Examination = examination;
