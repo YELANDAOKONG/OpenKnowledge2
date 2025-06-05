@@ -370,8 +370,8 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
         if (!CanExit) return;
         
         // Clear current examination data
-        _configService.AppData.CurrentExamination = null;
-        _configService.AppData.IsInExamination = false;
+        _configService.AppData.CurrentExamination = Examination;
+        _configService.AppData.IsInExamination = true;
         _configService.AppData.IsTheExaminationStarted = false;
         _configService.AppData.ExaminationTimer = null;
         _configService.SaveChangesAsync();

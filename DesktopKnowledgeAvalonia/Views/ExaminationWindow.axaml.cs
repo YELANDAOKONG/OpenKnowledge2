@@ -47,6 +47,7 @@ public partial class ExaminationWindow : AppWindowBase
         _viewModel.ExaminationLoaded += OnExaminationLoaded;
         _viewModel.QuestionChanged += OnQuestionChanged;
         _viewModel.ProgressUpdated += OnProgressUpdated;
+        _viewModel.WindowCloseRequested += (s, e) => Close();
         
         // Initialize UI text
         InitializeUI();

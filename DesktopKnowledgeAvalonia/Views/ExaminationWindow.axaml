@@ -6,10 +6,13 @@
         xmlns:loc="using:DesktopKnowledgeAvalonia.Localization"
         mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
         x:Class="DesktopKnowledgeAvalonia.Views.ExaminationWindow"
+        x:DataType="vm:ExaminationWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
         TransparencyLevelHint="AcrylicBlur"
         Background="Transparent"
         ExtendClientAreaToDecorationsHint="True"
+        IsVisible="{Binding IsWindowVisible}"
+        ShowInTaskbar="{Binding IsWindowVisible}"
         Title="{loc:Translate Key=exam.title}"
         MinWidth="800"
         MinHeight="600">

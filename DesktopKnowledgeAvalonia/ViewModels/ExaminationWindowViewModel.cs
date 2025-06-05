@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using DesktopKnowledgeAvalonia.Services;
+using DesktopKnowledgeAvalonia.Views;
 using LibraryOpenKnowledge.Extensions;
 using LibraryOpenKnowledge.Models;
 using LibraryOpenKnowledge.Tools;
@@ -46,11 +47,16 @@ public partial class ExaminationWindowViewModel : ViewModelBase
     
     [ObservableProperty]
     private bool _showStatusMessage;
+
+    [ObservableProperty] 
+    private bool _isWindowVisible;
     
     // Event handlers to notify the view of changes
     public event EventHandler? ExaminationLoaded;
     public event EventHandler? QuestionChanged;
     public event EventHandler? ProgressUpdated;
+    
+    public event EventHandler? WindowCloseRequested;
     
     // This will be assigned by the view
     public Action SaveCurrentAnswer { get; set; } = () => { };
@@ -59,6 +65,7 @@ public partial class ExaminationWindowViewModel : ViewModelBase
     {
         _configService = configService;
         _localizationService = localizationService;
+        _isWindowVisible = true;
     }
     
     public void Initialize()
@@ -330,10 +337,10 @@ public partial class ExaminationWindowViewModel : ViewModelBase
     public async Task SubmitExamination()
     {
         if (Examination == null) return;
-        
+    
         // Save final answers
         SaveCurrentAnswer();
-        
+    
         // Calculate scores
         var scoreRecord = new ScoreRecord
         {
@@ -341,14 +348,14 @@ public partial class ExaminationWindowViewModel : ViewModelBase
             ExamTitle = Examination.ExaminationMetadata.Title,
             UserName = _configService.AppConfig.UserName
         };
-        
+    
         // Calculate scores
         scoreRecord.CalculateScores(Examination);
-        
+    
         // Create a deep copy to avoid issues with Options
         var examinationJson = ExaminationSerializer.SerializeToJson(Examination);
         var examinationCopy = ExaminationSerializer.DeserializeFromJson(examinationJson!);
-        
+    
         if (examinationCopy != null)
         {
             // Save examination with final scores
@@ -356,9 +363,16 @@ public partial class ExaminationWindowViewModel : ViewModelBase
             _configService.AppData.IsInExamination = false;
             await _configService.SaveChangesAsync();
         }
-        
-        // TODO: Show score summary or navigate to results window
+
+        IsWindowVisible = false;
+        var resultWindow = new ExaminationResultWindow(Examination, scoreRecord);
+        resultWindow.Closed += (sender, args) =>
+        {
+            WindowCloseRequested?.Invoke(this, EventArgs.Empty);
+        };
+        resultWindow.Show();
     }
+
     
     public void BackToMain()
     {
