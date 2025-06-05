@@ -141,24 +141,20 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                         if (!string.IsNullOrEmpty(question.AiFeedback))
                         {
                             question.IsAiEvaluated = true;
-                            // Use ObtainedScore if available, otherwise use Score field
-                            if (question.ObtainedScore.HasValue)
-                            {
-                                question.Score = question.ObtainedScore.Value;
-                            }
+                            // ObtainedScore should already be set by AI
                         }
                         else
                         {
                             // Not yet evaluated by AI
                             question.IsAiEvaluated = false;
-                            question.Score = 0.0; // Set to 0 for calculation purposes
+                            question.ObtainedScore = 0.0; // Set obtained score to 0, but keep original Score (max score)
                         }
                     }
                     else
                     {
                         // No answer provided, consider evaluated with 0 score
                         question.IsAiEvaluated = true;
-                        question.Score = 0.0;
+                        question.ObtainedScore = 0.0;
                     }
                 }
                 else
@@ -270,7 +266,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                         QuestionId = questionId,
                         QuestionType = question.Type,
                         QuestionStem = question.Stem,
-                        MaxScore = score.MaxScore,
+                        MaxScore = question.Score, // Use question's original score as max score
                         ObtainedScore = score.ObtainedScore,
                         IsCorrect = score.IsCorrect,
                         IsAiJudged = question.IsAiJudge,
@@ -391,12 +387,8 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                 
                     // Update question with AI results
                     question.ObtainedScore = result.Score;
-                    question.Score = result.Score; // Also update the Score field for calculation
                     question.AiFeedback = result.Feedback;
                     question.IsAiEvaluated = true; // Mark as evaluated
-                
-                    // Update UI for this question
-                    UpdateQuestionScore(question.QuestionId, result.Score, result.IsCorrect, true, result.Feedback);
                 }
             }
             catch (Exception ex)
@@ -404,39 +396,21 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                 Console.WriteLine($"Error scoring question {question.QuestionId}: {ex.Message}");
                 // Mark as evaluated even if scoring failed
                 question.IsAiEvaluated = true;
+                question.ObtainedScore = 0.0;
                 question.AiFeedback = "Error occurred during AI evaluation.";
             }
         
             // Update progress
             AiScoringProgress = (double)(i + 1) / questionsToScore.Count * 100;
         
-            // Recalculate scores after each question
+            // Recalculate scores and regenerate UI after each question
             ScoreRecord.CalculateScores(Examination);
             ObtainedScore = ScoreRecord.ObtainedScore;
             ScorePercentage = TotalScore > 0 ? (ObtainedScore / TotalScore * 100) : 0;
             IsPassed = ScorePercentage >= 60;
-        }
-    
-        // Final update
-        InitializeQuestionScores();
-    }
-
-    private void UpdateQuestionScore(string? questionId, double score, bool isCorrect, bool isEvaluated = true, string aiFeedback = "")
-    {
-        if (string.IsNullOrEmpty(questionId)) 
-            return;
-    
-        foreach (var section in SectionScores)
-        {
-            var questionVm = section.Questions.FirstOrDefault(q => q.QuestionId == questionId);
-            if (questionVm != null)
-            {
-                questionVm.ObtainedScore = score;
-                questionVm.IsCorrect = isCorrect;
-                questionVm.IsEvaluated = isEvaluated;
-                questionVm.AiFeedback = aiFeedback;
-                return;
-            }
+            
+            // Trigger complete UI regeneration
+            InitializeQuestionScores();
         }
     }
 
@@ -535,21 +509,25 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                 
                 // Update question with new AI results
                 questionToScore.ObtainedScore = result.Score;
-                questionToScore.Score = result.Score;
                 questionToScore.AiFeedback = result.Feedback;
                 questionToScore.IsAiEvaluated = true;
             
-                UpdateQuestionScore(questionId, result.Score, result.IsCorrect, true, result.Feedback);
-            
+                // Recalculate scores and regenerate UI
                 ScoreRecord.CalculateScores(Examination);
                 ObtainedScore = ScoreRecord.ObtainedScore;
                 ScorePercentage = TotalScore > 0 ? (ObtainedScore / TotalScore * 100) : 0;
                 IsPassed = ScorePercentage >= 60;
             
+                // Trigger complete UI regeneration
                 InitializeQuestionScores();
             }
         
             AiScoringProgress = 100;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error rescoring question {questionId}: {ex.Message}");
+            questionToScore.AiFeedback = "Error occurred during AI evaluation.";
         }
         finally
         {
@@ -582,8 +560,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                     question.UserAnswer != null && 
                     question.UserAnswer.Length > 0)
                 {
-                    question.Score = 0.0;
-                    question.ObtainedScore = null;
+                    question.ObtainedScore = 0.0;
                     question.AiFeedback = null;
                     question.IsAiEvaluated = false;
                 }

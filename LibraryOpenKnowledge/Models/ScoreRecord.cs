@@ -39,16 +39,17 @@ public class ScoreRecord
             var sectionQuestionScores = new Dictionary<string, QuestionScore>();
             QuestionScores[sectionId] = sectionQuestionScores;
             
+            // 在 CalculateScores 方法中修复AI题目分数计算
             foreach (var question in section.Questions)
             {
                 string questionId = question.QuestionId ?? Guid.NewGuid().ToString();
                 double questionScore = 0;
-                
-                // For AI judged questions, the score is set by the AI
+    
+                // For AI judged questions, use ObtainedScore
                 if (question.IsAiJudge)
                 {
-                    // Get score from question if it was set by AI
-                    questionScore = question.Score;
+                    // Get score from question's ObtainedScore if it was set by AI
+                    questionScore = question.ObtainedScore ?? 0.0;
                 }
                 else
                 {
@@ -56,19 +57,20 @@ public class ScoreRecord
                     bool isCorrect = IsAnswerCorrect(question);
                     questionScore = isCorrect ? question.Score : 0;
                 }
-                
+    
                 // Add to question scores dictionary for this section
                 sectionQuestionScores[questionId] = new QuestionScore
                 {
                     QuestionId = questionId,
-                    MaxScore = question.Score,
+                    MaxScore = question.Score, // Original score is the max score
                     ObtainedScore = questionScore,
                     IsCorrect = Math.Abs(questionScore - question.Score) < 0.001
                 };
-                
+    
                 // Add to section score
                 sectionScore += questionScore;
             }
+
             
             // Add to section scores dictionary
             SectionScores[sectionId] = sectionScore;
