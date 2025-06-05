@@ -126,6 +126,11 @@
   "exam.dialog.status.loaded": "Examination Ready",
   "exam.dialog.start": "Start Examination",
   "exam.dialog.load.success": "Examination loaded successfully",
-  "exam.dialog.load.error": "Error loading examination"
+  "exam.dialog.load.error": "Error loading examination",
 
+  "settings.category.prompts": "Prompt",
+  "settings.prompts.grading": "Grading Template",
+  "settings.prompts.explanation": "Explanation Template",
+  "settings.prompts.check": "Error Check Template",
+  "settings.prompts.reset": "Reset to Default"
 }

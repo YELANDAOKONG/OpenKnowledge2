@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:loc="using:DesktopKnowledgeAvalonia.Localization"
+        xmlns:converters="clr-namespace:DesktopKnowledgeAvalonia.Converters"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="550"
         x:Class="DesktopKnowledgeAvalonia.Views.SettingWindow"
         x:DataType="vm:SettingWindowViewModel"
@@ -16,6 +17,10 @@
         MinWidth="700" MinHeight="450"
         WindowStartupLocation="CenterScreen">
 
+    <Window.Resources>
+        <converters:BoolToExpandCollapseIconConverter x:Key="BoolToExpandCollapseIconConverter"/>
+    </Window.Resources>
+    
     <Design.DataContext>
         <vm:SettingWindowViewModel/>
     </Design.DataContext>
@@ -199,6 +204,112 @@
                                     </Border>
                                 </StackPanel>
                             </DataTemplate>
+                            
+                            
+                            <!-- Prompt Templates Settings Template -->
+                            <DataTemplate DataType="vm:PromptTemplatesViewModel">
+                                <StackPanel Spacing="15">
+                                    <!-- Grading Template -->
+                                    <Border Background="#10FFFFFF" CornerRadius="4" Padding="15">
+                                        <StackPanel>
+                                            <Grid ColumnDefinitions="*,Auto,Auto">
+                                                <TextBlock Grid.Column="0" 
+                                                           Text="{loc:Translate Key=settings.prompts.grading}" 
+                                                           FontWeight="SemiBold"/>
+                                                <Button Grid.Column="1"
+                                                        Command="{Binding ResetGradingTemplateCommand}"
+                                                        Background="Transparent"
+                                                        Padding="5"
+                                                        ToolTip.Tip="{loc:Translate Key=settings.prompts.reset}">
+                                                    <PathIcon Data="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
+                                                              Width="16" Height="16"/>
+                                                </Button>
+                                                <Button Grid.Column="2" 
+                                                        Command="{Binding ToggleGradingExpandedCommand}"
+                                                        Background="Transparent"
+                                                        Padding="5">
+                                                    <PathIcon Data="{Binding IsGradingExpanded, 
+                                                              Converter={StaticResource BoolToExpandCollapseIconConverter}}" 
+                                                              Width="16" Height="16"/>
+                                                </Button>
+                                            </Grid>
+                                            <TextBox IsVisible="{Binding IsGradingExpanded}"
+                                                     Text="{Binding GradingTemplate}"
+                                                     AcceptsReturn="True"
+                                                     TextWrapping="Wrap"
+                                                     Height="200"
+                                                     Margin="0,10,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                    
+                                    <!-- Explanation Template -->
+                                    <Border Background="#10FFFFFF" CornerRadius="4" Padding="15">
+                                        <StackPanel>
+                                            <Grid ColumnDefinitions="*,Auto,Auto">
+                                                <TextBlock Grid.Column="0" 
+                                                           Text="{loc:Translate Key=settings.prompts.explanation}" 
+                                                           FontWeight="SemiBold"/>
+                                                <Button Grid.Column="1"
+                                                        Command="{Binding ResetExplanationTemplateCommand}"
+                                                        Background="Transparent"
+                                                        Padding="5"
+                                                        ToolTip.Tip="{loc:Translate Key=settings.prompts.reset}">
+                                                    <PathIcon Data="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
+                                                              Width="16" Height="16"/>
+                                                </Button>
+                                                <Button Grid.Column="2" 
+                                                        Command="{Binding ToggleExplanationExpandedCommand}"
+                                                        Background="Transparent"
+                                                        Padding="5">
+                                                    <PathIcon Data="{Binding IsExplanationExpanded, 
+                                                              Converter={StaticResource BoolToExpandCollapseIconConverter}}" 
+                                                              Width="16" Height="16"/>
+                                                </Button>
+                                            </Grid>
+                                            <TextBox IsVisible="{Binding IsExplanationExpanded}"
+                                                     Text="{Binding ExplanationTemplate}"
+                                                     AcceptsReturn="True"
+                                                     TextWrapping="Wrap"
+                                                     Height="200"
+                                                     Margin="0,10,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                    
+                                    <!-- Check Template -->
+                                    <Border Background="#10FFFFFF" CornerRadius="4" Padding="15">
+                                        <StackPanel>
+                                            <Grid ColumnDefinitions="*,Auto,Auto">
+                                                <TextBlock Grid.Column="0" 
+                                                           Text="{loc:Translate Key=settings.prompts.check}" 
+                                                           FontWeight="SemiBold"/>
+                                                <Button Grid.Column="1"
+                                                        Command="{Binding ResetCheckTemplateCommand}"
+                                                        Background="Transparent"
+                                                        Padding="5"
+                                                        ToolTip.Tip="{loc:Translate Key=settings.prompts.reset}">
+                                                    <PathIcon Data="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
+                                                              Width="16" Height="16"/>
+                                                </Button>
+                                                <Button Grid.Column="2" 
+                                                        Command="{Binding ToggleCheckExpandedCommand}"
+                                                        Background="Transparent"
+                                                        Padding="5">
+                                                    <PathIcon Data="{Binding IsCheckExpanded, 
+                                                              Converter={StaticResource BoolToExpandCollapseIconConverter}}" 
+                                                              Width="16" Height="16"/>
+                                                </Button>
+                                            </Grid>
+                                            <TextBox IsVisible="{Binding IsCheckExpanded}"
+                                                     Text="{Binding CheckTemplate}"
+                                                     AcceptsReturn="True"
+                                                     TextWrapping="Wrap"
+                                                     Height="200"
+                                                     Margin="0,10,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </DataTemplate>
+
 
                         </ContentControl.DataTemplates>
                     </ContentControl>

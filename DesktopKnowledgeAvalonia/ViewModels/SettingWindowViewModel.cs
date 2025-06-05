@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DesktopKnowledgeAvalonia.Models;
 using DesktopKnowledgeAvalonia.Services;
+using DesktopKnowledgeAvalonia.Tools;
 
 namespace DesktopKnowledgeAvalonia.ViewModels;
 
@@ -48,6 +49,12 @@ public partial class SettingWindowViewModel : ViewModelBase
             "M21 11.5v-1c0-.8-.7-1.5-1.5-1.5H16v-2c0-.8-.7-1.5-1.5-1.5H9.5C8.7 5.5 8 6.2 8 7v2H4.5c-.8 0-1.5.7-1.5 1.5v1C2.2 11.5 1.5 12.2 1.5 13v9c0 .8.7 1.5 1.5 1.5h18c.8 0 1.5-.7 1.5-1.5v-9c0-.8-.7-1.5-1.5-1.5zM9 7.5h6v2H9v-2zm10 14H5v-9h14v9zm-9-7.5c0-1.1.9-2 2-2s2 .9 2 2c0 1.1-.9 2-2 2s-2-.9-2-2z",
             new AISettingsViewModel(_configService, _localizationService));
 
+        // Prompt Templates Settings
+        var promptTemplates = new SettingCategory(
+            _localizationService["settings.category.prompts"],
+            "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 16H7v-2h10v2zm0-4H7v-2h10v2zm0-4H7V9h10v2zm0-4H7V5h10v2z",
+            new PromptTemplatesViewModel(_configService, _localizationService));
+        
         // Appearance Settings
         var appearance = new SettingCategory(
             _localizationService["settings.category.appearance"],
@@ -62,6 +69,7 @@ public partial class SettingWindowViewModel : ViewModelBase
 
         Categories.Add(general);
         Categories.Add(ai); // Add the AI category
+        Categories.Add(promptTemplates); // Add the prompt templates category
         Categories.Add(appearance);
         Categories.Add(language);
 
@@ -366,3 +374,75 @@ public partial class AISettingsViewModel : SettingsViewModelBase
         }
     }
 }
+
+public partial class PromptTemplatesViewModel : SettingsViewModelBase
+{
+    private readonly ConfigureService _configService;
+    private readonly LocalizationService _localizationService;
+
+    [ObservableProperty]
+    private string _gradingTemplate;
+
+    [ObservableProperty]
+    private string _explanationTemplate;
+
+    [ObservableProperty]
+    private string _checkTemplate;
+
+    [ObservableProperty]
+    private bool _isGradingExpanded;
+
+    [ObservableProperty]
+    private bool _isExplanationExpanded;
+
+    [ObservableProperty]
+    private bool _isCheckExpanded;
+
+    public PromptTemplatesViewModel(ConfigureService configService, LocalizationService localizationService)
+    {
+        _configService = configService;
+        _localizationService = localizationService;
+        
+        // Load existing values
+        _gradingTemplate = _configService.AppConfig.PromptGradingTemplate;
+        _explanationTemplate = _configService.AppConfig.PromptExplanationTemplate;
+        _checkTemplate = _configService.AppConfig.PromptCheckTemplate;
+    }
+
+    public override async Task SaveAsync()
+    {
+        _configService.AppConfig.PromptGradingTemplate = GradingTemplate;
+        _configService.AppConfig.PromptExplanationTemplate = ExplanationTemplate;
+        _configService.AppConfig.PromptCheckTemplate = CheckTemplate;
+        
+        await Task.CompletedTask;
+    }
+
+    [RelayCommand]
+    private void ToggleGradingExpanded() => IsGradingExpanded = !IsGradingExpanded;
+
+    [RelayCommand]
+    private void ToggleExplanationExpanded() => IsExplanationExpanded = !IsExplanationExpanded;
+
+    [RelayCommand]
+    private void ToggleCheckExpanded() => IsCheckExpanded = !IsCheckExpanded;
+    
+    [RelayCommand]
+    private void ResetGradingTemplate()
+    {
+        GradingTemplate = PromptTemplateManager.DefaultGradingTemplate;
+    }
+    
+    [RelayCommand]
+    private void ResetExplanationTemplate()
+    {
+        ExplanationTemplate = PromptTemplateManager.DefaultExplanationTemplate;
+    }
+    
+    [RelayCommand]
+    private void ResetCheckTemplate()
+    {
+        CheckTemplate = PromptTemplateManager.DefaultErrorCheckTemplate;
+    }
+}
+

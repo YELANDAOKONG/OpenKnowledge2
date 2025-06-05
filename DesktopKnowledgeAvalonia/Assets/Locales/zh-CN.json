@@ -126,6 +126,12 @@
   "exam.dialog.status.loaded": "考试已准备就绪",
   "exam.dialog.start": "开始考试",
   "exam.dialog.load.success": "考试加载成功",
-  "exam.dialog.load.error": "加载考试时出错"
+  "exam.dialog.load.error": "加载考试时出错",
 
+  "settings.category.prompts": "提示词",
+  "settings.prompts.grading": "评分模板",
+  "settings.prompts.explanation": "解释模板",
+  "settings.prompts.check": "错误检查模板",
+  "settings.prompts.reset": "重置为默认值"
+  
 }
