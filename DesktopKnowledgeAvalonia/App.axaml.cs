@@ -44,7 +44,9 @@ public partial class App : Application
                 bool needsInitialization = string.IsNullOrEmpty(configService.SystemConfig.OpenAiApiUrl) || 
                                            string.IsNullOrEmpty(configService.SystemConfig.OpenAiApiKey) || 
                                            string.IsNullOrEmpty(configService.SystemConfig.OpenAiModel);
-        
+
+                configService.AppStatistics.ApplicationStartCount++;
+                configService.SaveChangesAsync();
                 if (needsInitialization)
                 {
                     // Show the initialization window

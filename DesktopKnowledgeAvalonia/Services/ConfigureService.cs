@@ -17,15 +17,18 @@ public class ConfigureService
     
     private readonly string _configFilePath;
     private readonly string _dataFilePath;
+    private readonly string _statisticsFilePath;
     
     public SystemConfig SystemConfig { get; private set; } = new();
     public ApplicationConfig AppConfig { get; private set; } = new();
     public ApplicationData AppData { get; private set; } = new();
+    public ApplicationStatistics AppStatistics { get; set; } = new();
     
-    public ConfigureService(string? configFilePath = null, string? dataFilePath = null)
+    public ConfigureService(string? configFilePath = null, string? dataFilePath = null, string? statisticsFilePath = null)
     {
         _configFilePath = configFilePath ?? GetDefaultConfigPath();
         _dataFilePath = dataFilePath ?? GetDefaultAppDataPath();
+        _statisticsFilePath = statisticsFilePath ?? GetDefaultStatisticsPath();
         
         try
         {
@@ -37,6 +40,7 @@ public class ConfigureService
             SystemConfig = new SystemConfig();
             AppConfig = new ApplicationConfig();
             AppData = new ApplicationData();
+            AppStatistics = new ApplicationStatistics();
         }
     }
     
@@ -60,6 +64,17 @@ public class ConfigureService
             Directory.CreateDirectory(dataFolder);
             
         return Path.Combine(dataFolder, "Data.json");
+    }
+    
+    private static string GetDefaultStatisticsPath()
+    {
+        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        var statisticsFolder = Path.Combine(appDataPath, "OpenKnowledge", "Desktop");
+        
+        if (!Directory.Exists(statisticsFolder))
+            Directory.CreateDirectory(statisticsFolder);
+            
+        return Path.Combine(statisticsFolder, "Statistics.json");
     }
     
     private class CombinedConfig
@@ -104,6 +119,22 @@ public class ConfigureService
                 Console.WriteLine($"Error loading app data file: {ex.Message}");
             }
         }
+        
+        if (File.Exists(_statisticsFilePath))
+        {
+            try
+            {
+                string statisticsJson = File.ReadAllText(_statisticsFilePath);
+                var statistics = JsonSerializer.Deserialize<ApplicationStatistics>(statisticsJson, _jsonOptions);
+                
+                if (statistics != null)
+                    AppStatistics = statistics;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading statistics file: {ex.Message}");
+            }
+        }
     }
     
     private async Task LoadConfigAsync()
@@ -129,6 +160,15 @@ public class ConfigureService
                 
                 if (data != null)
                     AppData = data;
+            }
+            
+            if (File.Exists(_statisticsFilePath))
+            {
+                await using var stream = File.OpenRead(_statisticsFilePath);
+                var statistics = await JsonSerializer.DeserializeAsync<ApplicationStatistics>(stream, _jsonOptions);
+                
+                if (statistics != null)
+                    AppStatistics = statistics;
             }
         }
         catch (Exception ex)
@@ -178,6 +218,20 @@ public class ConfigureService
         {
             Console.WriteLine($"Error saving app data: {ex.Message}");
         }
+        
+        // Save statistics file separately with the same pattern
+        try
+        {
+            var statisticsJson = JsonSerializer.Serialize(AppStatistics, _jsonOptions);
+            var tempStatisticsPath = Path.GetTempFileName();
+            await File.WriteAllTextAsync(tempStatisticsPath, statisticsJson);
+            File.Copy(tempStatisticsPath, _statisticsFilePath, true);
+            File.Delete(tempStatisticsPath);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving statistics: {ex.Message}");
+        }
     }
     
     public async Task UpdateAiApiUrlAsync(string? url)
@@ -219,6 +273,12 @@ public class ConfigureService
     public async Task UpdateAppDataAsync(ApplicationData data)
     {
         AppData = data;
+        await SaveConfigAsync();
+    }
+    
+    public async Task UpdateAppStatisticsAsync(ApplicationStatistics statistics)
+    {
+        AppStatistics = statistics;
         await SaveConfigAsync();
     }
     
