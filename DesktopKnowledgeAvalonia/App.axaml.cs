@@ -45,7 +45,7 @@ public partial class App : Application
                                            string.IsNullOrEmpty(configService.SystemConfig.OpenAiApiKey) || 
                                            string.IsNullOrEmpty(configService.SystemConfig.OpenAiModel);
 
-                configService.AppStatistics.ApplicationStartCount++;
+                configService.AppStatistics.AddApplicationStartCount();
                 _ = configService.SaveChangesAsync();
                 if (needsInitialization)
                 {

@@ -340,6 +340,11 @@ public partial class ExaminationWindowViewModel : ViewModelBase
     
         // Save final answers
         SaveCurrentAnswer();
+        
+        // 累加统计计数
+        var config = App.GetService<ConfigureService>();
+        config.AppStatistics.AddSubmitExaminationCount();
+        _ = config.SaveChangesAsync();
     
         // Calculate scores
         var scoreRecord = new ScoreRecord

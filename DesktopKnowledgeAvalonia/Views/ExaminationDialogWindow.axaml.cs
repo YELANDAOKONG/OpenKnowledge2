@@ -55,6 +55,10 @@ public partial class ExaminationDialogWindow : AppWindowBase
         {
             _windowViewModel.MarkExamAsStarted();
         }
+
+        var config = App.GetService<ConfigureService>();
+        config.AppStatistics.AddLoadExaminationCount();
+        _ = config.SaveChangesAsync();
         
         _windowViewModel.IsWindowsVisible = false;
         // Open the examination window
