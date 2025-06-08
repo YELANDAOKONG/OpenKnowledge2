@@ -10,18 +10,17 @@ jobs:
     strategy:
       matrix:
         configuration: [Debug, Release]
-        os: [windows-latest, ubuntu-latest]
-        runtime:
-          - win-x64
-          - linux-x64
+        platform:
+          - { os: windows-latest, runtime: win-x64 }
+          - { os: ubuntu-latest, runtime: linux-x64 }
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.platform.os }}
 
     env:
       Solution_Name: OpenKnowledge2.sln
       Project_Path: DesktopKnowledgeAvalonia\DesktopKnowledgeAvalonia.csproj
       Configuration: ${{ matrix.configuration }}
-      RuntimeIdentifier: ${{ matrix.runtime }}
+      RuntimeIdentifier: ${{ matrix.platform.runtime }}
 
     steps:
       - name: Checkout code
