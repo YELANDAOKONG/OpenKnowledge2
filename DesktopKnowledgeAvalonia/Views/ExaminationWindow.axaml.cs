@@ -368,22 +368,35 @@ public partial class ExaminationWindow : AppWindowBase
         bool hasNextSection = _viewModel.CurrentSectionIndex < _viewModel.Examination.ExaminationSections.Length - 1;
         NextButton.IsEnabled = hasNextQuestion || hasNextSection;
         
-        // Show/hide reference materials
-        bool hasReferenceMaterials = _viewModel.CurrentQuestion.ReferenceMaterials != null && 
-                                    _viewModel.CurrentQuestion.ReferenceMaterials.Length > 0;
+        // 修改: 检查所有级别的参考资料，而不仅仅是当前问题的参考资料
+        bool hasExamReferenceMaterials = _viewModel.Examination?.ExaminationMetadata?.ReferenceMaterials != null && 
+                                        _viewModel.Examination.ExaminationMetadata.ReferenceMaterials.Length > 0;
+        bool hasSectionReferenceMaterials = _viewModel.CurrentSection?.ReferenceMaterials != null && 
+                                            _viewModel.CurrentSection.ReferenceMaterials.Length > 0;
+        bool hasQuestionReferenceMaterials = _viewModel.CurrentQuestion.ReferenceMaterials != null && 
+                                            _viewModel.CurrentQuestion.ReferenceMaterials.Length > 0;
+                                            
+        // 查找是否有父问题的参考资料
+        Question? parentQuestion = FindParentQuestion();
+        bool hasParentReferenceMaterials = parentQuestion?.ReferenceMaterials != null && 
+                                           parentQuestion.ReferenceMaterials.Length > 0;
+                                            
+        bool hasAnyReferenceMaterials = hasExamReferenceMaterials || hasSectionReferenceMaterials || 
+                                       hasQuestionReferenceMaterials || hasParentReferenceMaterials;
+                                        
+        // 如果有任何级别的参考资料，就显示参考资料区域
+        ReferenceMaterialsExpander.IsVisible = hasAnyReferenceMaterials;
         
-        ReferenceMaterialsExpander.IsVisible = hasReferenceMaterials;
-        ReferenceMaterialsExpander.Header = _localizationService["exam.reference"];
+        // 修改: 移除参考资料的总标题，避免形成二级嵌套
+        // ReferenceMaterialsExpander.Header = _localizationService["exam.reference"];
+        ReferenceMaterialsExpander.Header = string.Empty;
         
-        if (hasReferenceMaterials)
+        if (hasAnyReferenceMaterials)
         {
             BuildReferenceMaterialsUI();
         }
         
-        // Build answer UI based on question type
-        BuildAnswerUI();
-        
-        // Update section expandable state
+        // 更新章节展开状态
         for (int i = 0; i < SectionsPanel.Children.Count; i++)
         {
             if (SectionsPanel.Children[i] is Expander expander)
@@ -392,8 +405,9 @@ public partial class ExaminationWindow : AppWindowBase
             }
         }
         
-        BuildReferenceMaterialsUI();
+        BuildAnswerUI();
     }
+
     
     // Helper method to ensure judgment questions have proper Options
     private void EnsureQuestionOptions()
@@ -419,23 +433,26 @@ public partial class ExaminationWindow : AppWindowBase
     private void BuildReferenceMaterialsUI()
     {
         ReferenceMaterialsPanel.Children.Clear();
-        
-        // 添加考试级别参考资料
+    
+        // Restore the main header for the single expander
+        ReferenceMaterialsExpander.Header = _localizationService["exam.reference"];
+    
+        // Add examination level materials
         AddReferenceSection(
             _viewModel.Examination?.ExaminationMetadata?.ReferenceMaterials,
             _localizationService["exam.reference.examination"]);
-        
-        // 添加章节级别参考资料
+    
+        // Add section level materials
         AddReferenceSection(
             _viewModel.CurrentSection?.ReferenceMaterials,
             _localizationService["exam.reference.section"]);
-        
-        // 添加题目级别参考资料
+    
+        // Add question level materials
         AddReferenceSection(
             _viewModel.CurrentQuestion?.ReferenceMaterials,
             _localizationService["exam.reference.question"]);
-        
-        // 查找并添加父题目级别参考资料（如果当前题目是子题目）
+    
+        // Add parent question materials (if current question is a sub-question)
         Question? parentQuestion = FindParentQuestion();
         if (parentQuestion != null)
         {
@@ -451,17 +468,12 @@ public partial class ExaminationWindow : AppWindowBase
         if (materials == null || materials.Length == 0)
             return;
             
-        var expander = new Expander
-        {
-            Header = headerText,
-            IsExpanded = true,
-            Margin = new Thickness(0, 5, 0, 5)
-        };
-        
-        var sectionPanel = new StackPanel { Spacing = 5 };
         bool hasContent = false;
         
-        // 只处理文本参考资料
+        // 创建面板来容纳参考资料
+        var sectionPanel = new StackPanel { Spacing = 5 };
+        
+        // 处理文本参考资料
         foreach (var material in materials)
         {
             if (material.Materials != null && material.Materials.Length > 0)
@@ -478,11 +490,23 @@ public partial class ExaminationWindow : AppWindowBase
                     hasContent = true;
                 }
             }
+            
+            // 处理其他类型的参考资料
+            // 这里可以添加对文档、图像、音频、视频等的处理
         }
         
         if (hasContent)
         {
+            // 创建带标题的展开器作为一级元素
+            var expander = new Expander
+            {
+                Header = headerText,
+                IsExpanded = true,
+                Margin = new Thickness(0, 5, 0, 5)
+            };
             expander.Content = sectionPanel;
+            
+            // 添加到主面板
             ReferenceMaterialsPanel.Children.Add(expander);
         }
     }
@@ -513,6 +537,7 @@ public partial class ExaminationWindow : AppWindowBase
         
         return null;
     }
+
 
 
         
