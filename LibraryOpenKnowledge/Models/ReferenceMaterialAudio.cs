@@ -1,0 +1,12 @@
+﻿using System.Runtime.Serialization;
+
+namespace LibraryOpenKnowledge.Models;
+
+[Serializable]
+public class ReferenceMaterialAudio
+{
+    public ReferenceMaterialAudioTypes Type { get; set; } = ReferenceMaterialAudioTypes.Unknown;
+    public string? Uri { get; set; } = null;
+    public byte[]? Audio { get; set; } = null;
+
+}

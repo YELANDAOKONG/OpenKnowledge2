@@ -3,7 +3,7 @@
 namespace LibraryOpenKnowledge.Models;
 
 [Serializable]
-public enum ReferenceMaterialImageTypes
+public enum ReferenceMaterialAudioTypes
 {
     Unknown = 0,
     Local = 1,

@@ -6,5 +6,10 @@ namespace LibraryOpenKnowledge.Models;
 public class ReferenceMaterial
 {
     public string[] Materials { get; set; } = new string[] { };
+    
     public ReferenceMaterialImage[]? Images { get; set; } = null;
+    public ReferenceMaterialAudio[]? Audios { get; set; } = null;
+    public ReferenceMaterialVideo[]? Videos { get; set; } = null;
+    
+    
 }
