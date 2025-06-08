@@ -220,7 +220,7 @@
   "main.stats.total.examination.time": "{0} hours spent on examinations",
   "main.stats.total.study.time": "{0} hours spent on studying",
 
-  "exam.reference.exam": "Exam Reference Materials",
+  "exam.reference.examination": "Exam Reference Materials",
   "exam.reference.section": "Section Reference Materials",
   "exam.reference.question": "Question Reference Materials",
   "exam.reference.subquestion": "Sub-question"

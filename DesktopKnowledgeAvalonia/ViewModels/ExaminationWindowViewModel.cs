@@ -58,6 +58,8 @@ public partial class ExaminationWindowViewModel : ViewModelBase
     
     public event EventHandler? WindowCloseRequested;
     
+    public Question? ParentQuestion { get; private set; }
+    
     // This will be assigned by the view
     public Action SaveCurrentAnswer { get; set; } = () => { };
     

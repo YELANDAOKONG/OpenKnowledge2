@@ -74,6 +74,16 @@ public class ScoreRecord
                         // 添加到子问题总分
                         subQuestionsTotal += subQuestion.Score;
                         subQuestionsObtained += subQuestionScore;
+                        
+                        // 在QuestionScores中保存子问题分数（可选）
+                        string subQuestionId = subQuestion.QuestionId ?? $"{questionId}_sub_{subQuestion.GetHashCode()}";
+                        sectionQuestionScores[subQuestionId] = new QuestionScore
+                        {
+                            QuestionId = subQuestionId,
+                            MaxScore = subQuestion.Score,
+                            ObtainedScore = subQuestionScore,
+                            IsCorrect = Math.Abs(subQuestionScore - subQuestion.Score) < 0.001
+                        };
                     }
                     
                     // 计算获得的子问题总分百分比
@@ -84,6 +94,31 @@ public class ScoreRecord
                     
                     // 如果得分至少为最高分的90%，则认为复合题是正确的
                     isCorrect = percentage >= 0.9;
+                    
+                    // 修复：如果复合题本身有答案字段，也应该单独评分
+                    if (question.Answer != null && question.Answer.Length > 0)
+                    {
+                        // 复合题主题被视为一道独立题目
+                        double mainQuestionScore = 0;
+                        bool mainIsCorrect = false;
+                        
+                        if (question.IsAiJudge)
+                        {
+                            // AI评分复合题主题
+                            mainQuestionScore = question.ObtainedScore ?? 0.0;
+                            mainIsCorrect = Math.Abs(mainQuestionScore - question.Score) < 0.001;
+                        }
+                        else
+                        {
+                            // 自动评分复合题主题
+                            mainIsCorrect = IsAnswerCorrect(question);
+                            mainQuestionScore = mainIsCorrect ? question.Score : 0;
+                        }
+                        
+                        // 更新总分（不更改之前计算的子问题总分）
+                        questionScore = mainQuestionScore;
+                        isCorrect = mainIsCorrect;
+                    }
                 }
                 // 处理AI评分题
                 else if (question.IsAiJudge)
@@ -119,7 +154,7 @@ public class ScoreRecord
             ObtainedScore += sectionScore;
         }
     }
-    
+
     /// <summary>
     /// Gets the question score for a specific question
     /// </summary>

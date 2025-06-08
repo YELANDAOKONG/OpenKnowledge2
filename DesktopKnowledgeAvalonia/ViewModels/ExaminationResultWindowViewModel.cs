@@ -84,7 +84,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
     // Event to request saving the examination
     public event EventHandler<SaveExaminationEventArgs>? SaveExaminationRequested;
     public event EventHandler? ExitRequested;
-
+    
     public ExaminationResultWindowViewModel(ConfigureService configService, LocalizationService localizationService)
     {
         _configService = configService;
@@ -133,41 +133,66 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             
             foreach (var question in section.Questions)
             {
-                // 只看 IsAiJudge 标记，不考虑题目类型
-                if (question.IsAiJudge)
+                InitializeQuestionAiStatus(question);
+                
+                // 处理子问题
+                if (question.SubQuestions != null && question.SubQuestions.Count > 0)
                 {
-                    // Check if this AI question has been evaluated
-                    bool hasAnswer = question.UserAnswer != null && question.UserAnswer.Length > 0;
-                    
-                    if (hasAnswer)
+                    foreach (var subQuestion in question.SubQuestions)
                     {
-                        // If there's AI feedback, consider it evaluated
-                        if (!string.IsNullOrEmpty(question.AiFeedback))
-                        {
-                            question.IsAiEvaluated = true;
-                            // ObtainedScore should already be set by AI
-                        }
-                        else
-                        {
-                            // Not yet evaluated by AI
-                            question.IsAiEvaluated = false;
-                            question.ObtainedScore = 0.0; // Set obtained score to 0, but keep original Score (max score)
-                        }
+                        InitializeQuestionAiStatus(subQuestion);
                     }
-                    else
-                    {
-                        // No answer provided, consider evaluated with 0 score
-                        question.IsAiEvaluated = true;
-                        question.ObtainedScore = 0.0;
-                    }
-                }
-                else
-                {
-                    // Non-AI questions are always considered evaluated
-                    question.IsAiEvaluated = true;
                 }
             }
         }
+    }
+
+    // 抽取方法处理单个问题的AI状态初始化
+    private void InitializeQuestionAiStatus(Question question)
+    {
+        if (question.IsAiJudge)
+        {
+            // 检查这个AI问题是否已被评估
+            bool hasAnswer = question.UserAnswer != null && question.UserAnswer.Length > 0;
+            
+            if (hasAnswer)
+            {
+                // 如果有AI反馈，认为已评估
+                if (!string.IsNullOrEmpty(question.AiFeedback))
+                {
+                    question.IsAiEvaluated = true;
+                    // ObtainedScore应该已由AI设置
+                }
+                else
+                {
+                    // 尚未由AI评估
+                    question.IsAiEvaluated = false;
+                    question.ObtainedScore = 0.0; // 设置获得分数为0，但保留原始分数（最高分）
+                }
+            }
+            else
+            {
+                // 未提供答案，认为已评估，分数为0
+                question.IsAiEvaluated = true;
+                question.ObtainedScore = 0.0;
+            }
+        }
+        else
+        {
+            // 非AI问题始终视为已评估
+            question.IsAiEvaluated = true;
+        }
+    }
+
+    
+
+    // 判断单个问题是否需要AI评分
+    private bool IsQuestionNeedsAiScoring(Question question)
+    {
+        return question.IsAiJudge && 
+               question.UserAnswer != null && 
+               question.UserAnswer.Length > 0 && 
+               !question.IsAiEvaluated;
     }
 
     private void UpdateResultStatusText()
@@ -188,28 +213,30 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
     {
         if (Examination?.ExaminationSections == null) 
             return false;
-    
+
         foreach (var section in Examination.ExaminationSections)
         {
             if (section.Questions == null) 
                 continue;
-        
+            
             foreach (var question in section.Questions)
             {
-                // A question needs AI scoring if:
-                // 1. It's marked for AI judging
-                // 2. User provided an answer
-                // 3. It hasn't been evaluated yet
-                if (question.IsAiJudge && 
-                    question.UserAnswer != null && 
-                    question.UserAnswer.Length > 0 && 
-                    !question.IsAiEvaluated)
-                {
+                // 检查主问题是否需要AI评分
+                if (IsQuestionNeedsAiScoring(question))
                     return true;
+                
+                // 检查子问题是否需要AI评分
+                if (question.SubQuestions != null)
+                {
+                    foreach (var subQuestion in question.SubQuestions)
+                    {
+                        if (IsQuestionNeedsAiScoring(subQuestion))
+                            return true;
+                    }
                 }
             }
         }
-    
+
         return false;
     }
 
@@ -257,65 +284,20 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                 
                 if (allScores.TryGetValue(questionId, out var score))
                 {
-                    string correctAnswer = "";
-                    if (question.Answer != null && question.Answer.Length > 0)
+                    // 创建主问题的ViewModel
+                    var questionViewModel = CreateQuestionScoreViewModel(
+                        questionNumber++, 
+                        section.Title, 
+                        question, 
+                        score);
+                    
+                    // 处理复合题的子问题
+                    if (question.Type == QuestionTypes.Complex && 
+                        question.SubQuestions != null && 
+                        question.SubQuestions.Count > 0)
                     {
-                        correctAnswer = string.Join(", ", question.Answer);
-                    }
-
-                    var questionViewModel = new QuestionScoreViewModel
-                    {
-                        QuestionNumber = questionNumber++,
-                        SectionTitle = section.Title,
-                        QuestionId = questionId,
-                        QuestionType = question.Type,
-                        QuestionStem = question.Stem,
-                        MaxScore = question.Score,
-                        ObtainedScore = score.ObtainedScore,
-                        IsCorrect = score.IsCorrect,
-                        IsAiJudged = question.IsAiJudge,
-                        IsEvaluated = question.IsAiEvaluated,
-                        UserAnswer = question.UserAnswer != null && question.UserAnswer.Length > 0 
-                            ? string.Join(", ", question.UserAnswer) 
-                            : _localizationService["exam.result.no.answer"],
-                        CorrectAnswer = correctAnswer,
-                        AiFeedback = question.AiFeedback ?? string.Empty,
-                        SubQuestions = new ObservableCollection<QuestionScoreViewModel>()
-                    };
-
-                    // 如果是复合题，添加子问题
-                    if (question.Type == QuestionTypes.Complex && question.SubQuestions != null && question.SubQuestions.Count > 0)
-                    {
-                        for (int i = 0; i < question.SubQuestions.Count; i++)
-                        {
-                            var subQuestion = question.SubQuestions[i];
-                            string subQuestionId = subQuestion.QuestionId ?? $"{questionId}_sub_{i}";
-                            
-                            string subCorrectAnswer = "";
-                            if (subQuestion.Answer != null && subQuestion.Answer.Length > 0)
-                            {
-                                subCorrectAnswer = string.Join(", ", subQuestion.Answer);
-                            }
-
-                            questionViewModel.SubQuestions.Add(new QuestionScoreViewModel
-                            {
-                                QuestionNumber = i + 1,
-                                SectionTitle = section.Title,
-                                QuestionId = subQuestionId,
-                                QuestionType = subQuestion.Type,
-                                QuestionStem = subQuestion.Stem,
-                                MaxScore = subQuestion.Score,
-                                ObtainedScore = subQuestion.ObtainedScore ?? 0,
-                                IsCorrect = Math.Abs((subQuestion.ObtainedScore ?? 0) - subQuestion.Score) < 0.001,
-                                IsAiJudged = subQuestion.IsAiJudge,
-                                IsEvaluated = subQuestion.IsAiEvaluated,
-                                UserAnswer = subQuestion.UserAnswer != null && subQuestion.UserAnswer.Length > 0 
-                                    ? string.Join(", ", subQuestion.UserAnswer) 
-                                    : _localizationService["exam.result.no.answer"],
-                                CorrectAnswer = subCorrectAnswer,
-                                AiFeedback = subQuestion.AiFeedback ?? string.Empty
-                            });
-                        }
+                        // 递归处理子问题
+                        ProcessSubQuestions(questionViewModel, question, 0);
                     }
                     
                     sectionVM.Questions.Add(questionViewModel);
@@ -330,6 +312,94 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
         
         SectionScores = newSections;
     }
+
+    // 创建单个问题的ViewModel
+    private QuestionScoreViewModel CreateQuestionScoreViewModel(
+        int number, 
+        string sectionTitle, 
+        Question question, 
+        QuestionScore score)
+    {
+        string correctAnswer = "";
+        if (question.Answer != null && question.Answer.Length > 0)
+        {
+            correctAnswer = string.Join(", ", question.Answer);
+        }
+
+        return new QuestionScoreViewModel
+        {
+            QuestionNumber = number,
+            SectionTitle = sectionTitle,
+            QuestionId = question.QuestionId ?? string.Empty,
+            QuestionType = question.Type,
+            QuestionStem = question.Stem,
+            MaxScore = question.Score,
+            ObtainedScore = score.ObtainedScore,
+            IsCorrect = score.IsCorrect,
+            IsAiJudged = question.IsAiJudge,
+            IsEvaluated = question.IsAiEvaluated,
+            UserAnswer = question.UserAnswer != null && question.UserAnswer.Length > 0 
+                ? string.Join(", ", question.UserAnswer) 
+                : _localizationService["exam.result.no.answer"],
+            CorrectAnswer = correctAnswer,
+            AiFeedback = question.AiFeedback ?? string.Empty,
+            SubQuestions = new ObservableCollection<QuestionScoreViewModel>()
+        };
+    }
+
+    // 递归处理子问题，支持任意嵌套层级
+    private void ProcessSubQuestions(
+        QuestionScoreViewModel parentViewModel,
+        Question parentQuestion,
+        int depth)
+    {
+        if (parentQuestion.SubQuestions == null || parentQuestion.SubQuestions.Count == 0)
+            return;
+            
+        for (int i = 0; i < parentQuestion.SubQuestions.Count; i++)
+        {
+            var subQuestion = parentQuestion.SubQuestions[i];
+            string subQuestionId = subQuestion.QuestionId ?? $"{parentQuestion.QuestionId}_sub_{i}";
+            
+            string subCorrectAnswer = "";
+            if (subQuestion.Answer != null && subQuestion.Answer.Length > 0)
+            {
+                subCorrectAnswer = string.Join(", ", subQuestion.Answer);
+            }
+            
+            // 创建子问题的ViewModel
+            var subViewModel = new QuestionScoreViewModel
+            {
+                QuestionNumber = i + 1,
+                SectionTitle = parentViewModel.SectionTitle,
+                QuestionId = subQuestionId,
+                QuestionType = subQuestion.Type,
+                QuestionStem = subQuestion.Stem,
+                MaxScore = subQuestion.Score,
+                ObtainedScore = subQuestion.ObtainedScore ?? 0,
+                IsCorrect = Math.Abs((subQuestion.ObtainedScore ?? 0) - subQuestion.Score) < 0.001,
+                IsAiJudged = subQuestion.IsAiJudge,
+                IsEvaluated = subQuestion.IsAiEvaluated,
+                UserAnswer = subQuestion.UserAnswer != null && subQuestion.UserAnswer.Length > 0 
+                    ? string.Join(", ", subQuestion.UserAnswer) 
+                    : _localizationService["exam.result.no.answer"],
+                CorrectAnswer = subCorrectAnswer,
+                AiFeedback = subQuestion.AiFeedback ?? string.Empty,
+                SubQuestions = new ObservableCollection<QuestionScoreViewModel>()
+            };
+            
+            // 如果子问题也是复合题，递归处理其子问题
+            if (subQuestion.Type == QuestionTypes.Complex && 
+                subQuestion.SubQuestions != null && 
+                subQuestion.SubQuestions.Count > 0)
+            {
+                ProcessSubQuestions(subViewModel, subQuestion, depth + 1);
+            }
+            
+            parentViewModel.SubQuestions.Add(subViewModel);
+        }
+    }
+
 
     [RelayCommand]
     private async Task StartAiScoringAsync()
@@ -367,95 +437,158 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
     {
         if (Examination?.ExaminationSections == null) 
             return;
-    
+
         var aiClient = AiTools.CreateOpenAiClient(_configService.SystemConfig);
-    
-        // Count questions needing AI scoring
-        var questionsToScore = new List<(ExaminationSection section, Question question)>();
-    
+
+        // 计算需要AI评分的问题
+        var questionsToScore = new List<(ExaminationSection section, Question question, Question? parentQuestion)>();
+
         foreach (var section in Examination.ExaminationSections)
         {
             if (section.Questions == null) 
                 continue;
-        
+            
             foreach (var question in section.Questions)
             {
-                if (question.IsAiJudge && 
-                    question.UserAnswer != null && 
-                    question.UserAnswer.Length > 0 &&
-                    !question.IsAiEvaluated)
+                // 检查主问题
+                if (IsQuestionNeedsAiScoring(question))
                 {
-                    questionsToScore.Add((section, question));
+                    questionsToScore.Add((section, question, null));
+                }
+                
+                // 检查复合题的子问题
+                if (question.Type == QuestionTypes.Complex && 
+                    question.SubQuestions != null && 
+                    question.SubQuestions.Count > 0)
+                {
+                    foreach (var subQuestion in question.SubQuestions)
+                    {
+                        if (IsQuestionNeedsAiScoring(subQuestion))
+                        {
+                            questionsToScore.Add((section, subQuestion, question));
+                        }
+                    }
                 }
             }
         }
-    
+
         if (questionsToScore.Count == 0) 
             return;
-    
-        // Process each question
+
+        // 处理每个问题
         for (int i = 0; i < questionsToScore.Count; i++)
         {
-            var (section, question) = questionsToScore[i];
-        
-            // Update progress display
+            var (section, question, parentQuestion) = questionsToScore[i];
+            
+            // 更新进度显示
             CurrentScoringQuestionProgress = $"{i + 1} / {questionsToScore.Count}";
-        
+            
             string cleanStem = question.Stem
                 .Replace("\r\n", " ")
                 .Replace("\n", " ")
                 .Replace("\r", " ");
             
             CurrentScoringQuestion = $"{section.Title}: {cleanStem.Substring(0, Math.Min(50, cleanStem.Length))}...";
-        
+            
             try
             {
-                // Generate prompt for AI scoring
-                string prompt = PromptTemplateManager.GenerateGradingPrompt(
-                    question, 
-                    _configService.AppConfig.PromptGradingTemplate,
-                    true,
-                    _localizationService.CurrentLanguage);
-            
+                // 为AI评分生成提示
+                string prompt = GenerateComprehensiveGradingPrompt(section, question, parentQuestion);
+                
                 _configService.AppStatistics.AddAiCallCount(_configService);
-                // Send to AI for scoring
+                // 发送到AI进行评分
                 string? response = await AiTools.SendChatMessageAsync(
                     aiClient,
                     _configService.SystemConfig,
                     prompt);
-            
+                
                 if (!string.IsNullOrEmpty(response))
                 {
-                    // Parse AI response
+                    // 解析AI响应
                     var result = PromptTemplateManager.ParseAIResponse(response);
-                
-                    // Update question with AI results
+                    
+                    // 用AI结果更新问题
                     question.ObtainedScore = result.Score;
                     question.AiFeedback = result.Feedback;
-                    question.IsAiEvaluated = true; // Mark as evaluated
+                    question.IsAiEvaluated = true; // 标记为已评估
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error scoring question {question.QuestionId}: {ex.Message}");
-                // Mark as evaluated even if scoring failed
+                // 即使评分失败也标记为已评估
                 question.IsAiEvaluated = true;
                 question.ObtainedScore = 0.0;
                 question.AiFeedback = "Error occurred during AI evaluation.";
             }
-        
-            // Update progress
+            
+            // 更新进度
             AiScoringProgress = (double)(i + 1) / questionsToScore.Count * 100;
-        
-            // Recalculate scores and regenerate UI after each question
+            
+            // 重新计算分数并在每个问题后重新生成UI
             ScoreRecord.CalculateScores(Examination);
             ObtainedScore = ScoreRecord.ObtainedScore;
             ScorePercentage = TotalScore > 0 ? (ObtainedScore / TotalScore * 100) : 0;
             IsPassed = ScorePercentage >= 60;
             
-            // Trigger complete UI regeneration
+            // 触发完整UI重新生成
             InitializeQuestionScores();
         }
+    }
+
+    // 生成包含所有相关参考资料的评分提示
+    private string GenerateComprehensiveGradingPrompt(ExaminationSection section, Question question, Question? parentQuestion)
+    {
+        // 收集所有相关参考资料
+        var allReferenceMaterials = new List<ReferenceMaterial>();
+        
+        // 添加考试级别的参考资料
+        if (Examination.ExaminationMetadata.ReferenceMaterials != null)
+        {
+            allReferenceMaterials.AddRange(Examination.ExaminationMetadata.ReferenceMaterials);
+        }
+        
+        // 添加章节级别的参考资料
+        if (section.ReferenceMaterials != null)
+        {
+            allReferenceMaterials.AddRange(section.ReferenceMaterials);
+        }
+        
+        // 如果是子问题，添加父问题的参考资料
+        if (parentQuestion != null && parentQuestion.ReferenceMaterials != null)
+        {
+            allReferenceMaterials.AddRange(parentQuestion.ReferenceMaterials);
+        }
+        
+        // 添加问题自身的参考资料
+        if (question.ReferenceMaterials != null)
+        {
+            allReferenceMaterials.AddRange(question.ReferenceMaterials);
+        }
+        
+        // 创建扩展的问题对象，包含收集到的所有参考资料
+        var extendedQuestion = new Question
+        {
+            QuestionId = question.QuestionId,
+            Type = question.Type,
+            Stem = question.Stem,
+            Options = question.Options,
+            Score = question.Score,
+            UserAnswer = question.UserAnswer,
+            Answer = question.Answer,
+            ReferenceAnswer = question.ReferenceAnswer,
+            ReferenceMaterials = allReferenceMaterials.ToArray(),
+            IsAiJudge = question.IsAiJudge,
+            IgnoreSpace = question.IgnoreSpace,
+            Commits = question.Commits
+        };
+        
+        // 使用PromptTemplateManager生成包含所有参考资料的提示
+        return PromptTemplateManager.GenerateGradingPrompt(
+            extendedQuestion, 
+            _configService.AppConfig.PromptGradingTemplate,
+            true,
+            _localizationService.CurrentLanguage);
     }
 
     [RelayCommand]

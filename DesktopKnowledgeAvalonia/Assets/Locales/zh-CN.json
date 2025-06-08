@@ -220,7 +220,7 @@
   "main.stats.total.examination.time": "累计考试时长 {0} 小时",
   "main.stats.total.study.time": "累计学习时长 {0} 小时",
 
-  "exam.reference.exam": "试卷参考资料",
+  "exam.reference.examination": "试卷参考资料",
   "exam.reference.section": "章节参考资料",
   "exam.reference.question": "题目参考资料",
   "exam.reference.subquestion": "子题目"

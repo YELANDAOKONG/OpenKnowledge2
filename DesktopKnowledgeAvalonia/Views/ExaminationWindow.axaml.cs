@@ -419,23 +419,77 @@ public partial class ExaminationWindow : AppWindowBase
     {
         ReferenceMaterialsPanel.Children.Clear();
         
-        // 辅助函数：添加参考资料到面板
-        void AddMaterialsToPanel(ReferenceMaterial[] materials, string sourceName)
+        // 检查考试级别的参考资料
+        if (_viewModel.Examination?.ExaminationMetadata?.ReferenceMaterials != null && 
+            _viewModel.Examination.ExaminationMetadata.ReferenceMaterials.Length > 0)
         {
-            if (materials == null || materials.Length == 0) return;
-            
-            // 添加资料来源标题
-            var sourceHeader = new TextBlock
+            AddReferenceMaterialsToPanel(
+                _viewModel.Examination.ExaminationMetadata.ReferenceMaterials,
+                _localizationService["exam.reference.examination"]);
+        }
+        
+        // 检查当前章节的参考资料
+        if (_viewModel.CurrentSection?.ReferenceMaterials != null && 
+            _viewModel.CurrentSection.ReferenceMaterials.Length > 0)
+        {
+            AddReferenceMaterialsToPanel(
+                _viewModel.CurrentSection.ReferenceMaterials,
+                _localizationService["exam.reference.section"]);
+        }
+        
+        // 检查当前问题的参考资料
+        if (_viewModel.CurrentQuestion?.ReferenceMaterials != null && 
+            _viewModel.CurrentQuestion.ReferenceMaterials.Length > 0)
+        {
+            AddReferenceMaterialsToPanel(
+                _viewModel.CurrentQuestion.ReferenceMaterials,
+                _localizationService["exam.reference.question"]);
+        }
+        
+        // 如果是复合题中的子问题，检查父问题的参考资料
+        if (_viewModel.ParentQuestion != null && 
+            _viewModel.ParentQuestion.ReferenceMaterials != null &&
+            _viewModel.ParentQuestion.ReferenceMaterials.Length > 0)
+        {
+            AddReferenceMaterialsToPanel(
+                _viewModel.ParentQuestion.ReferenceMaterials,
+                _localizationService["exam.reference.parent"]);
+        }
+    }
+
+    private void AddReferenceMaterialsToPanel(ReferenceMaterial[] materials, string sourceName)
+    {
+        if (materials == null || materials.Length == 0) return;
+        
+        // 创建源标题的展开面板
+        var sourceExpander = new Expander
+        {
+            Header = sourceName,
+            IsExpanded = true,
+            Margin = new Thickness(0, 5, 0, 5)
+        };
+        
+        var sourcePanel = new StackPanel
+        {
+            Spacing = 5
+        };
+        
+        bool hasContent = false;
+        
+        // 处理文本参考资料
+        if (materials.Any(m => m.Materials != null && m.Materials.Length > 0))
+        {
+            var textExpander = new Expander
             {
-                Text = sourceName,
-                FontWeight = FontWeight.Bold,
-                Margin = new Thickness(0, 10, 0, 5)
+                Header = _localizationService["exam.reference.text"],
+                IsExpanded = true,
+                Margin = new Thickness(0, 5, 0, 5)
             };
-            ReferenceMaterialsPanel.Children.Add(sourceHeader);
+            
+            var textPanel = new StackPanel();
             
             foreach (var material in materials)
             {
-                // 添加文本资料
                 if (material.Materials != null && material.Materials.Length > 0)
                 {
                     foreach (var text in material.Materials)
@@ -446,11 +500,30 @@ public partial class ExaminationWindow : AppWindowBase
                             TextWrapping = TextWrapping.Wrap,
                             Margin = new Thickness(0, 3)
                         };
-                        ReferenceMaterialsPanel.Children.Add(textBlock);
+                        textPanel.Children.Add(textBlock);
                     }
+                    hasContent = true;
                 }
-                
-                // 添加图片资料
+            }
+            
+            textExpander.Content = textPanel;
+            sourcePanel.Children.Add(textExpander);
+        }
+        
+        // 处理图片参考资料
+        if (materials.Any(m => m.Images != null && m.Images.Length > 0))
+        {
+            var imagesExpander = new Expander
+            {
+                Header = _localizationService["exam.reference.images"],
+                IsExpanded = true,
+                Margin = new Thickness(0, 5, 0, 5)
+            };
+            
+            var imagesPanel = new StackPanel();
+            
+            foreach (var material in materials)
+            {
                 if (material.Images != null && material.Images.Length > 0)
                 {
                     foreach (var img in material.Images)
@@ -477,7 +550,7 @@ public partial class ExaminationWindow : AppWindowBase
                                 case ReferenceMaterialImageTypes.Embedded:
                                     if (img.Image != null)
                                     {
-                                        using var stream = new System.IO.MemoryStream(img.Image);
+                                        using var stream = new MemoryStream(img.Image);
                                         image = new Image
                                         {
                                             Source = new Bitmap(stream),
@@ -490,59 +563,71 @@ public partial class ExaminationWindow : AppWindowBase
                             
                             if (image != null)
                             {
-                                ReferenceMaterialsPanel.Children.Add(image);
+                                imagesPanel.Children.Add(image);
+                                hasContent = true;
                             }
                         }
                         catch (Exception ex)
                         {
-                            // 添加错误文本
                             var errorText = new TextBlock
                             {
                                 Text = $"Error loading image: {ex.Message}",
                                 Foreground = new SolidColorBrush(Colors.Red),
                                 Margin = new Thickness(0, 5)
                             };
-                            ReferenceMaterialsPanel.Children.Add(errorText);
+                            imagesPanel.Children.Add(errorText);
                         }
                     }
                 }
             }
+            
+            imagesExpander.Content = imagesPanel;
+            sourcePanel.Children.Add(imagesExpander);
         }
         
-        // 显示试卷级参考资料
-        if (_viewModel.Examination?.ExaminationMetadata?.ReferenceMaterials != null)
+        // 处理音频参考资料
+        if (materials.Any(m => m.Audios != null && m.Audios.Length > 0))
         {
-            AddMaterialsToPanel(_viewModel.Examination.ExaminationMetadata.ReferenceMaterials, _localizationService["exam.reference.exam"]);
-        }
-        
-        // 显示章节级参考资料
-        if (_viewModel.CurrentSection?.ReferenceMaterials != null)
-        {
-            AddMaterialsToPanel(_viewModel.CurrentSection.ReferenceMaterials, _localizationService["exam.reference.section"]);
-        }
-        
-        // 显示问题级参考资料
-        if (_viewModel.CurrentQuestion?.ReferenceMaterials != null)
-        {
-            AddMaterialsToPanel(_viewModel.CurrentQuestion.ReferenceMaterials, _localizationService["exam.reference.question"]);
-        }
-        
-        // 对于复合题，显示子问题的参考资料
-        if (_viewModel.CurrentQuestion?.Type == QuestionTypes.Complex && _viewModel.CurrentQuestion.SubQuestions != null)
-        {
-            for (int i = 0; i < _viewModel.CurrentQuestion.SubQuestions.Count; i++)
+            var audiosExpander = new Expander
             {
-                var subQuestion = _viewModel.CurrentQuestion.SubQuestions[i];
-                if (subQuestion.ReferenceMaterials != null && subQuestion.ReferenceMaterials.Length > 0)
-                {
-                    AddMaterialsToPanel(subQuestion.ReferenceMaterials, $"{_localizationService["exam.reference.subquestion"]} {i + 1}");
-                }
-            }
+                Header = _localizationService["exam.reference.audios"],
+                IsExpanded = true,
+                Margin = new Thickness(0, 5, 0, 5)
+            };
+            
+            var audiosPanel = new StackPanel();
+            // 音频资料处理逻辑...
+            
+            audiosExpander.Content = audiosPanel;
+            sourcePanel.Children.Add(audiosExpander);
+            hasContent = true;
         }
         
-        // 根据是否有参考资料显示/隐藏折叠面板
-        ReferenceMaterialsExpander.IsVisible = ReferenceMaterialsPanel.Children.Count > 0;
+        // 处理视频参考资料
+        if (materials.Any(m => m.Videos != null && m.Videos.Length > 0))
+        {
+            var videosExpander = new Expander
+            {
+                Header = _localizationService["exam.reference.videos"],
+                IsExpanded = true,
+                Margin = new Thickness(0, 5, 0, 5)
+            };
+            
+            var videosPanel = new StackPanel();
+            // 视频资料处理逻辑...
+            
+            videosExpander.Content = videosPanel;
+            sourcePanel.Children.Add(videosExpander);
+            hasContent = true;
+        }
+        
+        if (hasContent)
+        {
+            sourceExpander.Content = sourcePanel;
+            ReferenceMaterialsPanel.Children.Add(sourceExpander);
+        }
     }
+
         
     private void BuildAnswerUI()
     {
