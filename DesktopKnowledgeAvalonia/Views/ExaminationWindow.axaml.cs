@@ -391,6 +391,8 @@ public partial class ExaminationWindow : AppWindowBase
                 expander.IsExpanded = i == _viewModel.CurrentSectionIndex;
             }
         }
+        
+        BuildReferenceMaterialsUI();
     }
     
     // Helper method to ensure judgment questions have proper Options
