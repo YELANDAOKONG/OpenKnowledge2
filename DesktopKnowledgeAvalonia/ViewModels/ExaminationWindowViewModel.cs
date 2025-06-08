@@ -108,7 +108,7 @@ public partial class ExaminationWindowViewModel : ViewModelBase
         {
             if (_configService.AppData.ExaminationTimer.HasValue)
             {
-                var elapsed = DateTimeOffset.Now.ToUnixTimeMilliseconds() - _configService.AppData.ExaminationTimer.Value;
+                var elapsed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - _configService.AppData.ExaminationTimer.Value;
                 var timeSpan = TimeSpan.FromMilliseconds(elapsed);
                 TimeRemaining = $"{timeSpan.Hours:00}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}";
             }
@@ -274,7 +274,7 @@ public partial class ExaminationWindowViewModel : ViewModelBase
                 // Set or update timer
                 if (!_configService.AppData.ExaminationTimer.HasValue)
                 {
-                    _configService.AppData.ExaminationTimer = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                    _configService.AppData.ExaminationTimer = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 }
                 
                 await _configService.SaveChangesAsync();
@@ -313,7 +313,7 @@ public partial class ExaminationWindowViewModel : ViewModelBase
                 // Set or update timer
                 if (!_configService.AppData.ExaminationTimer.HasValue)
                 {
-                    _configService.AppData.ExaminationTimer = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                    _configService.AppData.ExaminationTimer = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 }
                 
                 await _configService.SaveChangesAsync();
@@ -340,6 +340,20 @@ public partial class ExaminationWindowViewModel : ViewModelBase
     
         // Save final answers
         SaveCurrentAnswer();
+        
+        // 计算考试时间并累加到统计数据
+        if (_configService.AppData.ExaminationTimer.HasValue)
+        {
+            long startTime = _configService.AppData.ExaminationTimer.Value;
+            long endTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            long timeSpent = endTime - startTime;
+        
+            // 将考试时间添加到统计数据
+            _configService.AppStatistics.AddExaminationTime(_configService, timeSpent);
+        
+            // 重置计时器
+            _configService.AppData.ExaminationTimer = null;
+        }
         
         // 累加统计计数
         var config = App.GetService<ConfigureService>();

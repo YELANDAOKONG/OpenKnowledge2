@@ -208,6 +208,16 @@
   "main.stats.total.exams.loaded": "总共加载考试 {0} 次",
   "main.stats.total.exams.submitted": "总共提交考试 {0} 次",
   "main.stats.total.app.starts": "总共启动程序 {0} 次",
-  "main.stats.total.question.interactions": "总共进行题目交互 {0} 次"
+  "main.stats.total.question.interactions": "总共进行题目交互 {0} 次",
+  "main.stats.week.study.started": "本周共启动学习 {0} 次",
+  "main.stats.month.study.started": "本月共启动学习 {0} 次",
+  "main.stats.year.study.started": "今年共启动学习 {0} 次",
+  "main.stats.total.study.started": "总共启动学习 {0} 次",
+  "main.stats.week.study.completed": "本周共完成学习 {0} 次",
+  "main.stats.month.study.completed": "本月共完成学习 {0} 次",
+  "main.stats.year.study.completed": "今年共完成学习 {0} 次",
+  "main.stats.total.study.completed": "总共完成学习 {0} 次",
+  "main.stats.total.examination.time": "累计考试时长 {0} 小时",
+  "main.stats.total.study.time": "累计学习时长 {0} 小时"
 
 }

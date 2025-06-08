@@ -217,7 +217,7 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         
         // 20%概率显示初始化天数
-        if (randomValue < 50)
+        if (randomValue < 35)
         {
             // 计算初始化至今的天数
             long initTimestamp = _configureService.AppStatistics.InitializationTime;
@@ -227,7 +227,7 @@ public partial class MainWindowViewModel : ViewModelBase
             return string.Format(_localizationService["main.stats.days.since.init"], daysSinceInit);
         }
         
-        // 剩余50%概率显示统计信息
+        // 剩余65%概率显示统计信息
         
         // 确定时间段（周、月、年、总计）
         int timePeriodValue = _random.Next(0, 100);
@@ -250,10 +250,12 @@ public partial class MainWindowViewModel : ViewModelBase
             timePeriod = "total";
         }
         
-        // 随机选择4种统计类型之一
-        int statTypeValue = _random.Next(0, 4);
+        // 随机选择统计类型
+        // 除了总计情况下可能显示学习和考试时间外，其他情况下显示8种统计类型之一
+        int statTypeCount = (timePeriod == "total") ? 10 : 8;
+        int statTypeValue = _random.Next(0, statTypeCount);
         
-        int statValue = 0;
+        object statValue = 0;
         string statKey = "";
         
         DateTime now = DateTime.UtcNow;
@@ -269,21 +271,19 @@ public partial class MainWindowViewModel : ViewModelBase
                 statKey = $"main.stats.{timePeriod}.ai.calls";
                 if (timePeriod == "week")
                 {
-                    statValue = _configureService.AppStatistics.AiCallCountWeeks.TryGetValue(currentYear, out var yearDict) && 
-                                yearDict.TryGetValue(currentWeek, out var count) ? count : 0;
+                    statValue = _configureService.AppStatistics.GetAiCallCountWeek();
                 }
                 else if (timePeriod == "month")
                 {
-                    statValue = _configureService.AppStatistics.AiCallCountMonths.TryGetValue(currentYear, out var yearDict) && 
-                                yearDict.TryGetValue(currentMonth, out var count) ? count : 0;
+                    statValue = _configureService.AppStatistics.GetAiCallCountMonth();
                 }
                 else if (timePeriod == "year")
                 {
-                    statValue = _configureService.AppStatistics.AiCallCountYears.TryGetValue(currentYear, out var count) ? count : 0;
+                    statValue = _configureService.AppStatistics.GetAiCallCountYear();
                 }
                 else // total
                 {
-                    statValue = _configureService.AppStatistics.AiCallCount;
+                    statValue = _configureService.AppStatistics.GetAiCallCount();
                 }
                 break;
                 
@@ -291,21 +291,19 @@ public partial class MainWindowViewModel : ViewModelBase
                 statKey = $"main.stats.{timePeriod}.exams.loaded";
                 if (timePeriod == "week")
                 {
-                    statValue = _configureService.AppStatistics.LoadExaminationCountWeeks.TryGetValue(currentYear, out var yearDict) && 
-                                yearDict.TryGetValue(currentWeek, out var count) ? count : 0;
+                    statValue = _configureService.AppStatistics.GetLoadExaminationCountWeek();
                 }
                 else if (timePeriod == "month")
                 {
-                    statValue = _configureService.AppStatistics.LoadExaminationCountMonths.TryGetValue(currentYear, out var yearDict) && 
-                                yearDict.TryGetValue(currentMonth, out var count) ? count : 0;
+                    statValue = _configureService.AppStatistics.GetLoadExaminationCountMonth();
                 }
                 else if (timePeriod == "year")
                 {
-                    statValue = _configureService.AppStatistics.LoadExaminationCountYears.TryGetValue(currentYear, out var count) ? count : 0;
+                    statValue = _configureService.AppStatistics.GetLoadExaminationCountYear();
                 }
                 else // total
                 {
-                    statValue = _configureService.AppStatistics.LoadExaminationCount;
+                    statValue = _configureService.AppStatistics.GetLoadExaminationCount();
                 }
                 break;
                 
@@ -313,44 +311,150 @@ public partial class MainWindowViewModel : ViewModelBase
                 statKey = $"main.stats.{timePeriod}.exams.submitted";
                 if (timePeriod == "week")
                 {
-                    statValue = _configureService.AppStatistics.SubmitExaminationCountWeeks.TryGetValue(currentYear, out var yearDict) && 
-                               yearDict.TryGetValue(currentWeek, out var count) ? count : 0;
+                    statValue = _configureService.AppStatistics.GetSubmitExaminationCountWeek();
                 }
                 else if (timePeriod == "month")
                 {
-                    statValue = _configureService.AppStatistics.SubmitExaminationCountMonths.TryGetValue(currentYear, out var yearDict) && 
-                               yearDict.TryGetValue(currentMonth, out var count) ? count : 0;
+                    statValue = _configureService.AppStatistics.GetSubmitExaminationCountMonth();
                 }
                 else if (timePeriod == "year")
                 {
-                    statValue = _configureService.AppStatistics.SubmitExaminationCountYears.TryGetValue(currentYear, out var count) ? count : 0;
+                    statValue = _configureService.AppStatistics.GetSubmitExaminationCountYear();
                 }
                 else // total
                 {
-                    statValue = _configureService.AppStatistics.SubmitExaminationCount;
+                    statValue = _configureService.AppStatistics.GetSubmitExaminationCount();
                 }
                 break;
                 
             case 3: // 程序启动次数
-            default:
                 statKey = $"main.stats.{timePeriod}.app.starts";
                 if (timePeriod == "week")
                 {
-                    statValue = _configureService.AppStatistics.ApplicationStartCountWeeks.TryGetValue(currentYear, out var yearDict) && 
-                               yearDict.TryGetValue(currentWeek, out var count) ? count : 0;
+                    statValue = _configureService.AppStatistics.GetApplicationStartCountWeek();
                 }
                 else if (timePeriod == "month")
                 {
-                    statValue = _configureService.AppStatistics.ApplicationStartCountMonths.TryGetValue(currentYear, out var yearDict) && 
-                               yearDict.TryGetValue(currentMonth, out var count) ? count : 0;
+                    statValue = _configureService.AppStatistics.GetApplicationStartCountMonth();
                 }
                 else if (timePeriod == "year")
                 {
-                    statValue = _configureService.AppStatistics.ApplicationStartCountYears.TryGetValue(currentYear, out var count) ? count : 0;
+                    statValue = _configureService.AppStatistics.GetApplicationStartCountYear();
                 }
                 else // total
                 {
-                    statValue = _configureService.AppStatistics.ApplicationStartCount;
+                    statValue = _configureService.AppStatistics.GetApplicationStartCount();
+                }
+                break;
+                
+            case 4: // 题目交互次数
+                statKey = $"main.stats.{timePeriod}.question.interactions";
+                if (timePeriod == "week")
+                {
+                    statValue = _configureService.AppStatistics.GetQuestionInteractionCountWeek();
+                }
+                else if (timePeriod == "month")
+                {
+                    statValue = _configureService.AppStatistics.GetQuestionInteractionCountMonth();
+                }
+                else if (timePeriod == "year")
+                {
+                    statValue = _configureService.AppStatistics.GetQuestionInteractionCountYear();
+                }
+                else // total
+                {
+                    statValue = _configureService.AppStatistics.GetQuestionInteractionCount();
+                }
+                break;
+                
+            case 5: // 启动学习次数
+                statKey = $"main.stats.{timePeriod}.study.started";
+                if (timePeriod == "week")
+                {
+                    statValue = _configureService.AppStatistics.GetStartStudyCountWeek();
+                }
+                else if (timePeriod == "month")
+                {
+                    statValue = _configureService.AppStatistics.GetStartStudyCountMonth();
+                }
+                else if (timePeriod == "year")
+                {
+                    statValue = _configureService.AppStatistics.GetStartStudyCountYear();
+                }
+                else // total
+                {
+                    statValue = _configureService.AppStatistics.GetStartStudyCount();
+                }
+                break;
+                
+            case 6: // 完成学习次数
+                statKey = $"main.stats.{timePeriod}.study.completed";
+                if (timePeriod == "week")
+                {
+                    statValue = _configureService.AppStatistics.GetCompleteStudyCountWeek();
+                }
+                else if (timePeriod == "month")
+                {
+                    statValue = _configureService.AppStatistics.GetCompleteStudyCountMonth();
+                }
+                else if (timePeriod == "year")
+                {
+                    statValue = _configureService.AppStatistics.GetCompleteStudyCountYear();
+                }
+                else // total
+                {
+                    statValue = _configureService.AppStatistics.GetCompleteStudyCount();
+                }
+                break;
+                
+            case 7: // 其他可能的统计项（可以根据需要添加）
+                // 回到默认情况，显示程序启动次数
+                statKey = $"main.stats.{timePeriod}.app.starts";
+                if (timePeriod == "week")
+                {
+                    statValue = _configureService.AppStatistics.GetApplicationStartCountWeek();
+                }
+                else if (timePeriod == "month")
+                {
+                    statValue = _configureService.AppStatistics.GetApplicationStartCountMonth();
+                }
+                else if (timePeriod == "year")
+                {
+                    statValue = _configureService.AppStatistics.GetApplicationStartCountYear();
+                }
+                else // total
+                {
+                    statValue = _configureService.AppStatistics.GetApplicationStartCount();
+                }
+                break;
+                
+            case 8: // 考试时间（仅在total中显示）
+                statKey = "main.stats.total.examination.time";
+                statValue = Math.Round(_configureService.AppStatistics.GetExaminationTime() / 3600000.0, 1); // 转换为小时，保留一位小数
+                break;
+                
+            case 9: // 学习时间（仅在total中显示）
+                statKey = "main.stats.total.study.time";
+                statValue = Math.Round(_configureService.AppStatistics.GetStudyTime() / 3600000.0, 1); // 转换为小时，保留一位小数
+                break;
+                
+            default: // 默认回到程序启动次数
+                statKey = $"main.stats.{timePeriod}.app.starts";
+                if (timePeriod == "week")
+                {
+                    statValue = _configureService.AppStatistics.GetApplicationStartCountWeek();
+                }
+                else if (timePeriod == "month")
+                {
+                    statValue = _configureService.AppStatistics.GetApplicationStartCountMonth();
+                }
+                else if (timePeriod == "year")
+                {
+                    statValue = _configureService.AppStatistics.GetApplicationStartCountYear();
+                }
+                else // total
+                {
+                    statValue = _configureService.AppStatistics.GetApplicationStartCount();
                 }
                 break;
         }

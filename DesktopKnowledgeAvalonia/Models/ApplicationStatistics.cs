@@ -275,6 +275,7 @@ public class ApplicationStatistics
 
     #endregion
     
+    
     // 加载考试计数
     #region LoadExaminationCount
     
@@ -451,6 +452,298 @@ public class ApplicationStatistics
     
     #endregion
     
+    // 启动学习计数
+    #region StartStudyCount
+
+    public int StartStudyCount { get; set; } = 0;
+    public Dictionary<int, int> StartStudyCountYears { get; set; } = new();
+    public Dictionary<int, Dictionary<int, int>> StartStudyCountMonths { get; set; } = new();
+    public Dictionary<int, Dictionary<int, int>> StartStudyCountWeeks { get; set; } = new();
+
+    public void AddStartStudyCount()
+    {
+        StartStudyCount++;
+        
+        DateTime utcNow = DateTime.UtcNow;
+        int year = utcNow.Year;
+        int month = utcNow.Month;
+        
+        // 获取当前UTC时间所在的ISO周数
+        Calendar calendar = CultureInfo.InvariantCulture.Calendar;
+        int week = calendar.GetWeekOfYear(utcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+        
+        // 更新年度统计
+        if (!StartStudyCountYears.TryAdd(year, 1))
+        {
+            StartStudyCountYears[year]++;
+        }
+        
+        // 更新月度统计
+        if (!StartStudyCountMonths.ContainsKey(year))
+        {
+            StartStudyCountMonths[year] = new Dictionary<int, int>();
+        }
+        if (!StartStudyCountMonths[year].TryAdd(month, 1))
+        {
+            StartStudyCountMonths[year][month]++;
+        }
+        
+        // 更新周统计
+        if (!StartStudyCountWeeks.ContainsKey(year))
+        {
+            StartStudyCountWeeks[year] = new Dictionary<int, int>();
+        }
+        if (!StartStudyCountWeeks[year].TryAdd(week, 1))
+        {
+            StartStudyCountWeeks[year][week]++;
+        }
+    }
+
+    public void AddStartStudyCount(ConfigureService service, bool saveChanges = true)
+    {
+        if (service.AppConfig.EnableStatistics)
+        {
+            AddStartStudyCount();
+            if (saveChanges)
+            {
+                _ = service.SaveChangesAsync();
+            }
+        }
+    }
+
+    public int GetStartStudyCount()
+    {
+        return StartStudyCount;
+    }
+
+    public int GetStartStudyCountYear(int? year = null)
+    {
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        return StartStudyCountYears.GetValueOrDefault(dataYear, 0);
+    }
+
+    public int GetStartStudyCountMonth(int? year = null, int? month = null)
+    {
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        var dataMonth = month ?? DateTime.UtcNow.Month;
+        return StartStudyCountMonths.GetValueOrDefault(dataYear, new Dictionary<int, int>()).GetValueOrDefault(dataMonth, 0);
+    }
+
+    public int GetStartStudyCountWeek(int? year = null, int? week = null)
+    {
+        Calendar calendar = CultureInfo.InvariantCulture.Calendar;
+        
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        var dataWeek = week ?? calendar.GetWeekOfYear(DateTime.UtcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+        return StartStudyCountWeeks.GetValueOrDefault(dataYear, new Dictionary<int, int>()).GetValueOrDefault(dataWeek, 0);
+    }
+
+    #endregion
+
+    // 完成学习计数
+    #region CompleteStudyCount
+
+    public int CompleteStudyCount { get; set; } = 0;
+    public Dictionary<int, int> CompleteStudyCountYears { get; set; } = new();
+    public Dictionary<int, Dictionary<int, int>> CompleteStudyCountMonths { get; set; } = new();
+    public Dictionary<int, Dictionary<int, int>> CompleteStudyCountWeeks { get; set; } = new();
+
+    public void AddCompleteStudyCount()
+    {
+        CompleteStudyCount++;
+        
+        DateTime utcNow = DateTime.UtcNow;
+        int year = utcNow.Year;
+        int month = utcNow.Month;
+        
+        // 获取当前UTC时间所在的ISO周数
+        Calendar calendar = CultureInfo.InvariantCulture.Calendar;
+        int week = calendar.GetWeekOfYear(utcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+        
+        // 更新年度统计
+        if (!CompleteStudyCountYears.TryAdd(year, 1))
+        {
+            CompleteStudyCountYears[year]++;
+        }
+        
+        // 更新月度统计
+        if (!CompleteStudyCountMonths.ContainsKey(year))
+        {
+            CompleteStudyCountMonths[year] = new Dictionary<int, int>();
+        }
+        if (!CompleteStudyCountMonths[year].TryAdd(month, 1))
+        {
+            CompleteStudyCountMonths[year][month]++;
+        }
+        
+        // 更新周统计
+        if (!CompleteStudyCountWeeks.ContainsKey(year))
+        {
+            CompleteStudyCountWeeks[year] = new Dictionary<int, int>();
+        }
+        if (!CompleteStudyCountWeeks[year].TryAdd(week, 1))
+        {
+            CompleteStudyCountWeeks[year][week]++;
+        }
+    }
+
+    public void AddCompleteStudyCount(ConfigureService service, bool saveChanges = true)
+    {
+        if (service.AppConfig.EnableStatistics)
+        {
+            AddCompleteStudyCount();
+            if (saveChanges)
+            {
+                _ = service.SaveChangesAsync();
+            }
+        }
+    }
+
+    public int GetCompleteStudyCount()
+    {
+        return CompleteStudyCount;
+    }
+
+    public int GetCompleteStudyCountYear(int? year = null)
+    {
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        return CompleteStudyCountYears.GetValueOrDefault(dataYear, 0);
+    }
+
+    public int GetCompleteStudyCountMonth(int? year = null, int? month = null)
+    {
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        var dataMonth = month ?? DateTime.UtcNow.Month;
+        return CompleteStudyCountMonths.GetValueOrDefault(dataYear, new Dictionary<int, int>()).GetValueOrDefault(dataMonth, 0);
+    }
+
+    public int GetCompleteStudyCountWeek(int? year = null, int? week = null)
+    {
+        Calendar calendar = CultureInfo.InvariantCulture.Calendar;
+        
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        var dataWeek = week ?? calendar.GetWeekOfYear(DateTime.UtcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+        return CompleteStudyCountWeeks.GetValueOrDefault(dataYear, new Dictionary<int, int>()).GetValueOrDefault(dataWeek, 0);
+    }
+
+    #endregion
+
     
+    
+    // 考试时间计时（毫秒）
+    #region ExaminationTime
+
+    public long ExaminationTime { get; set; } = 0;
+
+    // 累加考试时间（毫秒）
+    public void AddExaminationTime(long milliseconds)
+    {
+        ExaminationTime += milliseconds;
+    }
+
+    // 带服务的考试时间累加
+    public void AddExaminationTime(ConfigureService service, long milliseconds, bool saveChanges = true)
+    {
+        if (service.AppConfig.EnableStatistics)
+        {
+            AddExaminationTime(milliseconds);
+            if (saveChanges)
+            {
+                _ = service.SaveChangesAsync();
+            }
+        }
+    }
+
+    // 获取考试时间（毫秒）
+    public long GetExaminationTime()
+    {
+        return ExaminationTime;
+    }
+
+    #endregion
+
+    // 学习时间计时（毫秒）
+    #region StudyTime
+
+    public long StudyTime { get; set; } = 0;
+
+    // 累加学习时间（毫秒）
+    public void AddStudyTime(long milliseconds)
+    {
+        StudyTime += milliseconds;
+    }
+
+    // 带服务的学习时间累加
+    public void AddStudyTime(ConfigureService service, long milliseconds, bool saveChanges = true)
+    {
+        if (service.AppConfig.EnableStatistics)
+        {
+            AddStudyTime(milliseconds);
+            if (saveChanges)
+            {
+                _ = service.SaveChangesAsync();
+            }
+        }
+    }
+
+    // 获取学习时间（毫秒）
+    public long GetStudyTime()
+    {
+        return StudyTime;
+    }
+
+    #endregion
+
+    // 应用运行时间（毫秒）
+    #region ApplicationRunTime
+
+    public long ApplicationRunTime { get; set; } = 0;
+
+    // 累加应用运行时间（毫秒）
+    public void AddApplicationRunTime(long milliseconds)
+    {
+        ApplicationRunTime += milliseconds;
+    }
+
+    // 设置应用运行时间（毫秒）
+    public void SetApplicationRunTime(long milliseconds)
+    {
+        ApplicationRunTime = milliseconds;
+    }
+
+    // 带服务的应用运行时间累加
+    public void AddApplicationRunTime(ConfigureService service, long milliseconds, bool saveChanges = true)
+    {
+        if (service.AppConfig.EnableStatistics)
+        {
+            AddApplicationRunTime(milliseconds);
+            if (saveChanges)
+            {
+                _ = service.SaveChangesAsync();
+            }
+        }
+    }
+
+    // 带服务的应用运行时间设置
+    public void SetApplicationRunTime(ConfigureService service, long milliseconds, bool saveChanges = true)
+    {
+        if (service.AppConfig.EnableStatistics)
+        {
+            SetApplicationRunTime(milliseconds);
+            if (saveChanges)
+            {
+                _ = service.SaveChangesAsync();
+            }
+        }
+    }
+
+    // 获取应用运行时间（毫秒）
+    public long GetApplicationRunTime()
+    {
+        return ApplicationRunTime;
+    }
+
+    #endregion
+
     
 }
