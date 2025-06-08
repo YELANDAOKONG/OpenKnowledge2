@@ -443,7 +443,7 @@ public partial class ExaminationWindow : AppWindowBase
                 {
                     try
                     {
-                        Image image = null;
+                        Image? image = null;
                         
                         switch (img.Type)
                         {

@@ -4,6 +4,6 @@ namespace LibraryOpenKnowledge;
 
 public class DefaultClass
 {
-    public static readonly ExaminationVersion CurrentVersion = new ExaminationVersion(2, 2, 0);
+    public static readonly ExaminationVersion CurrentVersion = new ExaminationVersion(3, 0, 0);
     
 }

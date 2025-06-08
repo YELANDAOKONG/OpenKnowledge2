@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+
 namespace LibraryOpenKnowledge.Models;
+
 [Serializable]
 public class ScoreRecord
 {
@@ -11,7 +13,7 @@ public class ScoreRecord
     public string ExamTitle { get; set; } = string.Empty;
     public string UserId { get; set; } = string.Empty;
     public string UserName { get; set; } = string.Empty;
-    public DateTime Timestamp { get; set; } = DateTime.Now;
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     public double TotalScore { get; set; } = 0;
     public double ObtainedScore { get; set; } = 0;
     public Dictionary<string, double> SectionScores { get; set; } = new();
