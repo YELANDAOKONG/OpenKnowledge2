@@ -70,6 +70,33 @@ public class ApplicationStatistics
         }
     }
     
+    public int GetApplicationStartCount()
+    {
+        return ApplicationStartCount;
+    }
+    
+    public int GetApplicationStartCountYear(int? year = null)
+    {
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        return ApplicationStartCountYears.GetValueOrDefault(dataYear, 0);
+    }
+    
+    public int GetApplicationStartCountMonth(int? year = null, int? month = null)
+    {
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        var dataMonth = month ?? DateTime.UtcNow.Month;
+        return ApplicationStartCountMonths.GetValueOrDefault(dataYear, new Dictionary<int, int>()).GetValueOrDefault(dataMonth, 0);
+    }
+    
+    public int GetApplicationStartCountWeek(int? year = null, int? week = null)
+    {
+        Calendar calendar = CultureInfo.InvariantCulture.Calendar;
+        
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        var dataWeek = week ?? calendar.GetWeekOfYear(DateTime.UtcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);;
+        return ApplicationStartCountWeeks.GetValueOrDefault(dataYear, new Dictionary<int, int>()).GetValueOrDefault(dataWeek, 0);
+    }
+    
     #endregion
     
     // 加载考试计数
@@ -129,6 +156,33 @@ public class ApplicationStatistics
                 _ = service.SaveChangesAsync();
             }
         }
+    }
+    
+    public int GetLoadExaminationCount()
+    {
+        return LoadExaminationCount;
+    }
+    
+    public int GetLoadExaminationCountYear(int? year = null)
+    {
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        return LoadExaminationCountYears.GetValueOrDefault(dataYear, 0);
+    }
+    
+    public int GetLoadExaminationCountMonth(int? year = null, int? month = null)
+    {
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        var dataMonth = month ?? DateTime.UtcNow.Month;
+        return LoadExaminationCountMonths.GetValueOrDefault(dataYear, new Dictionary<int, int>()).GetValueOrDefault(dataMonth, 0);
+    }
+    
+    public int GetLoadExaminationCountWeek(int? year = null, int? week = null)
+    {
+        Calendar calendar = CultureInfo.InvariantCulture.Calendar;
+        
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        var dataWeek = week ?? calendar.GetWeekOfYear(DateTime.UtcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);;
+        return LoadExaminationCountWeeks.GetValueOrDefault(dataYear, new Dictionary<int, int>()).GetValueOrDefault(dataWeek, 0);
     }
     
     #endregion
@@ -192,6 +246,33 @@ public class ApplicationStatistics
         }
     }
     
+    public int GetSubmitExaminationCount()
+    {
+        return SubmitExaminationCount;
+    }
+    
+    public int GetSubmitExaminationCountYear(int? year = null)
+    {
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        return SubmitExaminationCountYears.TryGetValue(dataYear, out var count) ? count : 0;
+    }
+    
+    public int GetSubmitExaminationCountMonth(int? year = null, int? month = null)
+    {
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        var dataMonth = month ?? DateTime.UtcNow.Month;
+        return SubmitExaminationCountMonths.TryGetValue(dataYear, out var months) && months.TryGetValue(dataMonth, out var count) ? count : 0;
+    }
+    
+    public int GetSubmitExaminationCountWeek(int? year = null, int? week = null)
+    {
+        Calendar calendar = CultureInfo.InvariantCulture.Calendar;
+        
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        var dataWeek = week ?? calendar.GetWeekOfYear(DateTime.UtcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);;
+        return SubmitExaminationCountWeeks.TryGetValue(dataYear, out var weeks) && weeks.TryGetValue(dataWeek, out var count) ? count : 0;
+    }
+    
     #endregion
 
     // AI调用计数
@@ -251,6 +332,33 @@ public class ApplicationStatistics
                 _ = service.SaveChangesAsync();
             }
         }
+    }
+    
+    public int GetAiCallCount()
+    {
+        return AiCallCount;
+    }
+    
+    public int GetAiCallCountYear(int? year = null)
+    {
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        return AiCallCountYears.GetValueOrDefault(dataYear, 0);
+    }
+    
+    public int GetAiCallCountMonth(int? year = null, int? month = null)
+    {
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        var dataMonth = month ?? DateTime.UtcNow.Month;
+        return AiCallCountMonths.GetValueOrDefault(dataYear, new Dictionary<int, int>()).GetValueOrDefault(dataMonth, 0);
+    }
+    
+    public int GetAiCallCountWeek(int? year = null, int? week = null)
+    {
+        Calendar calendar = CultureInfo.InvariantCulture.Calendar;
+        
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        var dataWeek = week ?? calendar.GetWeekOfYear(DateTime.UtcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);;
+        return AiCallCountWeeks.GetValueOrDefault(dataYear, new Dictionary<int, int>()).GetValueOrDefault(dataWeek, 0);
     }
     
     #endregion
