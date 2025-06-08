@@ -66,12 +66,19 @@ public partial class SettingWindowViewModel : ViewModelBase
             _localizationService["settings.category.language"],
             "M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z",
             new LanguageSettingsViewModel(_configService, _localizationService));
+        
+        // Storage Settings
+        var storage = new SettingCategory(
+            _localizationService["settings.category.storage"],
+            "M6 2c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6H6zm7 7V3.5L18.5 9H13z",
+            new StorageSettingsViewModel(_configService, _localizationService));
 
         Categories.Add(general);
         Categories.Add(ai); // Add the AI category
         Categories.Add(promptTemplates); // Add the prompt templates category
         Categories.Add(appearance);
         Categories.Add(language);
+        Categories.Add(storage);
 
         SelectedCategory = general;
     }
@@ -486,6 +493,104 @@ public partial class PromptTemplatesViewModel : SettingsViewModelBase
     private void ResetCheckTemplate()
     {
         CheckTemplate = PromptTemplateManager.DefaultErrorCheckTemplate;
+    }
+}
+
+public partial class StorageSettingsViewModel : SettingsViewModelBase
+{
+    private readonly ConfigureService _configService;
+    private readonly LocalizationService _localizationService;
+    
+    [ObservableProperty]
+    private string _cacheSize = "0 B";
+    
+    [ObservableProperty]
+    private bool _isCalculating = false;
+    
+    [ObservableProperty]
+    private bool _isClearing = false;
+    
+    public StorageSettingsViewModel(ConfigureService configService, LocalizationService localizationService)
+    {
+        _configService = configService;
+        _localizationService = localizationService;
+        
+        // Calculate initial cache size when the tab is created
+        CalculateCacheSizeAsync().ConfigureAwait(false);
+    }
+    
+    [RelayCommand]
+    private async Task CalculateCacheSizeAsync()
+    {
+        if (IsCalculating)
+            return;
+            
+        IsCalculating = true;
+        
+        try
+        {
+            // Calculate cache size on a background thread
+            var size = await Task.Run(() => ConfigureService.CalculateCacheSize());
+            
+            // Format the size in a human-readable format
+            CacheSize = FormatFileSize(size);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error calculating cache size: {ex.Message}");
+            CacheSize = _localizationService["settings.storage.calculation.error"];
+        }
+        finally
+        {
+            IsCalculating = false;
+        }
+    }
+    
+    [RelayCommand]
+    private async Task ClearCacheAsync()
+    {
+        if (IsClearing)
+            return;
+            
+        IsClearing = true;
+        
+        try
+        {
+            // Clear cache on a background thread
+            await Task.Run(() => ConfigureService.ClearCache());
+            
+            // Recalculate the cache size after clearing
+            await CalculateCacheSizeAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error clearing cache: {ex.Message}");
+        }
+        finally
+        {
+            IsClearing = false;
+        }
+    }
+    
+    public override async Task SaveAsync()
+    {
+        // Nothing to save for this view
+        await Task.CompletedTask;
+    }
+    
+    private string FormatFileSize(long bytes)
+    {
+        string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
+        int suffixIndex = 0;
+        double size = bytes;
+        
+        while (size >= 1024 && suffixIndex < suffixes.Length - 1)
+        {
+            size /= 1024;
+            suffixIndex++;
+        }
+        
+        return $"{size:0.##} {suffixes[suffixIndex]}";
     }
 }
 

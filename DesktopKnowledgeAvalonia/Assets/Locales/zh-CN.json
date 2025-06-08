@@ -167,6 +167,17 @@
   "exam.result.rescore.all": "全部重新评分",
   "exam.result.toggle.questions": "切换题目面板",
   "exam.result.unevaluated": "未评估",
-  "exam.result.ai.feedback": "AI 评分反馈:"
+  "exam.result.ai.feedback": "AI 评分反馈:",
+
+  "settings.category.storage": "存储",
+  "settings.storage.cache.size": "缓存大小:",
+  "settings.storage.refresh": "刷新",
+  "settings.storage.clear": "清除缓存",
+  "settings.storage.calculating": "计算中...",
+  "settings.storage.clearing": "清除中...",
+  "settings.storage.calculation.error": "计算大小出错",
+  "settings.storage.refresh.tooltip": "重新计算当前缓存大小",
+  "settings.storage.clear.tooltip": "清除所有应用缓存数据"
+
 
 }

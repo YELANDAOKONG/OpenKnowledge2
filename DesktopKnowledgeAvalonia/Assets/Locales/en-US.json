@@ -167,10 +167,17 @@
   "exam.result.rescore.all": "Rescore All",
   "exam.result.toggle.questions": "Toggle Questions Panel",
   "exam.result.unevaluated": "Not Evaluated",
-  "exam.result.ai.feedback": "AI Feedback:"
+  "exam.result.ai.feedback": "AI Feedback:",
 
-
-
+  "settings.category.storage": "Storage",
+  "settings.storage.cache.size": "Cache Size:",
+  "settings.storage.refresh": "Refresh",
+  "settings.storage.clear": "Clear Cache",
+  "settings.storage.calculating": "Calculating...",
+  "settings.storage.clearing": "Clearing...",
+  "settings.storage.calculation.error": "Error calculating size",
+  "settings.storage.refresh.tooltip": "Recalculate current cache size",
+  "settings.storage.clear.tooltip": "Clear all application cache data"
 
 
 }
