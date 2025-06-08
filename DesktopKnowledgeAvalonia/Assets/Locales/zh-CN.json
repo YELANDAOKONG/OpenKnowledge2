@@ -193,17 +193,21 @@
   "main.stats.week.exams.loaded": "本周共加载考试 {0} 次",
   "main.stats.week.exams.submitted": "本周共提交考试 {0} 次",
   "main.stats.week.app.starts": "本周共启动程序 {0} 次",
+  "main.stats.week.question.interactions": "本周共进行题目交互 {0} 次",
   "main.stats.month.ai.calls": "本月共调用 AI API {0} 次",
   "main.stats.month.exams.loaded": "本月共加载考试 {0} 次",
   "main.stats.month.exams.submitted": "本月共提交考试 {0} 次",
   "main.stats.month.app.starts": "本月共启动程序 {0} 次",
+  "main.stats.month.question.interactions": "本月共进行题目交互 {0} 次",
   "main.stats.year.ai.calls": "今年共调用 AI API {0} 次",
   "main.stats.year.exams.loaded": "今年共加载考试 {0} 次",
   "main.stats.year.exams.submitted": "今年共提交考试 {0} 次",
   "main.stats.year.app.starts": "今年共启动程序 {0} 次",
+  "main.stats.year.question.interactions": "今年共进行题目交互 {0} 次",
   "main.stats.total.ai.calls": "总共调用 AI API {0} 次",
   "main.stats.total.exams.loaded": "总共加载考试 {0} 次",
   "main.stats.total.exams.submitted": "总共提交考试 {0} 次",
-  "main.stats.total.app.starts": "总共启动程序 {0} 次"
+  "main.stats.total.app.starts": "总共启动程序 {0} 次",
+  "main.stats.total.question.interactions": "总共进行题目交互 {0} 次"
 
 }

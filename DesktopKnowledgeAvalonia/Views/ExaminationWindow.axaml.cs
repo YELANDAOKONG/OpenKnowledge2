@@ -564,6 +564,7 @@ public partial class ExaminationWindow : AppWindowBase
             {
                 if (_viewModel.CurrentQuestion != null)
                 {
+                    _configService.AppStatistics.AddQuestionInteractionCount(_configService);
                     _viewModel.CurrentQuestion.UserAnswer = new[] { optionId };
                     _viewModel.UpdateProgress();
                 }
@@ -618,6 +619,7 @@ public partial class ExaminationWindow : AppWindowBase
     private void UpdateMultipleChoiceAnswer(string questionId)
     {
         if (_viewModel.CurrentQuestion == null || !_choiceAnswers.ContainsKey(questionId)) return;
+        _configService.AppStatistics.AddQuestionInteractionCount(_configService);
         
         var checkBoxes = _choiceAnswers[questionId] as List<CheckBox>;
         if (checkBoxes == null) return;
@@ -677,6 +679,7 @@ public partial class ExaminationWindow : AppWindowBase
         {
             if (_viewModel.CurrentQuestion != null && trueRadio.Tag is string optionId)
             {
+                _configService.AppStatistics.AddQuestionInteractionCount(_configService);
                 _viewModel.CurrentQuestion.UserAnswer = new[] { optionId };
                 _viewModel.UpdateProgress();
             }
@@ -686,6 +689,7 @@ public partial class ExaminationWindow : AppWindowBase
         {
             if (_viewModel.CurrentQuestion != null && falseRadio.Tag is string optionId)
             {
+                _configService.AppStatistics.AddQuestionInteractionCount(_configService);
                 _viewModel.CurrentQuestion.UserAnswer = new[] { optionId };
                 _viewModel.UpdateProgress();
             }
@@ -743,6 +747,7 @@ public partial class ExaminationWindow : AppWindowBase
         {
             if (_viewModel.CurrentQuestion != null && !string.IsNullOrWhiteSpace(textBox.Text))
             {
+                _configService.AppStatistics.AddQuestionInteractionCount(_configService);
                 _viewModel.CurrentQuestion.UserAnswer = new[] { textBox.Text };
                 _viewModel.UpdateProgress();
             }

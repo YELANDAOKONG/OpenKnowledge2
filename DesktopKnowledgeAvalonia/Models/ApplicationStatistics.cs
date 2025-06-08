@@ -99,6 +99,182 @@ public class ApplicationStatistics
     
     #endregion
     
+    // AI调用计数
+    #region AiCallCount
+    
+    public int AiCallCount { get; set; } = 0;
+    public Dictionary<int, int> AiCallCountYears { get; set; } = new();
+    public Dictionary<int, Dictionary<int, int>> AiCallCountMonths { get; set; } = new();
+    public Dictionary<int, Dictionary<int, int>> AiCallCountWeeks { get; set; } = new();
+    
+    public void AddAiCallCount()
+    {
+        AiCallCount++;
+        
+        DateTime utcNow = DateTime.UtcNow;
+        int year = utcNow.Year;
+        int month = utcNow.Month;
+        
+        // 获取当前UTC时间所在的ISO周数
+        Calendar calendar = CultureInfo.InvariantCulture.Calendar;
+        int week = calendar.GetWeekOfYear(utcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+        
+        // 更新年度统计
+        if (!AiCallCountYears.TryAdd(year, 1))
+        {
+            AiCallCountYears[year]++;
+        }
+        
+        // 更新月度统计
+        if (!AiCallCountMonths.ContainsKey(year))
+        {
+            AiCallCountMonths[year] = new Dictionary<int, int>();
+        }
+        if (!AiCallCountMonths[year].TryAdd(month, 1))
+        {
+            AiCallCountMonths[year][month]++;
+        }
+        
+        // 更新周统计
+        if (!AiCallCountWeeks.ContainsKey(year))
+        {
+            AiCallCountWeeks[year] = new Dictionary<int, int>();
+        }
+        if (!AiCallCountWeeks[year].TryAdd(week, 1))
+        {
+            AiCallCountWeeks[year][week]++;
+        }
+    }
+    
+    public void AddAiCallCount(ConfigureService service, bool saveChanges = true)
+    {
+        if (service.AppConfig.EnableStatistics)
+        {
+            AddAiCallCount();
+            if (saveChanges)
+            {
+                _ = service.SaveChangesAsync();
+            }
+        }
+    }
+    
+    public int GetAiCallCount()
+    {
+        return AiCallCount;
+    }
+    
+    public int GetAiCallCountYear(int? year = null)
+    {
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        return AiCallCountYears.GetValueOrDefault(dataYear, 0);
+    }
+    
+    public int GetAiCallCountMonth(int? year = null, int? month = null)
+    {
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        var dataMonth = month ?? DateTime.UtcNow.Month;
+        return AiCallCountMonths.GetValueOrDefault(dataYear, new Dictionary<int, int>()).GetValueOrDefault(dataMonth, 0);
+    }
+    
+    public int GetAiCallCountWeek(int? year = null, int? week = null)
+    {
+        Calendar calendar = CultureInfo.InvariantCulture.Calendar;
+        
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        var dataWeek = week ?? calendar.GetWeekOfYear(DateTime.UtcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);;
+        return AiCallCountWeeks.GetValueOrDefault(dataYear, new Dictionary<int, int>()).GetValueOrDefault(dataWeek, 0);
+    }
+    
+    #endregion
+    
+    // 题目交互计数
+    #region QuestionInteractionCount
+
+    public int QuestionInteractionCount { get; set; } = 0;
+    public Dictionary<int, int> QuestionInteractionCountYears { get; set; } = new();
+    public Dictionary<int, Dictionary<int, int>> QuestionInteractionCountMonths { get; set; } = new();
+    public Dictionary<int, Dictionary<int, int>> QuestionInteractionCountWeeks { get; set; } = new();
+
+    public void AddQuestionInteractionCount()
+    {
+        QuestionInteractionCount++;
+        
+        DateTime utcNow = DateTime.UtcNow;
+        int year = utcNow.Year;
+        int month = utcNow.Month;
+        
+        // 获取当前UTC时间所在的ISO周数
+        Calendar calendar = CultureInfo.InvariantCulture.Calendar;
+        int week = calendar.GetWeekOfYear(utcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+        
+        // 更新年度统计
+        if (!QuestionInteractionCountYears.TryAdd(year, 1))
+        {
+            QuestionInteractionCountYears[year]++;
+        }
+        
+        // 更新月度统计
+        if (!QuestionInteractionCountMonths.ContainsKey(year))
+        {
+            QuestionInteractionCountMonths[year] = new Dictionary<int, int>();
+        }
+        if (!QuestionInteractionCountMonths[year].TryAdd(month, 1))
+        {
+            QuestionInteractionCountMonths[year][month]++;
+        }
+        
+        // 更新周统计
+        if (!QuestionInteractionCountWeeks.ContainsKey(year))
+        {
+            QuestionInteractionCountWeeks[year] = new Dictionary<int, int>();
+        }
+        if (!QuestionInteractionCountWeeks[year].TryAdd(week, 1))
+        {
+            QuestionInteractionCountWeeks[year][week]++;
+        }
+    }
+
+    public void AddQuestionInteractionCount(ConfigureService service, bool saveChanges = true)
+    {
+        if (service.AppConfig.EnableStatistics)
+        {
+            AddQuestionInteractionCount();
+            if (saveChanges)
+            {
+                _ = service.SaveChangesAsync();
+            }
+        }
+    }
+
+    public int GetQuestionInteractionCount()
+    {
+        return QuestionInteractionCount;
+    }
+
+    public int GetQuestionInteractionCountYear(int? year = null)
+    {
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        return QuestionInteractionCountYears.GetValueOrDefault(dataYear, 0);
+    }
+
+    public int GetQuestionInteractionCountMonth(int? year = null, int? month = null)
+    {
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        var dataMonth = month ?? DateTime.UtcNow.Month;
+        return QuestionInteractionCountMonths.GetValueOrDefault(dataYear, new Dictionary<int, int>()).GetValueOrDefault(dataMonth, 0);
+    }
+
+    public int GetQuestionInteractionCountWeek(int? year = null, int? week = null)
+    {
+        Calendar calendar = CultureInfo.InvariantCulture.Calendar;
+        
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        var dataWeek = week ?? calendar.GetWeekOfYear(DateTime.UtcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+        return QuestionInteractionCountWeeks.GetValueOrDefault(dataYear, new Dictionary<int, int>()).GetValueOrDefault(dataWeek, 0);
+    }
+
+    #endregion
+    
     // 加载考试计数
     #region LoadExaminationCount
     
@@ -274,92 +450,7 @@ public class ApplicationStatistics
     }
     
     #endregion
-
-    // AI调用计数
-    #region AiCallCount
     
-    public int AiCallCount { get; set; } = 0;
-    public Dictionary<int, int> AiCallCountYears { get; set; } = new();
-    public Dictionary<int, Dictionary<int, int>> AiCallCountMonths { get; set; } = new();
-    public Dictionary<int, Dictionary<int, int>> AiCallCountWeeks { get; set; } = new();
     
-    public void AddAiCallCount()
-    {
-        AiCallCount++;
-        
-        DateTime utcNow = DateTime.UtcNow;
-        int year = utcNow.Year;
-        int month = utcNow.Month;
-        
-        // 获取当前UTC时间所在的ISO周数
-        Calendar calendar = CultureInfo.InvariantCulture.Calendar;
-        int week = calendar.GetWeekOfYear(utcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
-        
-        // 更新年度统计
-        if (!AiCallCountYears.TryAdd(year, 1))
-        {
-            AiCallCountYears[year]++;
-        }
-        
-        // 更新月度统计
-        if (!AiCallCountMonths.ContainsKey(year))
-        {
-            AiCallCountMonths[year] = new Dictionary<int, int>();
-        }
-        if (!AiCallCountMonths[year].TryAdd(month, 1))
-        {
-            AiCallCountMonths[year][month]++;
-        }
-        
-        // 更新周统计
-        if (!AiCallCountWeeks.ContainsKey(year))
-        {
-            AiCallCountWeeks[year] = new Dictionary<int, int>();
-        }
-        if (!AiCallCountWeeks[year].TryAdd(week, 1))
-        {
-            AiCallCountWeeks[year][week]++;
-        }
-    }
     
-    public void AddAiCallCount(ConfigureService service, bool saveChanges = true)
-    {
-        if (service.AppConfig.EnableStatistics)
-        {
-            AddAiCallCount();
-            if (saveChanges)
-            {
-                _ = service.SaveChangesAsync();
-            }
-        }
-    }
-    
-    public int GetAiCallCount()
-    {
-        return AiCallCount;
-    }
-    
-    public int GetAiCallCountYear(int? year = null)
-    {
-        var dataYear = year ?? DateTime.UtcNow.Year;
-        return AiCallCountYears.GetValueOrDefault(dataYear, 0);
-    }
-    
-    public int GetAiCallCountMonth(int? year = null, int? month = null)
-    {
-        var dataYear = year ?? DateTime.UtcNow.Year;
-        var dataMonth = month ?? DateTime.UtcNow.Month;
-        return AiCallCountMonths.GetValueOrDefault(dataYear, new Dictionary<int, int>()).GetValueOrDefault(dataMonth, 0);
-    }
-    
-    public int GetAiCallCountWeek(int? year = null, int? week = null)
-    {
-        Calendar calendar = CultureInfo.InvariantCulture.Calendar;
-        
-        var dataYear = year ?? DateTime.UtcNow.Year;
-        var dataWeek = week ?? calendar.GetWeekOfYear(DateTime.UtcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);;
-        return AiCallCountWeeks.GetValueOrDefault(dataYear, new Dictionary<int, int>()).GetValueOrDefault(dataWeek, 0);
-    }
-    
-    #endregion
 }
