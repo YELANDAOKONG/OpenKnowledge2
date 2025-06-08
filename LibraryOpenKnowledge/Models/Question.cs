@@ -22,6 +22,8 @@ public class Question
     
     public bool IsAiJudge { get; set; } = false; // 是否需要AI判题
     public bool IgnoreSpace { get; set; } = true; // 判断时是否忽略空格
+    public bool IgnoreCase { get; set; } = true; // 判断时忽略大小写
+    public bool IgnoreLineBreak { get; set; } = true; // 判断时忽略换行符
     public string[]? Commits { get; set; } = new string[] { }; // AI提示
     
     // public Question[]? SubQuestions { get; set; } = new Question[] { };

@@ -133,6 +133,9 @@ public class Question
     public ReferenceMaterial[]? ReferenceMaterials { get; set; } = new ReferenceMaterial[] { };
 
     public bool IsAiJudge { get; set; } = false;
+    public bool IgnoreSpace { get; set; } = true;
+    public bool IgnoreCase { get; set; } = true;
+    public bool IgnoreLineBreak { get; set; } = true;
     public string[]? Commits { get; set; } = new string[] { };
 
     // public Question[]? SubQuestions { get; set; } = new Question[] { };
@@ -451,6 +454,9 @@ public class ExaminationExtension
 |  ReferenceAnswer  |      string[]?      |  否  |           参考答案或解析           |
 | ReferenceMaterials | ReferenceMaterial[]? |  否  |         题目特定的参考资料         |
 |     IsAiJudge     |         bool         |  是  |         是否需要AI辅助评分         |
+|    IgnoreSpace    |         bool         |  是  |       评分判断时是否忽略空格       |
+|     IgnoreCase     |         bool         |  是  |      评分判断时是否忽略大小写      |
+|  IgnoreLineBreak  |         bool         |  是  |       评分判断时是否忽略换行       |
 |      Commits      |      string[]?      |  否  |        AI评分提示或解题步骤        |
 |    SubQuestions    |   List<Question>?   |  否  |      子题目集合，用于复合题型      |
 |   ObtainedScore   |       double?       |  否  |              用户得分              |
@@ -658,6 +664,7 @@ public class ExaminationExtension
 
 - 为文档、通用文件类型增加 `Format` 字段
 - 修改 `Question` 结构中 `Question[]?` 为 `List<Question>?`
+- 在 `Question` 结构中新增 `IgnoreSpace` `IgnoreCase` `IgnoreLineBreak` 等字段
 
 ### 7.2 版本 `3.0.0` 的主要变更
 
