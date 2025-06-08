@@ -415,218 +415,105 @@ public partial class ExaminationWindow : AppWindowBase
         }
     }
     
+    // 在 ExaminationResultWindow.axaml.cs 中修改
     private void BuildReferenceMaterialsUI()
     {
         ReferenceMaterialsPanel.Children.Clear();
         
-        // 检查考试级别的参考资料
-        if (_viewModel.Examination?.ExaminationMetadata?.ReferenceMaterials != null && 
-            _viewModel.Examination.ExaminationMetadata.ReferenceMaterials.Length > 0)
-        {
-            AddReferenceMaterialsToPanel(
-                _viewModel.Examination.ExaminationMetadata.ReferenceMaterials,
-                _localizationService["exam.reference.examination"]);
-        }
+        // 添加考试级别参考资料
+        AddReferenceSection(
+            _viewModel.Examination?.ExaminationMetadata?.ReferenceMaterials,
+            _localizationService["exam.reference.examination"]);
         
-        // 检查当前章节的参考资料
-        if (_viewModel.CurrentSection?.ReferenceMaterials != null && 
-            _viewModel.CurrentSection.ReferenceMaterials.Length > 0)
-        {
-            AddReferenceMaterialsToPanel(
-                _viewModel.CurrentSection.ReferenceMaterials,
-                _localizationService["exam.reference.section"]);
-        }
+        // 添加章节级别参考资料
+        AddReferenceSection(
+            _viewModel.CurrentSection?.ReferenceMaterials,
+            _localizationService["exam.reference.section"]);
         
-        // 检查当前问题的参考资料
-        if (_viewModel.CurrentQuestion?.ReferenceMaterials != null && 
-            _viewModel.CurrentQuestion.ReferenceMaterials.Length > 0)
-        {
-            AddReferenceMaterialsToPanel(
-                _viewModel.CurrentQuestion.ReferenceMaterials,
-                _localizationService["exam.reference.question"]);
-        }
+        // 添加题目级别参考资料
+        AddReferenceSection(
+            _viewModel.CurrentQuestion?.ReferenceMaterials,
+            _localizationService["exam.reference.question"]);
         
-        // 如果是复合题中的子问题，检查父问题的参考资料
-        if (_viewModel.ParentQuestion != null && 
-            _viewModel.ParentQuestion.ReferenceMaterials != null &&
-            _viewModel.ParentQuestion.ReferenceMaterials.Length > 0)
+        // 查找并添加父题目级别参考资料（如果当前题目是子题目）
+        Question? parentQuestion = FindParentQuestion();
+        if (parentQuestion != null)
         {
-            AddReferenceMaterialsToPanel(
-                _viewModel.ParentQuestion.ReferenceMaterials,
+            AddReferenceSection(
+                parentQuestion.ReferenceMaterials,
                 _localizationService["exam.reference.parent"]);
         }
     }
 
-    private void AddReferenceMaterialsToPanel(ReferenceMaterial[] materials, string sourceName)
+    // 添加参考资料区块
+    private void AddReferenceSection(ReferenceMaterial[]? materials, string headerText)
     {
-        if (materials == null || materials.Length == 0) return;
-        
-        // 创建源标题的展开面板
-        var sourceExpander = new Expander
+        if (materials == null || materials.Length == 0)
+            return;
+            
+        var expander = new Expander
         {
-            Header = sourceName,
+            Header = headerText,
             IsExpanded = true,
             Margin = new Thickness(0, 5, 0, 5)
         };
         
-        var sourcePanel = new StackPanel
-        {
-            Spacing = 5
-        };
-        
+        var sectionPanel = new StackPanel { Spacing = 5 };
         bool hasContent = false;
         
-        // 处理文本参考资料
-        if (materials.Any(m => m.Materials != null && m.Materials.Length > 0))
+        // 只处理文本参考资料
+        foreach (var material in materials)
         {
-            var textExpander = new Expander
+            if (material.Materials != null && material.Materials.Length > 0)
             {
-                Header = _localizationService["exam.reference.text"],
-                IsExpanded = true,
-                Margin = new Thickness(0, 5, 0, 5)
-            };
-            
-            var textPanel = new StackPanel();
-            
-            foreach (var material in materials)
-            {
-                if (material.Materials != null && material.Materials.Length > 0)
+                foreach (var text in material.Materials)
                 {
-                    foreach (var text in material.Materials)
+                    var textBlock = new TextBlock
                     {
-                        var textBlock = new TextBlock
-                        {
-                            Text = text,
-                            TextWrapping = TextWrapping.Wrap,
-                            Margin = new Thickness(0, 3)
-                        };
-                        textPanel.Children.Add(textBlock);
-                    }
+                        Text = text,
+                        TextWrapping = TextWrapping.Wrap,
+                        Margin = new Thickness(0, 3)
+                    };
+                    sectionPanel.Children.Add(textBlock);
                     hasContent = true;
                 }
             }
-            
-            textExpander.Content = textPanel;
-            sourcePanel.Children.Add(textExpander);
-        }
-        
-        // 处理图片参考资料
-        if (materials.Any(m => m.Images != null && m.Images.Length > 0))
-        {
-            var imagesExpander = new Expander
-            {
-                Header = _localizationService["exam.reference.images"],
-                IsExpanded = true,
-                Margin = new Thickness(0, 5, 0, 5)
-            };
-            
-            var imagesPanel = new StackPanel();
-            
-            foreach (var material in materials)
-            {
-                if (material.Images != null && material.Images.Length > 0)
-                {
-                    foreach (var img in material.Images)
-                    {
-                        try
-                        {
-                            Image? image = null;
-                            
-                            switch (img.Type)
-                            {
-                                case ReferenceMaterialImageTypes.Local:
-                                case ReferenceMaterialImageTypes.Remote:
-                                    if (!string.IsNullOrEmpty(img.Uri))
-                                    {
-                                        image = new Image
-                                        {
-                                            Source = new Bitmap(img.Uri),
-                                            MaxHeight = 300,
-                                            Margin = new Thickness(0, 10)
-                                        };
-                                    }
-                                    break;
-                                    
-                                case ReferenceMaterialImageTypes.Embedded:
-                                    if (img.Image != null)
-                                    {
-                                        using var stream = new MemoryStream(img.Image);
-                                        image = new Image
-                                        {
-                                            Source = new Bitmap(stream),
-                                            MaxHeight = 300,
-                                            Margin = new Thickness(0, 10)
-                                        };
-                                    }
-                                    break;
-                            }
-                            
-                            if (image != null)
-                            {
-                                imagesPanel.Children.Add(image);
-                                hasContent = true;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            var errorText = new TextBlock
-                            {
-                                Text = $"Error loading image: {ex.Message}",
-                                Foreground = new SolidColorBrush(Colors.Red),
-                                Margin = new Thickness(0, 5)
-                            };
-                            imagesPanel.Children.Add(errorText);
-                        }
-                    }
-                }
-            }
-            
-            imagesExpander.Content = imagesPanel;
-            sourcePanel.Children.Add(imagesExpander);
-        }
-        
-        // 处理音频参考资料
-        if (materials.Any(m => m.Audios != null && m.Audios.Length > 0))
-        {
-            var audiosExpander = new Expander
-            {
-                Header = _localizationService["exam.reference.audios"],
-                IsExpanded = true,
-                Margin = new Thickness(0, 5, 0, 5)
-            };
-            
-            var audiosPanel = new StackPanel();
-            // 音频资料处理逻辑...
-            
-            audiosExpander.Content = audiosPanel;
-            sourcePanel.Children.Add(audiosExpander);
-            hasContent = true;
-        }
-        
-        // 处理视频参考资料
-        if (materials.Any(m => m.Videos != null && m.Videos.Length > 0))
-        {
-            var videosExpander = new Expander
-            {
-                Header = _localizationService["exam.reference.videos"],
-                IsExpanded = true,
-                Margin = new Thickness(0, 5, 0, 5)
-            };
-            
-            var videosPanel = new StackPanel();
-            // 视频资料处理逻辑...
-            
-            videosExpander.Content = videosPanel;
-            sourcePanel.Children.Add(videosExpander);
-            hasContent = true;
         }
         
         if (hasContent)
         {
-            sourceExpander.Content = sourcePanel;
-            ReferenceMaterialsPanel.Children.Add(sourceExpander);
+            expander.Content = sectionPanel;
+            ReferenceMaterialsPanel.Children.Add(expander);
         }
     }
+
+    // 查找当前问题的父问题
+    private Question? FindParentQuestion()
+    {
+        if (_viewModel.CurrentSection?.Questions == null || _viewModel.CurrentQuestion == null)
+            return null;
+            
+        foreach (var question in _viewModel.CurrentSection.Questions)
+        {
+            if (question.Type == QuestionTypes.Complex && 
+                question.SubQuestions != null)
+            {
+                foreach (var subQuestion in question.SubQuestions)
+                {
+                    if (subQuestion == _viewModel.CurrentQuestion || 
+                        (subQuestion.QuestionId != null && 
+                         _viewModel.CurrentQuestion.QuestionId != null && 
+                         subQuestion.QuestionId == _viewModel.CurrentQuestion.QuestionId))
+                    {
+                        return question;
+                    }
+                }
+            }
+        }
+        
+        return null;
+    }
+
 
         
     private void BuildAnswerUI()
