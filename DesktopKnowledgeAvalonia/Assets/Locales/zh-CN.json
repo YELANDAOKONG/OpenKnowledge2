@@ -185,7 +185,25 @@
   "settings.about.protocol": "协议版本",
   "settings.general.enable.statistics": "启用统计",
   "settings.general.statistics": "统计",
-  "settings.about.subtitle": "开放知识共享协议"
+  "settings.general.randomize.welcome": "随机欢迎信息",
+  "settings.about.subtitle": "开放知识共享协议",
 
+  "main.stats.days.since.init": "距离初始化已有 {0} 天",
+  "main.stats.week.ai.calls": "本周共调用 AI API {0} 次",
+  "main.stats.week.exams.loaded": "本周共加载考试 {0} 次",
+  "main.stats.week.exams.submitted": "本周共提交考试 {0} 次",
+  "main.stats.week.app.starts": "本周共启动程序 {0} 次",
+  "main.stats.month.ai.calls": "本月共调用 AI API {0} 次",
+  "main.stats.month.exams.loaded": "本月共加载考试 {0} 次",
+  "main.stats.month.exams.submitted": "本月共提交考试 {0} 次",
+  "main.stats.month.app.starts": "本月共启动程序 {0} 次",
+  "main.stats.year.ai.calls": "今年共调用 AI API {0} 次",
+  "main.stats.year.exams.loaded": "今年共加载考试 {0} 次",
+  "main.stats.year.exams.submitted": "今年共提交考试 {0} 次",
+  "main.stats.year.app.starts": "今年共启动程序 {0} 次",
+  "main.stats.total.ai.calls": "总共调用 AI API {0} 次",
+  "main.stats.total.exams.loaded": "总共加载考试 {0} 次",
+  "main.stats.total.exams.submitted": "总共提交考试 {0} 次",
+  "main.stats.total.app.starts": "总共启动程序 {0} 次"
 
 }

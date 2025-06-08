@@ -13,6 +13,7 @@ public class ApplicationConfig
     public string UserName { get; set; } = "Default";
     
     public bool EnableStatistics { get; set; } = true;
+    public bool RandomizeWelcomeMessage { get; set; } = false;
 
     public string PromptGradingTemplate { get; set; }  = PromptTemplateManager.DefaultGradingTemplate;
     public string PromptExplanationTemplate { get; set; }  = PromptTemplateManager.DefaultExplanationTemplate;

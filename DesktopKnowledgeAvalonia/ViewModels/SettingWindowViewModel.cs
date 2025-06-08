@@ -128,6 +128,10 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
     
     [ObservableProperty]
     private bool _enableStatistics;
+    
+    [ObservableProperty]
+    private bool _randomizeWelcomeMessage;
+
 
     public GeneralSettingsViewModel(ConfigureService configService, LocalizationService localizationService)
     {
@@ -135,12 +139,14 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
         _localizationService = localizationService;
         _userName = _configService.AppConfig.UserName;
         _enableStatistics = _configService.AppConfig.EnableStatistics;
+        _randomizeWelcomeMessage = _configService.AppConfig.RandomizeWelcomeMessage;
     }
 
     public override async Task SaveAsync()
     {
         _configService.AppConfig.UserName = UserName;
         _configService.AppConfig.EnableStatistics = EnableStatistics;
+        _configService.AppConfig.RandomizeWelcomeMessage = RandomizeWelcomeMessage;
         await Task.CompletedTask;
     }
 }

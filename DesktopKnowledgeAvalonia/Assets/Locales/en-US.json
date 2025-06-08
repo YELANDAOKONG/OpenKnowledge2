@@ -185,6 +185,25 @@
   "settings.about.protocol": "Protocol Version",
   "settings.general.enable.statistics": "Enable Statistics",
   "settings.general.statistics": "Statistics",
-  "settings.about.subtitle": "Open Knowledge Sharing Protocol"
+  "settings.general.randomize.welcome": "Randomize Welcome Message",
+  "settings.about.subtitle": "Open Knowledge Sharing Protocol",
+
+  "main.stats.days.since.init": "It's been {0} days since initialization",
+  "main.stats.week.ai.calls": "This week, AI API has been called {0} times",
+  "main.stats.week.exams.loaded": "This week, {0} exams have been loaded",
+  "main.stats.week.exams.submitted": "This week, {0} exams have been submitted",
+  "main.stats.week.app.starts": "This week, the program has been started {0} times",
+  "main.stats.month.ai.calls": "This month, AI API has been called {0} times",
+  "main.stats.month.exams.loaded": "This month, {0} exams have been loaded",
+  "main.stats.month.exams.submitted": "This month, {0} exams have been submitted",
+  "main.stats.month.app.starts": "This month, the program has been started {0} times",
+  "main.stats.year.ai.calls": "This year, AI API has been called {0} times",
+  "main.stats.year.exams.loaded": "This year, {0} exams have been loaded",
+  "main.stats.year.exams.submitted": "This year, {0} exams have been submitted",
+  "main.stats.year.app.starts": "This year, the program has been started {0} times",
+  "main.stats.total.ai.calls": "In total, AI API has been called {0} times",
+  "main.stats.total.exams.loaded": "In total, {0} exams have been loaded",
+  "main.stats.total.exams.submitted": "In total, {0} exams have been submitted",
+  "main.stats.total.app.starts": "In total, the program has been started {0} times"
   
 }

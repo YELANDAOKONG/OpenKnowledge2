@@ -1,24 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DesktopKnowledgeAvalonia.Services;
+using DesktopKnowledgeAvalonia.Utils;
 using DesktopKnowledgeAvalonia.Views;
 using LibraryOpenKnowledge;
 using LibraryOpenKnowledge.Tools;
+using Calendar = Avalonia.Controls.Calendar;
 
 namespace DesktopKnowledgeAvalonia.ViewModels;
 
 public partial class MainWindowViewModel : ViewModelBase
 {
     private readonly ConfigureService _configureService;
+    private readonly LocalizationService _localizationService;
     private readonly DispatcherTimer _clockTimer;
     
     [ObservableProperty]
@@ -63,6 +66,7 @@ public partial class MainWindowViewModel : ViewModelBase
     public MainWindowViewModel()
     {
         _configureService = App.GetService<ConfigureService>();
+        _localizationService = App.GetService<LocalizationService>();
         
         // Initialize user name from config
         _userName = _configureService.AppConfig.UserName;
@@ -174,4 +178,185 @@ public partial class MainWindowViewModel : ViewModelBase
             newWindows.Show();
         };
     }
+    
+    private readonly Random _random = new Random();
+    private string _welcomeMessage;
+
+    public string WelcomeMessage
+    {
+        get
+        {
+            if (_welcomeMessage == null)
+            {
+                _welcomeMessage = GetWelcomeMessage();
+            }
+            return _welcomeMessage;
+        }
+    }
+
+    private string GetWelcomeMessage()
+    {
+        // 检查统计功能是否启用
+        if (!_configureService.AppConfig.EnableStatistics)
+        {
+            return _localizationService["main.welcome"];
+        }
+        
+        if (!_configureService.AppConfig.EnableStatistics || !_configureService.AppConfig.RandomizeWelcomeMessage)
+        {
+            return _localizationService["main.welcome"];
+        }
+        
+        // 生成0-99的随机数决定显示哪种消息
+        int randomValue = _random.Next(0, 100);
+        
+        // 15%概率显示"欢迎"
+        if (randomValue < 15)
+        {
+            return _localizationService["main.welcome"];
+        }
+        
+        // 20%概率显示初始化天数
+        if (randomValue < 50)
+        {
+            // 计算初始化至今的天数
+            long initTimestamp = _configureService.AppStatistics.InitializationTime;
+            long currentTimestamp = TimeUtil.GetUnixTimestampMilliseconds();
+            int daysSinceInit = (int)((currentTimestamp - initTimestamp) / (1000 * 60 * 60 * 24));
+            
+            return string.Format(_localizationService["main.stats.days.since.init"], daysSinceInit);
+        }
+        
+        // 剩余50%概率显示统计信息
+        
+        // 确定时间段（周、月、年、总计）
+        int timePeriodValue = _random.Next(0, 100);
+        string timePeriod;
+        
+        if (timePeriodValue < 40)  // 40%概率显示本周
+        {
+            timePeriod = "week";
+        }
+        else if (timePeriodValue < 70)  // 30%概率显示本月
+        {
+            timePeriod = "month";
+        }
+        else if (timePeriodValue < 90)  // 20%概率显示今年
+        {
+            timePeriod = "year";
+        }
+        else  // 10%概率显示总计
+        {
+            timePeriod = "total";
+        }
+        
+        // 随机选择4种统计类型之一
+        int statTypeValue = _random.Next(0, 4);
+        
+        int statValue = 0;
+        string statKey = "";
+        
+        DateTime now = DateTime.UtcNow;
+        int currentYear = now.Year;
+        int currentMonth = now.Month;
+        
+        System.Globalization.Calendar calendar = CultureInfo.InvariantCulture.Calendar;
+        int currentWeek = calendar.GetWeekOfYear(now, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+        
+        switch (statTypeValue)
+        {
+            case 0: // AI调用次数
+                statKey = $"main.stats.{timePeriod}.ai.calls";
+                if (timePeriod == "week")
+                {
+                    statValue = _configureService.AppStatistics.AiCallCountWeeks.TryGetValue(currentYear, out var yearDict) && 
+                                yearDict.TryGetValue(currentWeek, out var count) ? count : 0;
+                }
+                else if (timePeriod == "month")
+                {
+                    statValue = _configureService.AppStatistics.AiCallCountMonths.TryGetValue(currentYear, out var yearDict) && 
+                                yearDict.TryGetValue(currentMonth, out var count) ? count : 0;
+                }
+                else if (timePeriod == "year")
+                {
+                    statValue = _configureService.AppStatistics.AiCallCountYears.TryGetValue(currentYear, out var count) ? count : 0;
+                }
+                else // total
+                {
+                    statValue = _configureService.AppStatistics.AiCallCount;
+                }
+                break;
+                
+            case 1: // 加载考试次数
+                statKey = $"main.stats.{timePeriod}.exams.loaded";
+                if (timePeriod == "week")
+                {
+                    statValue = _configureService.AppStatistics.LoadExaminationCountWeeks.TryGetValue(currentYear, out var yearDict) && 
+                                yearDict.TryGetValue(currentWeek, out var count) ? count : 0;
+                }
+                else if (timePeriod == "month")
+                {
+                    statValue = _configureService.AppStatistics.LoadExaminationCountMonths.TryGetValue(currentYear, out var yearDict) && 
+                                yearDict.TryGetValue(currentMonth, out var count) ? count : 0;
+                }
+                else if (timePeriod == "year")
+                {
+                    statValue = _configureService.AppStatistics.LoadExaminationCountYears.TryGetValue(currentYear, out var count) ? count : 0;
+                }
+                else // total
+                {
+                    statValue = _configureService.AppStatistics.LoadExaminationCount;
+                }
+                break;
+                
+            case 2: // 提交考试次数
+                statKey = $"main.stats.{timePeriod}.exams.submitted";
+                if (timePeriod == "week")
+                {
+                    statValue = _configureService.AppStatistics.SubmitExaminationCountWeeks.TryGetValue(currentYear, out var yearDict) && 
+                               yearDict.TryGetValue(currentWeek, out var count) ? count : 0;
+                }
+                else if (timePeriod == "month")
+                {
+                    statValue = _configureService.AppStatistics.SubmitExaminationCountMonths.TryGetValue(currentYear, out var yearDict) && 
+                               yearDict.TryGetValue(currentMonth, out var count) ? count : 0;
+                }
+                else if (timePeriod == "year")
+                {
+                    statValue = _configureService.AppStatistics.SubmitExaminationCountYears.TryGetValue(currentYear, out var count) ? count : 0;
+                }
+                else // total
+                {
+                    statValue = _configureService.AppStatistics.SubmitExaminationCount;
+                }
+                break;
+                
+            case 3: // 程序启动次数
+            default:
+                statKey = $"main.stats.{timePeriod}.app.starts";
+                if (timePeriod == "week")
+                {
+                    statValue = _configureService.AppStatistics.ApplicationStartCountWeeks.TryGetValue(currentYear, out var yearDict) && 
+                               yearDict.TryGetValue(currentWeek, out var count) ? count : 0;
+                }
+                else if (timePeriod == "month")
+                {
+                    statValue = _configureService.AppStatistics.ApplicationStartCountMonths.TryGetValue(currentYear, out var yearDict) && 
+                               yearDict.TryGetValue(currentMonth, out var count) ? count : 0;
+                }
+                else if (timePeriod == "year")
+                {
+                    statValue = _configureService.AppStatistics.ApplicationStartCountYears.TryGetValue(currentYear, out var count) ? count : 0;
+                }
+                else // total
+                {
+                    statValue = _configureService.AppStatistics.ApplicationStartCount;
+                }
+                break;
+        }
+        
+        return string.Format(_localizationService[statKey], statValue);
+    }
+    
+
 }

@@ -90,6 +90,16 @@
                                                           IsChecked="{Binding EnableStatistics}"
                                                           HorizontalAlignment="Right"/>
                                         </Grid>
+                                        
+                                        <Grid ColumnDefinitions="*,Auto" Margin="0,10,0,0">
+                                            <TextBlock Grid.Column="0" 
+                                                       Text="{loc:Translate Key=settings.general.randomize.welcome}"
+                                                       VerticalAlignment="Center"/>
+                                            <ToggleSwitch Grid.Column="1" 
+                                                          IsChecked="{Binding RandomizeWelcomeMessage}"
+                                                          HorizontalAlignment="Right"
+                                                          IsEnabled="{Binding EnableStatistics}"/>
+                                        </Grid>
                                     </StackPanel>
                                 </StackPanel>
                             </DataTemplate>

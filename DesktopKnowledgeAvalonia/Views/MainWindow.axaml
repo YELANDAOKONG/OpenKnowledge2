@@ -62,7 +62,10 @@
                 </ContentControl>
                 
                 <!-- Welcome Message -->
-                <TextBlock Text="{loc:Translate Key=main.welcome}" 
+                <!-- <TextBlock Text="{loc:Translate Key=main.welcome}"  -->
+                <!--            Opacity="0.7" -->
+                <!--            Margin="0,5,0,0"/> -->
+                <TextBlock Text="{Binding WelcomeMessage}" 
                            Opacity="0.7"
                            Margin="0,5,0,0"/>
             </StackPanel>
