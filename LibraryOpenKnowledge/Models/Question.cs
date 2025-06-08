@@ -21,6 +21,7 @@ public class Question
     public ReferenceMaterial[]? ReferenceMaterials { get; set; } = new ReferenceMaterial[] { }; // 参考资料
     
     public bool IsAiJudge { get; set; } = false; // 是否需要AI判题
+    public bool IgnoreSpace { get; set; } = true; // 判断时是否忽略空格
     public string[]? Commits { get; set; } = new string[] { }; // AI提示
     
     // public Question[]? SubQuestions { get; set; } = new Question[] { };
