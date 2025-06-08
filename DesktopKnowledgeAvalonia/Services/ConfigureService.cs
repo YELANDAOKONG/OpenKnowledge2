@@ -44,10 +44,33 @@ public class ConfigureService
         }
     }
     
-    private static string GetDefaultConfigPath()
+    
+    public static string GetConfigDirectory()
     {
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        var configFolder = Path.Combine(appDataPath, "OpenKnowledge", "Desktop");
+        var folder = Path.Combine(appDataPath, "OpenKnowledge", "Desktop");
+        if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+        return folder;
+    }
+
+    public static string GetCacheDirectory()
+    {
+        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        var folder = Path.Combine(appDataPath, "OpenKnowledge", "Cache");
+        if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+        return folder;
+    }
+    
+    public static string GetTempDirectory()
+    {
+        var tempFolder = Path.Combine(Path.GetTempPath(), "OpenKnowledge");
+        if (!Directory.Exists(tempFolder)) Directory.CreateDirectory(tempFolder);
+        return tempFolder;
+    }
+    
+    public static string GetDefaultConfigPath()
+    {
+        var configFolder = GetConfigDirectory();
         
         if (!Directory.Exists(configFolder))
             Directory.CreateDirectory(configFolder);
@@ -55,10 +78,9 @@ public class ConfigureService
         return Path.Combine(configFolder, "Config.json");
     }
     
-    private static string GetDefaultAppDataPath()
+    public static string GetDefaultAppDataPath()
     {
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        var dataFolder = Path.Combine(appDataPath, "OpenKnowledge", "Desktop");
+        var dataFolder = GetConfigDirectory();
         
         if (!Directory.Exists(dataFolder))
             Directory.CreateDirectory(dataFolder);
@@ -66,7 +88,7 @@ public class ConfigureService
         return Path.Combine(dataFolder, "Data.json");
     }
     
-    private static string GetDefaultStatisticsPath()
+    public static string GetDefaultStatisticsPath()
     {
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         var statisticsFolder = Path.Combine(appDataPath, "OpenKnowledge", "Desktop");
@@ -75,6 +97,74 @@ public class ConfigureService
             Directory.CreateDirectory(statisticsFolder);
             
         return Path.Combine(statisticsFolder, "Statistics.json");
+    }
+    
+    public static void ClearCache(bool throwExceptions = false)
+    {
+        var cacheFolder = GetCacheDirectory();
+        if (Directory.Exists(cacheFolder))
+        {
+            Directory.Delete(cacheFolder, true);
+        }
+    }
+    
+    public static long CalculateCacheSize()
+    {
+        var cacheFolder = GetCacheDirectory();
+        if (!Directory.Exists(cacheFolder)) return 0;
+        
+        long size = 0;
+        foreach (var file in Directory.GetFiles(cacheFolder, "*", SearchOption.AllDirectories))
+        {
+            size += new FileInfo(file).Length;
+        }
+        return size;
+    }
+
+    public static string RandomFileName(string prefix = "temp", string extension = "dat")
+    {
+        var random = Random.Shared;
+        var rId1 = random.Next(Int32.MaxValue);
+        var rId2 = random.Next(Int32.MaxValue);
+        var rId3 = random.Next(Int32.MaxValue);
+        var times = DateTime.UtcNow.Second;
+        var timems = DateTime.UtcNow.Microsecond;
+        var timens = DateTime.UtcNow.Nanosecond;
+        if (extension.StartsWith("."))
+        {
+            extension = extension.Substring(1);
+        }
+        return $"{prefix}_{rId1}{rId2}{rId3}_{times}{timems}{timens}.{extension}";
+    }
+    
+    public static string RandomDirectoryName(string prefix = "temp")
+    {
+        var random = Random.Shared;
+        var rId1 = random.Next(Int32.MaxValue);
+        var rId2 = random.Next(Int32.MaxValue);
+        var rId3 = random.Next(Int32.MaxValue);
+
+        var times = DateTime.UtcNow.Second;
+        var timems = DateTime.UtcNow.Microsecond;
+        var timens = DateTime.UtcNow.Nanosecond;
+        return $"{prefix}_{rId1}{rId2}{rId3}_{times}{timems}{timens}";
+    }
+    
+    public static string NewTempFilePath(string prefix = "temp", string extension = ".dat")
+    {
+        var tempFolder = GetTempDirectory();
+        var fileName = RandomFileName(prefix, extension);
+        var filePath = Path.Combine(tempFolder, fileName);
+        return filePath;
+    }
+    
+    public static string NewTempDirectoryPath(string prefix = "temp")
+    {
+        var tempFolder = GetTempDirectory();
+        var dirName = RandomDirectoryName(prefix);
+        var dirPath = Path.Combine(tempFolder, dirName);
+        if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
+        return dirPath;
     }
     
     private class CombinedConfig

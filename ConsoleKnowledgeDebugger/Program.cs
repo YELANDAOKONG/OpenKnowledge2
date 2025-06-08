@@ -1,4 +1,5 @@
-﻿using DesktopKnowledgeAvalonia.Tools;
+﻿using DesktopKnowledgeAvalonia.Services;
+using DesktopKnowledgeAvalonia.Tools;
 using LibraryOpenKnowledge;
 using LibraryOpenKnowledge.Extensions;
 using LibraryOpenKnowledge.Models;
@@ -217,6 +218,12 @@ class Program
             language: null
         );
         Console.WriteLine(prompt);
+        
+        Console.WriteLine("===========================");
+        
+        Console.WriteLine(ConfigureService.NewTempFilePath());
+        Console.WriteLine(ConfigureService.NewTempFilePath());
+        Console.WriteLine(ConfigureService.NewTempFilePath());
 
     }
 }
