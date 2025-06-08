@@ -12,4 +12,7 @@ public class ReferenceMaterial
     public ReferenceMaterialImage[]? Images { get; set; } = null;
     public ReferenceMaterialAudio[]? Audios { get; set; } = null;
     public ReferenceMaterialVideo[]? Videos { get; set; } = null;
+    
+    public ReferenceMaterialFile[]? Files { get; set; } = null;
+    
 }
