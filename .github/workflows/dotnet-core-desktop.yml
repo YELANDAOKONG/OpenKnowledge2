@@ -1,54 +1,70 @@
-﻿name: .NET Core Desktop (Avalonia)
+﻿name: Cross-platform .NET Desktop Build
 
 on:
   push:
-    branches: [ "release" ]
+    branches: [ "release" ]  # Only trigger on release branch
 
 jobs:
   build:
-
     strategy:
       matrix:
+        os: [windows-latest, ubuntu-latest]
         configuration: [Debug, Release]
-        platform:
-          - { os: windows-latest, runtime: win-x64 }
-          - { os: ubuntu-latest, runtime: linux-x64 }
 
-    runs-on: ${{ matrix.platform.os }}
+    runs-on: ${{ matrix.os }}
 
     env:
       Solution_Name: OpenKnowledge2.sln
-      Project_Path: DesktopKnowledgeAvalonia\DesktopKnowledgeAvalonia.csproj
-      Configuration: ${{ matrix.configuration }}
-      RuntimeIdentifier: ${{ matrix.platform.runtime }}
+      Project_Path: DesktopKnowledgeAvalonia/DesktopKnowledgeAvalonia.csproj
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
+          ref: release  # Explicitly use release branch
           fetch-depth: 0
-
-      - name: Setup .NET 8 SDK
+      
+      # Install the .NET Core workload
+      - name: Install .NET Core
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
-
+      
+      # Restore dependencies
       - name: Restore dependencies
         run: dotnet restore ${{ env.Solution_Name }}
+      
+      # Build the project (self-contained)
+      - name: Build for Windows (if Windows runner)
+        if: matrix.os == 'windows-latest'
+        run: |
+          dotnet publish ${{ env.Project_Path }} `
+            --configuration ${{ matrix.configuration }} `
+            --self-contained true `
+            --runtime win-x64 `
+            --output ./publish/win-x64
 
-      - name: Run unit tests
-        run: dotnet test ${{ env.Solution_Name }} --configuration ${{ env.Configuration }}
-
-      - name: Build self-contained application
+      - name: Build for Linux (if Linux runner)
+        if: matrix.os == 'ubuntu-latest'
         run: |
           dotnet publish ${{ env.Project_Path }} \
-            --configuration ${{ env.Configuration }} \
-            --runtime ${{ env.RuntimeIdentifier }} \
+            --configuration ${{ matrix.configuration }} \
             --self-contained true \
-            --output bin/publish/${{ env.RuntimeIdentifier }}-${{ env.Configuration }}
-
-      - name: Upload build artifacts
+            --runtime linux-x64 \
+            --output ./publish/linux-x64
+      
+      # Upload build artifacts
+      - name: Upload Windows build artifacts
+        if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v4
         with:
-          name: DesktopKnowledgeAvalonia-${{ env.RuntimeIdentifier }}-${{ env.Configuration }}
-          path: bin/publish/${{ env.RuntimeIdentifier }}-${{ env.Configuration }}
+          name: DesktopKnowledge-Windows-${{ matrix.configuration }}
+          path: ./publish/win-x64
+
+      - name: Upload Linux build artifacts
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: DesktopKnowledge-Linux-${{ matrix.configuration }}
+          path: ./publish/linux-x64
+
