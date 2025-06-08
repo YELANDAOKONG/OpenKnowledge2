@@ -36,6 +36,70 @@ public class AIGradingResult
             var cleanJson = CleanJsonString(json);
             
             // 使用System.Text.Json解析
+            using JsonDocument document = JsonDocument.Parse(cleanJson);
+            JsonElement root = document.RootElement;
+            
+            // 解析基本字段
+            if (root.TryGetProperty("isCorrect", out JsonElement isCorrectElement))
+                result.IsCorrect = isCorrectElement.GetBoolean();
+            
+            if (root.TryGetProperty("score", out JsonElement scoreElement))
+                result.Score = scoreElement.GetDouble();
+            
+            if (root.TryGetProperty("maxScore", out JsonElement maxScoreElement))
+                result.MaxScore = maxScoreElement.GetDouble();
+            
+            if (root.TryGetProperty("confidenceLevel", out JsonElement confidenceElement))
+                result.ConfidenceLevel = confidenceElement.GetDouble();
+            
+            if (root.TryGetProperty("feedback", out JsonElement feedbackElement))
+                result.Feedback = ExtractStringValue(feedbackElement);
+            
+            // 解析维度评分（如果存在）
+            if (root.TryGetProperty("dimensions", out JsonElement dimensionsElement) && 
+                dimensionsElement.ValueKind == JsonValueKind.Array)
+            {
+                foreach (JsonElement dimension in dimensionsElement.EnumerateArray())
+                {
+                    var scoringDimension = new ScoringDimension();
+                    
+                    if (dimension.TryGetProperty("name", out JsonElement nameElement))
+                        scoringDimension.Name = ExtractStringValue(nameElement);
+                    
+                    if (dimension.TryGetProperty("score", out JsonElement dimScoreElement))
+                        scoringDimension.Score = dimScoreElement.GetDouble();
+                    
+                    if (dimension.TryGetProperty("maxScore", out JsonElement dimMaxScoreElement))
+                        scoringDimension.MaxScore = dimMaxScoreElement.GetDouble();
+                    
+                    result.Dimensions.Add(scoringDimension);
+                }
+            }
+            
+            result.ParseSuccess = true;
+        }
+        catch (Exception ex)
+        {
+            result.ParseSuccess = false;
+            result.ParseError = ex.Message;
+        }
+        
+        return result;
+    }
+    
+      public static AIGradingResult FromJsonDefault(string json)
+    {
+        var result = new AIGradingResult
+        {
+            RawJson = json
+        };
+        
+        try
+        {
+            // 清理JSON字符串（移除可能的围绕代码块的标记）
+            var cleanJson = CleanJsonString(json);
+            
+            // 使用System.Text.Json解析
             using (JsonDocument document = JsonDocument.Parse(cleanJson))
             {
                 JsonElement root = document.RootElement;
@@ -87,6 +151,33 @@ public class AIGradingResult
         }
         
         return result;
+    }
+
+    // 提取字符串值，处理可能的字符串数组
+    private static string ExtractStringValue(JsonElement element)
+    {
+        if (element.ValueKind == JsonValueKind.String)
+            return element.GetString() ?? string.Empty;
+        
+        if (element.ValueKind == JsonValueKind.Array)
+        {
+            // 处理字符串数组，将其合并为带换行符的单个字符串
+            var stringList = new List<string>();
+            
+            foreach (JsonElement item in element.EnumerateArray())
+            {
+                if (item.ValueKind == JsonValueKind.String)
+                {
+                    string? value = item.GetString();
+                    if (value != null)
+                        stringList.Add(value);
+                }
+            }
+            
+            return string.Join("\n", stringList);
+        }
+        
+        return string.Empty;
     }
     
     // 清理JSON字符串，移除可能的Markdown代码块标记等
@@ -148,4 +239,3 @@ public class AIGradingResult
         return report.ToString();
     }
 }
-
