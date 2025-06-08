@@ -1,0 +1,55 @@
+﻿name: .NET Core Desktop (Avalonia)
+
+on:
+  push:
+    branches: [ "release" ]
+
+jobs:
+  build:
+
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+        os: [windows-latest, ubuntu-latest]
+        runtime:
+          - win-x64
+          - linux-x64
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      Solution_Name: OpenKnowledge2.sln
+      Project_Path: DesktopKnowledgeAvalonia\DesktopKnowledgeAvalonia.csproj
+      Configuration: ${{ matrix.configuration }}
+      RuntimeIdentifier: ${{ matrix.runtime }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.Solution_Name }}
+
+      - name: Run unit tests
+        run: dotnet test ${{ env.Solution_Name }} --configuration ${{ env.Configuration }}
+
+      - name: Build self-contained application
+        run: |
+          dotnet publish ${{ env.Project_Path }} \
+            --configuration ${{ env.Configuration }} \
+            --runtime ${{ env.RuntimeIdentifier }} \
+            --self-contained true \
+            --output bin/publish/${{ env.RuntimeIdentifier }}-${{ env.Configuration }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: DesktopKnowledgeAvalonia-${{ env.RuntimeIdentifier }}-${{ env.Configuration }}
+          path: bin/publish/${{ env.RuntimeIdentifier }}-${{ env.Configuration }}
