@@ -387,13 +387,17 @@
                             <!-- About Settings Template -->
                             <DataTemplate DataType="{x:Type vm:AboutSettingsViewModel}">
                                 <StackPanel Margin="20">
-                                    <!-- Text="OpenKnowledge" -->
-                                    <TextBlock Text="{loc:Translate Key=settings.about.title}"
+                                    <TextBlock Text="OpenKnowledge" 
                                                FontSize="32" 
                                                FontWeight="Bold"
                                                HorizontalAlignment="Center"
+                                               Margin="0,0,0,5" />
+                   
+                                    <TextBlock Text="{loc:Translate Key=settings.about.subtitle}"
+                                               FontSize="16" 
+                                               HorizontalAlignment="Center"
                                                Margin="0,0,0,30" />
-        
+
                                     <StackPanel Spacing="15">
                                         <StackPanel>
                                             <TextBlock Text="{loc:Translate Key=settings.about.version}"
@@ -409,6 +413,7 @@
                                     </StackPanel>
                                 </StackPanel>
                             </DataTemplate>
+
 
 
 

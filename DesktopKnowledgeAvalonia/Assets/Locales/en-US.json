@@ -184,6 +184,7 @@
   "settings.about.version": "Version",
   "settings.about.protocol": "Protocol Version",
   "settings.general.enable.statistics": "Enable Statistics",
-  "settings.general.statistics": "Statistics"
+  "settings.general.statistics": "Statistics",
+  "settings.about.subtitle": "Open Knowledge Sharing Protocol"
   
 }
