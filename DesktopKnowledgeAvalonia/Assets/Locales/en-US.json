@@ -177,7 +177,12 @@
   "settings.storage.clearing": "Clearing...",
   "settings.storage.calculation.error": "Error calculating size",
   "settings.storage.refresh.tooltip": "Recalculate current cache size",
-  "settings.storage.clear.tooltip": "Clear all application cache data"
+  "settings.storage.clear.tooltip": "Clear all application cache data",
 
-
+  "settings.category.about": "About",
+  "settings.about.title": "OpenKnowledge",
+  "settings.about.version": "Version",
+  "settings.about.protocol": "Protocol Version",
+  "settings.general.enable.statistics": "Enable Statistics"
+  
 }

@@ -177,7 +177,13 @@
   "settings.storage.clearing": "清除中...",
   "settings.storage.calculation.error": "计算大小出错",
   "settings.storage.refresh.tooltip": "重新计算当前缓存大小",
-  "settings.storage.clear.tooltip": "清除所有应用缓存数据"
+  "settings.storage.clear.tooltip": "清除所有应用缓存数据",
+
+  "settings.category.about": "关于",
+  "settings.about.title": "OpenKnowledge",
+  "settings.about.version": "版本",
+  "settings.about.protocol": "协议版本",
+  "settings.general.enable.statistics": "启用统计"
 
 
 }

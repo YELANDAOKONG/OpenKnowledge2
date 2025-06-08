@@ -72,6 +72,12 @@ public partial class SettingWindowViewModel : ViewModelBase
             _localizationService["settings.category.storage"],
             "M6 2c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6H6zm7 7V3.5L18.5 9H13z",
             new StorageSettingsViewModel(_configService, _localizationService));
+        
+        // About Settings
+        var about = new SettingCategory(
+            _localizationService["settings.category.about"],
+            "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z", // Info icon path
+            new AboutSettingsViewModel(_configService, _localizationService));
 
         Categories.Add(general);
         Categories.Add(ai); // Add the AI category
@@ -79,6 +85,7 @@ public partial class SettingWindowViewModel : ViewModelBase
         Categories.Add(appearance);
         Categories.Add(language);
         Categories.Add(storage);
+        Categories.Add(about);
 
         SelectedCategory = general;
     }
@@ -118,20 +125,26 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
 
     [ObservableProperty]
     private string _userName;
+    
+    [ObservableProperty]
+    private bool _enableStatistics;
 
     public GeneralSettingsViewModel(ConfigureService configService, LocalizationService localizationService)
     {
         _configService = configService;
         _localizationService = localizationService;
         _userName = _configService.AppConfig.UserName;
+        _enableStatistics = _configService.AppConfig.EnableStatistics;
     }
 
     public override async Task SaveAsync()
     {
         _configService.AppConfig.UserName = UserName;
+        _configService.AppConfig.EnableStatistics = EnableStatistics;
         await Task.CompletedTask;
     }
 }
+
 
 // Appearance Settings View - contains theme and transparency settings
 public partial class AppearanceSettingsViewModel : SettingsViewModelBase
@@ -596,3 +609,43 @@ public partial class StorageSettingsViewModel : SettingsViewModelBase
     }
 }
 
+public partial class AboutSettingsViewModel : SettingsViewModelBase
+{
+    private readonly ConfigureService _configService;
+    private readonly LocalizationService _localizationService;
+    
+    [ObservableProperty]
+    private string _versionInfo;
+    
+    [ObservableProperty]
+    private string _protocolVersion;
+    
+    public AboutSettingsViewModel(ConfigureService configService, LocalizationService localizationService)
+    {
+        _configService = configService;
+        _localizationService = localizationService;
+        
+        // Get version information from assembly
+        var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+        var version = assembly.GetName().Version;
+        
+        if (version != null)
+        {
+            _versionInfo = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision:0000}";
+        }
+        else
+        {
+            _versionInfo = "1.0.0.0000";
+        }
+        
+        // Get protocol version from DefaultClass
+        var pVersion = LibraryOpenKnowledge.DefaultClass.CurrentVersion;
+        _protocolVersion = $"Protocol {pVersion.Major}.{pVersion.Minor}.{pVersion.Patch}";
+    }
+    
+    public override async Task SaveAsync()
+    {
+        // Nothing to save for this view
+        await Task.CompletedTask;
+    }
+}

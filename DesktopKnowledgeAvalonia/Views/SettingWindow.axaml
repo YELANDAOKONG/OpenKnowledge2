@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:loc="using:DesktopKnowledgeAvalonia.Localization"
         xmlns:converters="clr-namespace:DesktopKnowledgeAvalonia.Converters"
+        xmlns:services="clr-namespace:DesktopKnowledgeAvalonia.Services"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="550"
         x:Class="DesktopKnowledgeAvalonia.Views.SettingWindow"
         x:DataType="vm:SettingWindowViewModel"
@@ -71,11 +72,17 @@
                         <ContentControl.DataTemplates>
                             <!-- General Settings Template -->
                             <DataTemplate DataType="vm:GeneralSettingsViewModel">
-                                <StackPanel Spacing="15">
+                                <StackPanel Margin="20" Spacing="20">
                                     <TextBlock Text="{loc:Translate Key=settings.general.username}" 
                                                FontWeight="SemiBold" 
                                                Margin="0,0,0,5"/>
                                     <TextBox Text="{Binding UserName}" MaxLength="50"/>
+                                    
+                                    <StackPanel>
+                                        <TextBlock Text="{loc:Translate Key=settings.general.enable.statistics}"
+                                                   Margin="0,0,0,5" />
+                                        <ToggleSwitch IsChecked="{Binding EnableStatistics}" />
+                                    </StackPanel>
                                 </StackPanel>
                             </DataTemplate>
                             
@@ -368,6 +375,32 @@
                                     </Border>
                                 </StackPanel>
                             </DataTemplate>
+                            
+                            <!-- About Settings Template -->
+                            <DataTemplate DataType="{x:Type vm:AboutSettingsViewModel}">
+                                <StackPanel Margin="20">
+                                    <TextBlock Text="OpenKnowledge" 
+                                               FontSize="32" 
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,0,0,30" />
+        
+                                    <StackPanel Spacing="15">
+                                        <StackPanel>
+                                            <TextBlock Text="{loc:Translate Key=settings.about.version}"
+                                                       FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding VersionInfo}" />
+                                        </StackPanel>
+            
+                                        <StackPanel>
+                                            <TextBlock Text="{loc:Translate Key=settings.about.protocol}"
+                                                       FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding ProtocolVersion}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </StackPanel>
+                            </DataTemplate>
+
 
 
                         </ContentControl.DataTemplates>
