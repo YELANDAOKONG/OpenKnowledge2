@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using LibraryOpenKnowledge.Models;
+using LibraryOpenKnowledge.Tools.Models;
 
 namespace LibraryOpenKnowledge.Tools;
 

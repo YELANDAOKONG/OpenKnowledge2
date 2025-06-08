@@ -4,6 +4,7 @@ using LibraryOpenKnowledge;
 using LibraryOpenKnowledge.Extensions;
 using LibraryOpenKnowledge.Models;
 using LibraryOpenKnowledge.Tools;
+using LibraryOpenKnowledge.Tools.Models;
 
 namespace ConsoleKnowledgeDebugger;
 

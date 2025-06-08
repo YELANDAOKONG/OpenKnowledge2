@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using LibraryOpenKnowledge.Models;
 using LibraryOpenKnowledge.Tools;
+using LibraryOpenKnowledge.Tools.Models;
 
 namespace DesktopKnowledgeAvalonia.Tools;
 
