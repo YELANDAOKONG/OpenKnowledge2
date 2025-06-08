@@ -379,6 +379,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                     true,
                     _localizationService.CurrentLanguage);
             
+                _configService.AppStatistics.AddAiCallCount(_configService);
                 // Send to AI for scoring
                 string? response = await AiTools.SendChatMessageAsync(
                     aiClient,
@@ -506,6 +507,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                 true,
                 _localizationService.CurrentLanguage);
         
+            _configService.AppStatistics.AddAiCallCount(_configService);
             string? response = await AiTools.SendChatMessageAsync(
                 aiClient,
                 _configService.SystemConfig,

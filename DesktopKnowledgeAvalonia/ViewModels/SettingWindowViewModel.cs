@@ -363,6 +363,7 @@ public partial class AISettingsViewModel : SettingsViewModelBase
             // Create OpenAI client using the SDK
             var client = LibraryOpenKnowledge.Tools.AiTools.CreateOpenAiClient(tempConfig);
         
+            _configService.AppStatistics.AddAiCallCount(_configService);
             // Test the main model
             var response = await LibraryOpenKnowledge.Tools.AiTools.SendChatMessageAsync(
                 client,
@@ -385,6 +386,7 @@ public partial class AISettingsViewModel : SettingsViewModelBase
                 
                 try
                 {
+                    _configService.AppStatistics.AddAiCallCount(_configService);
                     var assistResponse = await LibraryOpenKnowledge.Tools.AiTools.SendChatMessageAsync(
                         client,
                         assistConfig,

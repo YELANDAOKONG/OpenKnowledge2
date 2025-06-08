@@ -343,8 +343,7 @@ public partial class ExaminationWindowViewModel : ViewModelBase
         
         // 累加统计计数
         var config = App.GetService<ConfigureService>();
-        config.AppStatistics.AddSubmitExaminationCount();
-        _ = config.SaveChangesAsync();
+        config.AppStatistics.AddSubmitExaminationCount(config);
     
         // Calculate scores
         var scoreRecord = new ScoreRecord

@@ -11,6 +11,8 @@ public class ApplicationConfig
     public string? ThemeVariant { get; set; } = "Dark";
     public string? PreferredLanguage { get; set; } = null;
     public string UserName { get; set; } = "Default";
+    
+    public bool EnableStatistics { get; set; } = true;
 
     public string PromptGradingTemplate { get; set; }  = PromptTemplateManager.DefaultGradingTemplate;
     public string PromptExplanationTemplate { get; set; }  = PromptTemplateManager.DefaultExplanationTemplate;

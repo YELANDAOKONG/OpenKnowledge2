@@ -57,8 +57,7 @@ public partial class ExaminationDialogWindow : AppWindowBase
         }
 
         var config = App.GetService<ConfigureService>();
-        config.AppStatistics.AddLoadExaminationCount();
-        _ = config.SaveChangesAsync();
+        config.AppStatistics.AddLoadExaminationCount(config);
         
         _windowViewModel.IsWindowsVisible = false;
         // Open the examination window
