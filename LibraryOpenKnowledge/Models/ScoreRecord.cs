@@ -195,29 +195,75 @@ public class ScoreRecord
     {
         if (question.UserAnswer == null || question.UserAnswer.Length == 0 || question.Answer == null || question.Answer.Length == 0)
             return false;
+        
+        // 根据问题设置预处理文本
+        Func<string, string> preprocessText = (text) => {
+            if (string.IsNullOrEmpty(text)) return string.Empty;
             
+            string result = text;
+            if (question.IgnoreSpace)
+                result = result.Replace(" ", "");
+            if (question.IgnoreLineBreak)
+                result = result.Replace("\r\n", "").Replace("\n", "").Replace("\r", "");
+            if (question.IgnoreCase)
+                result = result.ToLowerInvariant();
+            return result;
+        };
+        
         switch (question.Type)
         {
             case QuestionTypes.SingleChoice:
-                return question.UserAnswer[0].Trim().Equals(question.Answer[0].Trim(), StringComparison.OrdinalIgnoreCase);
+                return preprocessText(question.UserAnswer[0]).Equals(preprocessText(question.Answer[0]));
                 
             case QuestionTypes.MultipleChoice:
-                // All selected options must match exactly
+                // 所有选项必须完全匹配
                 if (question.UserAnswer.Length != question.Answer.Length)
                     return false;
                     
-                var userOptions = new HashSet<string>(question.UserAnswer.Select(a => a.Trim()), StringComparer.OrdinalIgnoreCase);
-                var correctOptions = new HashSet<string>(question.Answer.Select(a => a.Trim()), StringComparer.OrdinalIgnoreCase);
+                var userOptions = new HashSet<string>(question.UserAnswer.Select(a => preprocessText(a)), StringComparer.Ordinal);
+                var correctOptions = new HashSet<string>(question.Answer.Select(a => preprocessText(a)), StringComparer.Ordinal);
                 return userOptions.SetEquals(correctOptions);
                 
             case QuestionTypes.Judgment:
-                return question.UserAnswer[0].Trim().Equals(question.Answer[0].Trim(), StringComparison.OrdinalIgnoreCase);
+                return preprocessText(question.UserAnswer[0]).Equals(preprocessText(question.Answer[0]));
                 
             case QuestionTypes.FillInTheBlank:
-                return question.UserAnswer[0].Trim().Equals(question.Answer[0].Trim(), StringComparison.OrdinalIgnoreCase);
+                return preprocessText(question.UserAnswer[0]).Equals(preprocessText(question.Answer[0]));
+                
+            case QuestionTypes.Math:
+                if (!question.IsAiJudge)
+                    return preprocessText(question.UserAnswer[0]).Equals(preprocessText(question.Answer[0]));
+                return false;
+            
+            case QuestionTypes.Calculation:
+                // 对于数学和计算题，如果不使用AI判断，则使用直接比较
+                if (!question.IsAiJudge)
+                    return preprocessText(question.UserAnswer[0]).Equals(preprocessText(question.Answer[0]));
+                return false; // 默认需要AI判断
+                
+            case QuestionTypes.Essay:
+                if (!question.IsAiJudge)
+                    return preprocessText(question.UserAnswer[0]).Equals(preprocessText(question.Answer[0]));
+                return false;
+            
+            case QuestionTypes.ShortAnswer:
+                // 对于作文和简答题，如果不使用AI判断，则使用直接比较
+                if (!question.IsAiJudge)
+                    return preprocessText(question.UserAnswer[0]).Equals(preprocessText(question.Answer[0]));
+                return false; // 默认需要AI判断
+                
+            case QuestionTypes.Complex:
+                // 复合题通常需要分别评估子问题
+                if (!question.IsAiJudge && question.UserAnswer.Length > 0 && question.Answer.Length > 0)
+                    return preprocessText(question.UserAnswer[0]).Equals(preprocessText(question.Answer[0]));
+                return false;
                 
             default:
-                return false; // Complex types require AI judgment
+                // 其他类型如果不使用AI判断，则使用直接比较
+                if (!question.IsAiJudge && question.UserAnswer.Length > 0 && question.Answer.Length > 0)
+                    return preprocessText(question.UserAnswer[0]).Equals(preprocessText(question.Answer[0]));
+                return false;
         }
     }
+    
 }
