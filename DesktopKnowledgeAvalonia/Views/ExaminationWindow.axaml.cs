@@ -417,117 +417,168 @@ public partial class ExaminationWindow : AppWindowBase
     {
         ReferenceMaterialsPanel.Children.Clear();
         
-        if (_viewModel.CurrentQuestion?.ReferenceMaterials == null) return;
-        
-        foreach (var material in _viewModel.CurrentQuestion.ReferenceMaterials)
+        // 辅助函数：添加参考资料到面板
+        void AddMaterialsToPanel(ReferenceMaterial[] materials, string sourceName)
         {
-            // Add text materials
-            if (material.Materials != null && material.Materials.Length > 0)
-            {
-                foreach (var text in material.Materials)
-                {
-                    var textBlock = new TextBlock
-                    {
-                        Text = text,
-                        TextWrapping = TextWrapping.Wrap,
-                        Margin = new Thickness(0, 3)
-                    };
-                    ReferenceMaterialsPanel.Children.Add(textBlock);
-                }
-            }
+            if (materials == null || materials.Length == 0) return;
             
-            // Add images
-            if (material.Images != null && material.Images.Length > 0)
+            // 添加资料来源标题
+            var sourceHeader = new TextBlock
             {
-                foreach (var img in material.Images)
+                Text = sourceName,
+                FontWeight = FontWeight.Bold,
+                Margin = new Thickness(0, 10, 0, 5)
+            };
+            ReferenceMaterialsPanel.Children.Add(sourceHeader);
+            
+            foreach (var material in materials)
+            {
+                // 添加文本资料
+                if (material.Materials != null && material.Materials.Length > 0)
                 {
-                    try
+                    foreach (var text in material.Materials)
                     {
-                        Image? image = null;
-                        
-                        switch (img.Type)
+                        var textBlock = new TextBlock
                         {
-                            case ReferenceMaterialImageTypes.Local:
-                            case ReferenceMaterialImageTypes.Remote:
-                                if (!string.IsNullOrEmpty(img.Uri))
-                                {
-                                    image = new Image
-                                    {
-                                        Source = new Bitmap(img.Uri),
-                                        MaxHeight = 300,
-                                        Margin = new Thickness(0, 10)
-                                    };
-                                }
-                                break;
-                                
-                            case ReferenceMaterialImageTypes.Embedded:
-                                if (img.Image != null)
-                                {
-                                    using var stream = new System.IO.MemoryStream(img.Image);
-                                    image = new Image
-                                    {
-                                        Source = new Bitmap(stream),
-                                        MaxHeight = 300,
-                                        Margin = new Thickness(0, 10)
-                                    };
-                                }
-                                break;
-                        }
-                        
-                        if (image != null)
-                        {
-                            ReferenceMaterialsPanel.Children.Add(image);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        // Add error text instead
-                        var errorText = new TextBlock
-                        {
-                            Text = $"Error loading image: {ex.Message}",
-                            Foreground = new SolidColorBrush(Colors.Red),
-                            Margin = new Thickness(0, 5)
+                            Text = text,
+                            TextWrapping = TextWrapping.Wrap,
+                            Margin = new Thickness(0, 3)
                         };
-                        ReferenceMaterialsPanel.Children.Add(errorText);
+                        ReferenceMaterialsPanel.Children.Add(textBlock);
+                    }
+                }
+                
+                // 添加图片资料
+                if (material.Images != null && material.Images.Length > 0)
+                {
+                    foreach (var img in material.Images)
+                    {
+                        try
+                        {
+                            Image? image = null;
+                            
+                            switch (img.Type)
+                            {
+                                case ReferenceMaterialImageTypes.Local:
+                                case ReferenceMaterialImageTypes.Remote:
+                                    if (!string.IsNullOrEmpty(img.Uri))
+                                    {
+                                        image = new Image
+                                        {
+                                            Source = new Bitmap(img.Uri),
+                                            MaxHeight = 300,
+                                            Margin = new Thickness(0, 10)
+                                        };
+                                    }
+                                    break;
+                                    
+                                case ReferenceMaterialImageTypes.Embedded:
+                                    if (img.Image != null)
+                                    {
+                                        using var stream = new System.IO.MemoryStream(img.Image);
+                                        image = new Image
+                                        {
+                                            Source = new Bitmap(stream),
+                                            MaxHeight = 300,
+                                            Margin = new Thickness(0, 10)
+                                        };
+                                    }
+                                    break;
+                            }
+                            
+                            if (image != null)
+                            {
+                                ReferenceMaterialsPanel.Children.Add(image);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // 添加错误文本
+                            var errorText = new TextBlock
+                            {
+                                Text = $"Error loading image: {ex.Message}",
+                                Foreground = new SolidColorBrush(Colors.Red),
+                                Margin = new Thickness(0, 5)
+                            };
+                            ReferenceMaterialsPanel.Children.Add(errorText);
+                        }
                     }
                 }
             }
         }
+        
+        // 显示试卷级参考资料
+        if (_viewModel.Examination?.ExaminationMetadata?.ReferenceMaterials != null)
+        {
+            AddMaterialsToPanel(_viewModel.Examination.ExaminationMetadata.ReferenceMaterials, _localizationService["exam.reference.exam"]);
+        }
+        
+        // 显示章节级参考资料
+        if (_viewModel.CurrentSection?.ReferenceMaterials != null)
+        {
+            AddMaterialsToPanel(_viewModel.CurrentSection.ReferenceMaterials, _localizationService["exam.reference.section"]);
+        }
+        
+        // 显示问题级参考资料
+        if (_viewModel.CurrentQuestion?.ReferenceMaterials != null)
+        {
+            AddMaterialsToPanel(_viewModel.CurrentQuestion.ReferenceMaterials, _localizationService["exam.reference.question"]);
+        }
+        
+        // 对于复合题，显示子问题的参考资料
+        if (_viewModel.CurrentQuestion?.Type == QuestionTypes.Complex && _viewModel.CurrentQuestion.SubQuestions != null)
+        {
+            for (int i = 0; i < _viewModel.CurrentQuestion.SubQuestions.Count; i++)
+            {
+                var subQuestion = _viewModel.CurrentQuestion.SubQuestions[i];
+                if (subQuestion.ReferenceMaterials != null && subQuestion.ReferenceMaterials.Length > 0)
+                {
+                    AddMaterialsToPanel(subQuestion.ReferenceMaterials, $"{_localizationService["exam.reference.subquestion"]} {i + 1}");
+                }
+            }
+        }
+        
+        // 根据是否有参考资料显示/隐藏折叠面板
+        ReferenceMaterialsExpander.IsVisible = ReferenceMaterialsPanel.Children.Count > 0;
     }
-    
+        
     private void BuildAnswerUI()
     {
         AnswerContainer.Children.Clear();
-        
+    
         if (_viewModel.CurrentQuestion == null) return;
-        
+    
         string questionId = _viewModel.CurrentQuestion.QuestionId ?? Guid.NewGuid().ToString();
-        
+    
         switch (_viewModel.CurrentQuestion.Type)
         {
             case QuestionTypes.SingleChoice:
                 CreateSingleChoiceUI(questionId);
                 break;
-                
+            
             case QuestionTypes.MultipleChoice:
                 CreateMultipleChoiceUI(questionId);
                 break;
-                
+            
             case QuestionTypes.Judgment:
                 CreateJudgmentUI(questionId);
                 break;
-                
+            
+            case QuestionTypes.Complex:
+                CreateComplexQuestionUI(questionId);
+                break;
+            
             case QuestionTypes.FillInTheBlank:
             case QuestionTypes.ShortAnswer:
             case QuestionTypes.Essay:
             case QuestionTypes.Math:
             case QuestionTypes.Calculation:
-            case QuestionTypes.Complex:
             case QuestionTypes.Other:
                 CreateTextAnswerUI(questionId);
                 break;
         }
     }
+
     
     private void CreateSingleChoiceUI(string questionId)
     {
@@ -703,6 +754,289 @@ public partial class ExaminationWindow : AppWindowBase
         var radioButtons = new List<RadioButton> { trueRadio, falseRadio };
         _choiceAnswers[questionId] = radioButtons;
     }
+
+    // 创建复合题UI
+    private void CreateComplexQuestionUI(string questionId)
+    {
+        if (_viewModel.CurrentQuestion?.SubQuestions == null || _viewModel.CurrentQuestion.SubQuestions.Count == 0) 
+        {
+            // 如果没有子问题，则作为普通文本题处理
+            CreateTextAnswerUI(questionId);
+            return;
+        }
+        
+        // 创建子问题容器
+        var subQuestionsContainer = new StackPanel
+        {
+            Spacing = 10
+        };
+        
+        // 为每个子问题创建UI
+        for (int i = 0; i < _viewModel.CurrentQuestion.SubQuestions.Count; i++)
+        {
+            var subQuestion = _viewModel.CurrentQuestion.SubQuestions[i];
+            string subQuestionId = subQuestion.QuestionId ?? $"{questionId}_sub_{i}";
+            
+            // 创建子问题容器
+            var subQuestionContainer = new Border
+            {
+                Background = new SolidColorBrush(Color.Parse("#10FFFFFF")),
+                CornerRadius = new CornerRadius(4),
+                Padding = new Thickness(10),
+                Margin = new Thickness(0, 5)
+            };
+            
+            var subQuestionPanel = new StackPanel
+            {
+                Spacing = 5
+            };
+            
+            // 添加子问题题干
+            var stemText = new TextBlock
+            {
+                Text = subQuestion.Stem,
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 0, 0, 5)
+            };
+            subQuestionPanel.Children.Add(stemText);
+            
+            // 根据子问题类型添加答题UI
+            switch (subQuestion.Type)
+            {
+                case QuestionTypes.SingleChoice:
+                    CreateSubQuestionSingleChoiceUI(subQuestionPanel, subQuestion, subQuestionId);
+                    break;
+                    
+                case QuestionTypes.MultipleChoice:
+                    CreateSubQuestionMultipleChoiceUI(subQuestionPanel, subQuestion, subQuestionId);
+                    break;
+                    
+                case QuestionTypes.Judgment:
+                    CreateSubQuestionJudgmentUI(subQuestionPanel, subQuestion, subQuestionId);
+                    break;
+                    
+                default:
+                    CreateSubQuestionTextAnswerUI(subQuestionPanel, subQuestion, subQuestionId);
+                    break;
+            }
+            
+            subQuestionContainer.Child = subQuestionPanel;
+            subQuestionsContainer.Children.Add(subQuestionContainer);
+        }
+        
+        AnswerContainer.Children.Add(subQuestionsContainer);
+    }
+
+    // 子问题UI生成的辅助方法 - 单选题
+    private void CreateSubQuestionSingleChoiceUI(StackPanel container, Question subQuestion, string subQuestionId)
+    {
+        if (subQuestion.Options == null || subQuestion.Options.Count == 0) return;
+        
+        var radioButtons = new List<RadioButton>();
+        var letters = GetOptionLetters(subQuestion.Options.Count);
+        
+        for (int i = 0; i < subQuestion.Options.Count; i++)
+        {
+            var option = subQuestion.Options[i];
+            var letter = letters[i];
+            
+            var radioButton = new RadioButton
+            {
+                Content = $"{letter}. {option.Text}",
+                GroupName = $"SingleChoice_{subQuestionId}",
+                Margin = new Thickness(0, 5),
+                Tag = option.Id
+            };
+            
+            // 检查是否已选择
+            if (subQuestion.UserAnswer != null && 
+                subQuestion.UserAnswer.Contains(option.Id))
+            {
+                radioButton.IsChecked = true;
+            }
+            
+            // 设置事件处理
+            string optionId = option.Id;
+            radioButton.Checked += (s, e) => 
+            {
+                _configService.AppStatistics.AddQuestionInteractionCount(_configService);
+                subQuestion.UserAnswer = new[] { optionId };
+                _viewModel.UpdateProgress();
+            };
+            
+            radioButtons.Add(radioButton);
+            container.Children.Add(radioButton);
+        }
+        
+        // 存储单选按钮以备后用
+        _choiceAnswers[subQuestionId] = radioButtons;
+    }
+
+    // 子问题UI生成的辅助方法 - 多选题
+    private void CreateSubQuestionMultipleChoiceUI(StackPanel container, Question subQuestion, string subQuestionId)
+    {
+        if (subQuestion.Options == null || subQuestion.Options.Count == 0) return;
+        
+        var checkBoxes = new List<CheckBox>();
+        var letters = GetOptionLetters(subQuestion.Options.Count);
+        
+        for (int i = 0; i < subQuestion.Options.Count; i++)
+        {
+            var option = subQuestion.Options[i];
+            var letter = letters[i];
+            
+            var checkBox = new CheckBox
+            {
+                Content = $"{letter}. {option.Text}",
+                Margin = new Thickness(0, 5),
+                Tag = option.Id
+            };
+            
+            // 检查是否已选择
+            if (subQuestion.UserAnswer != null && 
+                subQuestion.UserAnswer.Contains(option.Id))
+            {
+                checkBox.IsChecked = true;
+            }
+            
+            // 设置事件处理
+            checkBox.Checked += (s, e) => UpdateSubQuestionMultipleChoiceAnswer(subQuestionId, subQuestion);
+            checkBox.Unchecked += (s, e) => UpdateSubQuestionMultipleChoiceAnswer(subQuestionId, subQuestion);
+            
+            checkBoxes.Add(checkBox);
+            container.Children.Add(checkBox);
+        }
+        
+        _choiceAnswers[subQuestionId] = checkBoxes;
+    }
+
+    private void UpdateSubQuestionMultipleChoiceAnswer(string subQuestionId, Question subQuestion)
+    {
+        if (!_choiceAnswers.ContainsKey(subQuestionId)) return;
+        _configService.AppStatistics.AddQuestionInteractionCount(_configService);
+        
+        var checkBoxes = _choiceAnswers[subQuestionId] as List<CheckBox>;
+        if (checkBoxes == null) return;
+        
+        var selectedOptions = new List<string>();
+        
+        foreach (var checkBox in checkBoxes)
+        {
+            if (checkBox.IsChecked == true && checkBox.Tag is string optionId)
+            {
+                selectedOptions.Add(optionId);
+            }
+        }
+        
+        subQuestion.UserAnswer = selectedOptions.ToArray();
+        _viewModel.UpdateProgress();
+    }
+
+    // 子问题UI生成的辅助方法 - 判断题
+    private void CreateSubQuestionJudgmentUI(StackPanel container, Question subQuestion, string subQuestionId)
+    {
+        // 确保判断题有正确的选项
+        if (subQuestion.Options == null || subQuestion.Options.Count < 2)
+        {
+            subQuestion.Options = new List<Option>
+            {
+                new Option("True", "True"),
+                new Option("False", "False")
+            };
+        }
+        
+        var panel = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Spacing = 20
+        };
+        
+        var trueOption = subQuestion.Options[0];
+        var falseOption = subQuestion.Options[1];
+        
+        var trueRadio = new RadioButton
+        {
+            Content = "T. " + trueOption.Text,
+            GroupName = $"Judgment_{subQuestionId}",
+            Tag = trueOption.Id
+        };
+        
+        var falseRadio = new RadioButton
+        {
+            Content = "F. " + falseOption.Text,
+            GroupName = $"Judgment_{subQuestionId}",
+            Tag = falseOption.Id
+        };
+        
+        // 设置初始状态
+        if (subQuestion.UserAnswer != null && subQuestion.UserAnswer.Length > 0)
+        {
+            string answer = subQuestion.UserAnswer[0];
+            trueRadio.IsChecked = answer.Equals(trueOption.Id, StringComparison.OrdinalIgnoreCase);
+            falseRadio.IsChecked = answer.Equals(falseOption.Id, StringComparison.OrdinalIgnoreCase);
+        }
+        
+        // 设置事件处理
+        trueRadio.Checked += (s, e) => 
+        {
+            if (trueRadio.Tag is string optionId)
+            {
+                _configService.AppStatistics.AddQuestionInteractionCount(_configService);
+                subQuestion.UserAnswer = new[] { optionId };
+                _viewModel.UpdateProgress();
+            }
+        };
+        
+        falseRadio.Checked += (s, e) => 
+        {
+            if (falseRadio.Tag is string optionId)
+            {
+                _configService.AppStatistics.AddQuestionInteractionCount(_configService);
+                subQuestion.UserAnswer = new[] { optionId };
+                _viewModel.UpdateProgress();
+            }
+        };
+        
+        panel.Children.Add(trueRadio);
+        panel.Children.Add(falseRadio);
+        container.Children.Add(panel);
+        
+        var radioButtons = new List<RadioButton> { trueRadio, falseRadio };
+        _choiceAnswers[subQuestionId] = radioButtons;
+    }
+
+    // 子问题UI生成的辅助方法 - 文本题
+    private void CreateSubQuestionTextAnswerUI(StackPanel container, Question subQuestion, string subQuestionId)
+    {
+        var textBox = new TextBox
+        {
+            Watermark = _localizationService["exam.answer.placeholder"],
+            AcceptsReturn = true,
+            TextWrapping = TextWrapping.Wrap,
+            MinHeight = 100
+        };
+        
+        // 设置初始文本
+        if (subQuestion.UserAnswer != null && subQuestion.UserAnswer.Length > 0)
+        {
+            textBox.Text = string.Join("\n", subQuestion.UserAnswer);
+        }
+        
+        // 添加失去焦点处理
+        textBox.LostFocus += (s, e) => 
+        {
+            if (!string.IsNullOrWhiteSpace(textBox.Text))
+            {
+                _configService.AppStatistics.AddQuestionInteractionCount(_configService);
+                subQuestion.UserAnswer = new[] { textBox.Text };
+                _viewModel.UpdateProgress();
+            }
+        };
+        
+        _textAnswers[subQuestionId] = textBox;
+        container.Children.Add(textBox);
+    }
+
     
     // Helper method to get option letters
     private string[] GetOptionLetters(int count)
@@ -856,25 +1190,51 @@ public partial class ExaminationWindow : AppWindowBase
         
         string questionId = _viewModel.CurrentQuestion.QuestionId ?? Guid.NewGuid().ToString();
         
-        // Save answer based on question type
         switch (_viewModel.CurrentQuestion.Type)
         {
+            case QuestionTypes.Complex:
+                // 复合题需要保存每个子问题的答案
+                if (_viewModel.CurrentQuestion.SubQuestions != null)
+                {
+                    for (int i = 0; i < _viewModel.CurrentQuestion.SubQuestions.Count; i++)
+                    {
+                        var subQuestion = _viewModel.CurrentQuestion.SubQuestions[i];
+                        string subQuestionId = subQuestion.QuestionId ?? $"{questionId}_sub_{i}";
+                        
+                        switch (subQuestion.Type)
+                        {
+                            case QuestionTypes.FillInTheBlank:
+                            case QuestionTypes.ShortAnswer:
+                            case QuestionTypes.Essay:
+                            case QuestionTypes.Math:
+                            case QuestionTypes.Calculation:
+                            case QuestionTypes.Other:
+                                if (_textAnswers.TryGetValue(subQuestionId, out var textBox) && !string.IsNullOrWhiteSpace(textBox.Text))
+                                {
+                                    subQuestion.UserAnswer = new[] { textBox.Text };
+                                }
+                                break;
+                                
+                            // 选择题通过UI事件直接处理
+                        }
+                    }
+                }
+                break;
+                
             case QuestionTypes.FillInTheBlank:
             case QuestionTypes.ShortAnswer:
             case QuestionTypes.Essay:
             case QuestionTypes.Math:
             case QuestionTypes.Calculation:
-            case QuestionTypes.Complex:
             case QuestionTypes.Other:
-                if (_textAnswers.TryGetValue(questionId, out var textBox) && !string.IsNullOrWhiteSpace(textBox.Text))
+                if (_textAnswers.TryGetValue(questionId, out var theTextBox) && !string.IsNullOrWhiteSpace(theTextBox.Text))
                 {
-                    _viewModel.CurrentQuestion.UserAnswer = new[] { textBox.Text };
+                    _viewModel.CurrentQuestion.UserAnswer = new[] { theTextBox.Text };
                 }
                 break;
-                
-            // Choice questions are handled through direct UI element events
         }
     }
+
     
     protected override void OnClosed(EventArgs e)
     {

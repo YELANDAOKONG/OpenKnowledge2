@@ -229,32 +229,32 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
     private void InitializeQuestionScores()
     {
         var newSections = new ObservableCollection<SectionScoreViewModel>();
-    
+        
         if (Examination?.ExaminationSections == null || ScoreRecord == null) 
         {
             SectionScores = newSections;
             return;
         }
-    
+        
         var allScores = ScoreRecord.GetAllQuestionScores();
-    
+        
         int questionNumber = 1;
         foreach (var section in Examination.ExaminationSections)
         {
             if (section.Questions == null || section.Questions.Length == 0) 
                 continue;
-        
+            
             var sectionVM = new SectionScoreViewModel
             {
                 SectionId = section.SectionId ?? string.Empty,
                 SectionTitle = section.Title,
                 Questions = new ObservableCollection<QuestionScoreViewModel>()
             };
-        
+            
             foreach (var question in section.Questions)
             {
                 string questionId = question.QuestionId ?? string.Empty;
-            
+                
                 if (allScores.TryGetValue(questionId, out var score))
                 {
                     string correctAnswer = "";
@@ -263,33 +263,71 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                         correctAnswer = string.Join(", ", question.Answer);
                     }
 
-                    sectionVM.Questions.Add(new QuestionScoreViewModel
+                    var questionViewModel = new QuestionScoreViewModel
                     {
                         QuestionNumber = questionNumber++,
                         SectionTitle = section.Title,
                         QuestionId = questionId,
                         QuestionType = question.Type,
                         QuestionStem = question.Stem,
-                        MaxScore = question.Score, // Use question's original score as max score
+                        MaxScore = question.Score,
                         ObtainedScore = score.ObtainedScore,
                         IsCorrect = score.IsCorrect,
                         IsAiJudged = question.IsAiJudge,
-                        IsEvaluated = question.IsAiEvaluated, // Use question's evaluation status
+                        IsEvaluated = question.IsAiEvaluated,
                         UserAnswer = question.UserAnswer != null && question.UserAnswer.Length > 0 
                             ? string.Join(", ", question.UserAnswer) 
                             : _localizationService["exam.result.no.answer"],
                         CorrectAnswer = correctAnswer,
-                        AiFeedback = question.AiFeedback ?? string.Empty // Use question's AI feedback
-                    });
+                        AiFeedback = question.AiFeedback ?? string.Empty,
+                        SubQuestions = new ObservableCollection<QuestionScoreViewModel>()
+                    };
+
+                    // 如果是复合题，添加子问题
+                    if (question.Type == QuestionTypes.Complex && question.SubQuestions != null && question.SubQuestions.Count > 0)
+                    {
+                        for (int i = 0; i < question.SubQuestions.Count; i++)
+                        {
+                            var subQuestion = question.SubQuestions[i];
+                            string subQuestionId = subQuestion.QuestionId ?? $"{questionId}_sub_{i}";
+                            
+                            string subCorrectAnswer = "";
+                            if (subQuestion.Answer != null && subQuestion.Answer.Length > 0)
+                            {
+                                subCorrectAnswer = string.Join(", ", subQuestion.Answer);
+                            }
+
+                            questionViewModel.SubQuestions.Add(new QuestionScoreViewModel
+                            {
+                                QuestionNumber = i + 1,
+                                SectionTitle = section.Title,
+                                QuestionId = subQuestionId,
+                                QuestionType = subQuestion.Type,
+                                QuestionStem = subQuestion.Stem,
+                                MaxScore = subQuestion.Score,
+                                ObtainedScore = subQuestion.ObtainedScore ?? 0,
+                                IsCorrect = Math.Abs((subQuestion.ObtainedScore ?? 0) - subQuestion.Score) < 0.001,
+                                IsAiJudged = subQuestion.IsAiJudge,
+                                IsEvaluated = subQuestion.IsAiEvaluated,
+                                UserAnswer = subQuestion.UserAnswer != null && subQuestion.UserAnswer.Length > 0 
+                                    ? string.Join(", ", subQuestion.UserAnswer) 
+                                    : _localizationService["exam.result.no.answer"],
+                                CorrectAnswer = subCorrectAnswer,
+                                AiFeedback = subQuestion.AiFeedback ?? string.Empty
+                            });
+                        }
+                    }
+                    
+                    sectionVM.Questions.Add(questionViewModel);
                 }
             }
-        
+            
             if (sectionVM.Questions.Count > 0)
             {
                 newSections.Add(sectionVM);
             }
         }
-    
+        
         SectionScores = newSections;
     }
 
@@ -627,4 +665,5 @@ public class QuestionScoreViewModel : ViewModelBase
     public string UserAnswer { get; set; } = string.Empty;
     public string CorrectAnswer { get; set; } = string.Empty;
     public string AiFeedback { get; set; } = string.Empty;
+    public ObservableCollection<QuestionScoreViewModel> SubQuestions { get; set; } = new();
 }

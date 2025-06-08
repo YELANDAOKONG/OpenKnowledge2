@@ -41,43 +41,81 @@ public class ScoreRecord
             var sectionQuestionScores = new Dictionary<string, QuestionScore>();
             QuestionScores[sectionId] = sectionQuestionScores;
             
-            // 在 CalculateScores 方法中修复AI题目分数计算
             foreach (var question in section.Questions)
             {
                 string questionId = question.QuestionId ?? Guid.NewGuid().ToString();
                 double questionScore = 0;
-    
-                // For AI judged questions, use ObtainedScore
-                if (question.IsAiJudge)
+                bool isCorrect = false;
+
+                // 处理含有子问题的复合题
+                if (question.Type == QuestionTypes.Complex && question.SubQuestions != null && question.SubQuestions.Count > 0)
                 {
-                    // Get score from question's ObtainedScore if it was set by AI
-                    questionScore = question.ObtainedScore ?? 0.0;
+                    double subQuestionsTotal = 0;
+                    double subQuestionsObtained = 0;
+                    
+                    // 计算每个子问题的分数
+                    foreach (var subQuestion in question.SubQuestions)
+                    {
+                        double subQuestionScore = 0;
+                        
+                        // 对于AI评分的子问题，使用ObtainedScore
+                        if (subQuestion.IsAiJudge)
+                        {
+                            // 从子问题的ObtainedScore获取分数
+                            subQuestionScore = subQuestion.ObtainedScore ?? 0.0;
+                        }
+                        else
+                        {
+                            // 对于自动评分的子问题
+                            bool subIsCorrect = IsAnswerCorrect(subQuestion);
+                            subQuestionScore = subIsCorrect ? subQuestion.Score : 0;
+                        }
+                        
+                        // 添加到子问题总分
+                        subQuestionsTotal += subQuestion.Score;
+                        subQuestionsObtained += subQuestionScore;
+                    }
+                    
+                    // 计算获得的子问题总分百分比
+                    double percentage = subQuestionsTotal > 0 ? (subQuestionsObtained / subQuestionsTotal) : 0;
+                    
+                    // 将此百分比应用于主问题分数
+                    questionScore = percentage * question.Score;
+                    
+                    // 如果得分至少为最高分的90%，则认为复合题是正确的
+                    isCorrect = percentage >= 0.9;
                 }
+                // 处理AI评分题
+                else if (question.IsAiJudge)
+                {
+                    // 从问题的ObtainedScore获取分数
+                    questionScore = question.ObtainedScore ?? 0.0;
+                    isCorrect = Math.Abs(questionScore - question.Score) < 0.001;
+                }
+                // 处理自动评分题
                 else
                 {
-                    // For automatically graded questions
-                    bool isCorrect = IsAnswerCorrect(question);
+                    isCorrect = IsAnswerCorrect(question);
                     questionScore = isCorrect ? question.Score : 0;
                 }
-    
-                // Add to question scores dictionary for this section
+
+                // 添加到问题分数字典
                 sectionQuestionScores[questionId] = new QuestionScore
                 {
                     QuestionId = questionId,
-                    MaxScore = question.Score, // Original score is the max score
+                    MaxScore = question.Score,
                     ObtainedScore = questionScore,
-                    IsCorrect = Math.Abs(questionScore - question.Score) < 0.001
+                    IsCorrect = isCorrect
                 };
-    
-                // Add to section score
+
+                // 添加到章节分数
                 sectionScore += questionScore;
             }
-
             
-            // Add to section scores dictionary
+            // 添加到章节分数字典
             SectionScores[sectionId] = sectionScore;
             
-            // Add to total score
+            // 添加到总分
             ObtainedScore += sectionScore;
         }
     }
