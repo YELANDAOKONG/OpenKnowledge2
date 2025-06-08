@@ -23,7 +23,8 @@ public class Question
     public bool IsAiJudge { get; set; } = false; // 是否需要AI判题
     public string[]? Commits { get; set; } = new string[] { }; // AI提示
     
-    public Question[]? SubQuestions { get; set; } = new Question[] { };
+    // public Question[]? SubQuestions { get; set; } = new Question[] { };
+    public List<Question>? SubQuestions { get; set; } = new List<Question>();
     
     
     public double? ObtainedScore { get; set; } = null; // 获得的分数
