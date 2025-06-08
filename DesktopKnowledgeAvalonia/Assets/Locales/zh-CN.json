@@ -183,7 +183,8 @@
   "settings.about.title": "OpenKnowledge",
   "settings.about.version": "版本",
   "settings.about.protocol": "协议版本",
-  "settings.general.enable.statistics": "启用统计"
+  "settings.general.enable.statistics": "启用统计",
+  "settings.general.statistics": "统计"
 
 
 }

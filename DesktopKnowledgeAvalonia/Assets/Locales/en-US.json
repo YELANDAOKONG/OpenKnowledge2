@@ -183,6 +183,7 @@
   "settings.about.title": "OpenKnowledge",
   "settings.about.version": "Version",
   "settings.about.protocol": "Protocol Version",
-  "settings.general.enable.statistics": "Enable Statistics"
+  "settings.general.enable.statistics": "Enable Statistics",
+  "settings.general.statistics": "Statistics"
   
 }
