@@ -73,15 +73,20 @@
                             <!-- General Settings Template -->
                             <DataTemplate DataType="vm:GeneralSettingsViewModel">
                                 <StackPanel Margin="20" Spacing="20">
-                                    <TextBlock Text="{loc:Translate Key=settings.general.username}" 
-                                               FontWeight="SemiBold" 
-                                               Margin="0,0,0,5"/>
-                                    <TextBox Text="{Binding UserName}" MaxLength="50"/>
-        
-                                    <StackPanel>
+                                    <StackPanel Margin="5" Spacing="10">
+                                        <TextBlock Text="{loc:Translate Key=settings.general.username}" 
+                                                   FontWeight="SemiBold" 
+                                                   Margin="0,0,0,10"/>
+                                        
+                                        <TextBox Text="{Binding UserName}" MaxLength="50"/>
+                                    </StackPanel>
+                                    
+                                    
+                                    <StackPanel Margin="5" Spacing="10">
                                         <TextBlock Text="{loc:Translate Key=settings.general.statistics}" 
                                                    FontWeight="SemiBold" 
-                                                   Margin="0,0,0,5"/>
+                                                   Margin="0,0,0,10"/>
+                                        
                                         <Grid ColumnDefinitions="*,Auto">
                                             <TextBlock Grid.Column="0" 
                                                        Text="{loc:Translate Key=settings.general.enable.statistics}"
