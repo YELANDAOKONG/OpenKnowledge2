@@ -557,31 +557,11 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
     // 生成包含所有相关参考资料的评分提示
     private string GenerateComprehensiveGradingPrompt(ExaminationSection section, Question question, Question? parentQuestion)
     {
-        // 收集所有相关参考资料
-        var allReferenceMaterials = new List<ReferenceMaterial>();
-        
-        // 添加考试级别的参考资料
-        if (Examination.ExaminationMetadata.ReferenceMaterials != null)
-        {
-            allReferenceMaterials.AddRange(Examination.ExaminationMetadata.ReferenceMaterials);
-        }
-        
-        // 添加章节级别的参考资料
-        if (section.ReferenceMaterials != null)
-        {
-            allReferenceMaterials.AddRange(section.ReferenceMaterials);
-        }
-        
-        // 如果是子问题，添加父问题的参考资料
+        // 收集所有父问题的参考资料
+        var parentQuestionReferenceMaterials = new List<ReferenceMaterial>();
         if (parentQuestion != null && parentQuestion.ReferenceMaterials != null)
         {
-            allReferenceMaterials.AddRange(parentQuestion.ReferenceMaterials);
-        }
-        
-        // 添加问题自身的参考资料
-        if (question.ReferenceMaterials != null)
-        {
-            allReferenceMaterials.AddRange(question.ReferenceMaterials);
+            parentQuestionReferenceMaterials.AddRange(parentQuestion.ReferenceMaterials);
         }
         
         // 创建扩展的问题对象，包含收集到的所有参考资料
@@ -595,7 +575,6 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             UserAnswer = question.UserAnswer,
             Answer = question.Answer,
             ReferenceAnswer = question.ReferenceAnswer,
-            // ReferenceMaterials = allReferenceMaterials.ToArray(),
             ReferenceMaterials = question.ReferenceMaterials,
             IsAiJudge = question.IsAiJudge,
             IgnoreSpace = question.IgnoreSpace,
@@ -610,7 +589,8 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             _localizationService.CurrentLanguage,
             examinationReferenceMaterials: Examination.ExaminationMetadata.ReferenceMaterials,
             sectionReferenceMaterials: section.ReferenceMaterials,
-            parentReferenceMaterials: (parentQuestion != null && parentQuestion.ReferenceMaterials != null) ? parentQuestion.ReferenceMaterials : null);
+            // parentReferenceMaterials: (parentQuestion != null && parentQuestion.ReferenceMaterials != null) ? parentQuestion.ReferenceMaterials : null
+            parentReferenceMaterials: parentQuestionReferenceMaterials.ToArray());
     }
 
     [RelayCommand]
