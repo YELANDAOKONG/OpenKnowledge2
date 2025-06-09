@@ -18,6 +18,7 @@ public class ApplicationStatistics
     public Dictionary<int, int> ApplicationStartCountYears { get; set; } = new();
     public Dictionary<int, Dictionary<int, int>> ApplicationStartCountMonths { get; set; } = new();
     public Dictionary<int, Dictionary<int, int>> ApplicationStartCountWeeks { get; set; } = new();
+    public Dictionary<int, Dictionary<int, Dictionary<int, int>>> ApplicationStartCountDays { get; set; } = new();
     
     public void AddApplicationStartCount()
     {
@@ -26,6 +27,7 @@ public class ApplicationStatistics
         DateTime utcNow = DateTime.UtcNow;
         int year = utcNow.Year;
         int month = utcNow.Month;
+        int day = utcNow.Day;
         
         // 获取当前UTC时间所在的ISO周数
         Calendar calendar = CultureInfo.InvariantCulture.Calendar;
@@ -55,6 +57,20 @@ public class ApplicationStatistics
         if (!ApplicationStartCountWeeks[year].TryAdd(week, 1))
         {
             ApplicationStartCountWeeks[year][week]++;
+        }
+        
+        // 更新日统计
+        if (!ApplicationStartCountDays.ContainsKey(year))
+        {
+            ApplicationStartCountDays[year] = new Dictionary<int, Dictionary<int, int>>();
+        }
+        if (!ApplicationStartCountDays[year].ContainsKey(month))
+        {
+            ApplicationStartCountDays[year][month] = new Dictionary<int, int>();
+        }
+        if (!ApplicationStartCountDays[year][month].TryAdd(day, 1))
+        {
+            ApplicationStartCountDays[year][month][day]++;
         }
     }
 
@@ -93,8 +109,19 @@ public class ApplicationStatistics
         Calendar calendar = CultureInfo.InvariantCulture.Calendar;
         
         var dataYear = year ?? DateTime.UtcNow.Year;
-        var dataWeek = week ?? calendar.GetWeekOfYear(DateTime.UtcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);;
+        var dataWeek = week ?? calendar.GetWeekOfYear(DateTime.UtcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
         return ApplicationStartCountWeeks.GetValueOrDefault(dataYear, new Dictionary<int, int>()).GetValueOrDefault(dataWeek, 0);
+    }
+    
+    public int GetApplicationStartCountDay(int? year = null, int? month = null, int? day = null)
+    {
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        var dataMonth = month ?? DateTime.UtcNow.Month;
+        var dataDay = day ?? DateTime.UtcNow.Day;
+        return ApplicationStartCountDays
+            .GetValueOrDefault(dataYear, new Dictionary<int, Dictionary<int, int>>())
+            .GetValueOrDefault(dataMonth, new Dictionary<int, int>())
+            .GetValueOrDefault(dataDay, 0);
     }
     
     #endregion
@@ -106,6 +133,7 @@ public class ApplicationStatistics
     public Dictionary<int, int> AiCallCountYears { get; set; } = new();
     public Dictionary<int, Dictionary<int, int>> AiCallCountMonths { get; set; } = new();
     public Dictionary<int, Dictionary<int, int>> AiCallCountWeeks { get; set; } = new();
+    public Dictionary<int, Dictionary<int, Dictionary<int, int>>> AiCallCountDays { get; set; } = new();
     
     public void AddAiCallCount()
     {
@@ -114,6 +142,7 @@ public class ApplicationStatistics
         DateTime utcNow = DateTime.UtcNow;
         int year = utcNow.Year;
         int month = utcNow.Month;
+        int day = utcNow.Day;
         
         // 获取当前UTC时间所在的ISO周数
         Calendar calendar = CultureInfo.InvariantCulture.Calendar;
@@ -143,6 +172,20 @@ public class ApplicationStatistics
         if (!AiCallCountWeeks[year].TryAdd(week, 1))
         {
             AiCallCountWeeks[year][week]++;
+        }
+        
+        // 更新日统计
+        if (!AiCallCountDays.ContainsKey(year))
+        {
+            AiCallCountDays[year] = new Dictionary<int, Dictionary<int, int>>();
+        }
+        if (!AiCallCountDays[year].ContainsKey(month))
+        {
+            AiCallCountDays[year][month] = new Dictionary<int, int>();
+        }
+        if (!AiCallCountDays[year][month].TryAdd(day, 1))
+        {
+            AiCallCountDays[year][month][day]++;
         }
     }
     
@@ -181,8 +224,19 @@ public class ApplicationStatistics
         Calendar calendar = CultureInfo.InvariantCulture.Calendar;
         
         var dataYear = year ?? DateTime.UtcNow.Year;
-        var dataWeek = week ?? calendar.GetWeekOfYear(DateTime.UtcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);;
+        var dataWeek = week ?? calendar.GetWeekOfYear(DateTime.UtcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
         return AiCallCountWeeks.GetValueOrDefault(dataYear, new Dictionary<int, int>()).GetValueOrDefault(dataWeek, 0);
+    }
+    
+    public int GetAiCallCountDay(int? year = null, int? month = null, int? day = null)
+    {
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        var dataMonth = month ?? DateTime.UtcNow.Month;
+        var dataDay = day ?? DateTime.UtcNow.Day;
+        return AiCallCountDays
+            .GetValueOrDefault(dataYear, new Dictionary<int, Dictionary<int, int>>())
+            .GetValueOrDefault(dataMonth, new Dictionary<int, int>())
+            .GetValueOrDefault(dataDay, 0);
     }
     
     #endregion
@@ -194,6 +248,7 @@ public class ApplicationStatistics
     public Dictionary<int, int> QuestionInteractionCountYears { get; set; } = new();
     public Dictionary<int, Dictionary<int, int>> QuestionInteractionCountMonths { get; set; } = new();
     public Dictionary<int, Dictionary<int, int>> QuestionInteractionCountWeeks { get; set; } = new();
+    public Dictionary<int, Dictionary<int, Dictionary<int, int>>> QuestionInteractionCountDays { get; set; } = new();
 
     public void AddQuestionInteractionCount()
     {
@@ -202,6 +257,7 @@ public class ApplicationStatistics
         DateTime utcNow = DateTime.UtcNow;
         int year = utcNow.Year;
         int month = utcNow.Month;
+        int day = utcNow.Day;
         
         // 获取当前UTC时间所在的ISO周数
         Calendar calendar = CultureInfo.InvariantCulture.Calendar;
@@ -231,6 +287,20 @@ public class ApplicationStatistics
         if (!QuestionInteractionCountWeeks[year].TryAdd(week, 1))
         {
             QuestionInteractionCountWeeks[year][week]++;
+        }
+        
+        // 更新日统计
+        if (!QuestionInteractionCountDays.ContainsKey(year))
+        {
+            QuestionInteractionCountDays[year] = new Dictionary<int, Dictionary<int, int>>();
+        }
+        if (!QuestionInteractionCountDays[year].ContainsKey(month))
+        {
+            QuestionInteractionCountDays[year][month] = new Dictionary<int, int>();
+        }
+        if (!QuestionInteractionCountDays[year][month].TryAdd(day, 1))
+        {
+            QuestionInteractionCountDays[year][month][day]++;
         }
     }
 
@@ -272,6 +342,17 @@ public class ApplicationStatistics
         var dataWeek = week ?? calendar.GetWeekOfYear(DateTime.UtcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
         return QuestionInteractionCountWeeks.GetValueOrDefault(dataYear, new Dictionary<int, int>()).GetValueOrDefault(dataWeek, 0);
     }
+    
+    public int GetQuestionInteractionCountDay(int? year = null, int? month = null, int? day = null)
+    {
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        var dataMonth = month ?? DateTime.UtcNow.Month;
+        var dataDay = day ?? DateTime.UtcNow.Day;
+        return QuestionInteractionCountDays
+            .GetValueOrDefault(dataYear, new Dictionary<int, Dictionary<int, int>>())
+            .GetValueOrDefault(dataMonth, new Dictionary<int, int>())
+            .GetValueOrDefault(dataDay, 0);
+    }
 
     #endregion
     
@@ -283,6 +364,7 @@ public class ApplicationStatistics
     public Dictionary<int, int> LoadExaminationCountYears { get; set; } = new();
     public Dictionary<int, Dictionary<int, int>> LoadExaminationCountMonths { get; set; } = new();
     public Dictionary<int, Dictionary<int, int>> LoadExaminationCountWeeks { get; set; } = new();
+    public Dictionary<int, Dictionary<int, Dictionary<int, int>>> LoadExaminationCountDays { get; set; } = new();
     
     public void AddLoadExaminationCount()
     {
@@ -291,6 +373,7 @@ public class ApplicationStatistics
         DateTime utcNow = DateTime.UtcNow;
         int year = utcNow.Year;
         int month = utcNow.Month;
+        int day = utcNow.Day;
         
         // 获取当前UTC时间所在的ISO周数
         Calendar calendar = CultureInfo.InvariantCulture.Calendar;
@@ -320,6 +403,20 @@ public class ApplicationStatistics
         if (!LoadExaminationCountWeeks[year].TryAdd(week, 1))
         {
             LoadExaminationCountWeeks[year][week]++;
+        }
+        
+        // 更新日统计
+        if (!LoadExaminationCountDays.ContainsKey(year))
+        {
+            LoadExaminationCountDays[year] = new Dictionary<int, Dictionary<int, int>>();
+        }
+        if (!LoadExaminationCountDays[year].ContainsKey(month))
+        {
+            LoadExaminationCountDays[year][month] = new Dictionary<int, int>();
+        }
+        if (!LoadExaminationCountDays[year][month].TryAdd(day, 1))
+        {
+            LoadExaminationCountDays[year][month][day]++;
         }
     }
     
@@ -358,8 +455,19 @@ public class ApplicationStatistics
         Calendar calendar = CultureInfo.InvariantCulture.Calendar;
         
         var dataYear = year ?? DateTime.UtcNow.Year;
-        var dataWeek = week ?? calendar.GetWeekOfYear(DateTime.UtcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);;
+        var dataWeek = week ?? calendar.GetWeekOfYear(DateTime.UtcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
         return LoadExaminationCountWeeks.GetValueOrDefault(dataYear, new Dictionary<int, int>()).GetValueOrDefault(dataWeek, 0);
+    }
+    
+    public int GetLoadExaminationCountDay(int? year = null, int? month = null, int? day = null)
+    {
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        var dataMonth = month ?? DateTime.UtcNow.Month;
+        var dataDay = day ?? DateTime.UtcNow.Day;
+        return LoadExaminationCountDays
+            .GetValueOrDefault(dataYear, new Dictionary<int, Dictionary<int, int>>())
+            .GetValueOrDefault(dataMonth, new Dictionary<int, int>())
+            .GetValueOrDefault(dataDay, 0);
     }
     
     #endregion
@@ -371,6 +479,7 @@ public class ApplicationStatistics
     public Dictionary<int, int> SubmitExaminationCountYears { get; set; } = new();
     public Dictionary<int, Dictionary<int, int>> SubmitExaminationCountMonths { get; set; } = new();
     public Dictionary<int, Dictionary<int, int>> SubmitExaminationCountWeeks { get; set; } = new();
+    public Dictionary<int, Dictionary<int, Dictionary<int, int>>> SubmitExaminationCountDays { get; set; } = new();
     
     public void AddSubmitExaminationCount()
     {
@@ -379,6 +488,7 @@ public class ApplicationStatistics
         DateTime utcNow = DateTime.UtcNow;
         int year = utcNow.Year;
         int month = utcNow.Month;
+        int day = utcNow.Day;
         
         // 获取当前UTC时间所在的ISO周数
         Calendar calendar = CultureInfo.InvariantCulture.Calendar;
@@ -409,6 +519,20 @@ public class ApplicationStatistics
         {
             SubmitExaminationCountWeeks[year][week]++;
         }
+        
+        // 更新日统计
+        if (!SubmitExaminationCountDays.ContainsKey(year))
+        {
+            SubmitExaminationCountDays[year] = new Dictionary<int, Dictionary<int, int>>();
+        }
+        if (!SubmitExaminationCountDays[year].ContainsKey(month))
+        {
+            SubmitExaminationCountDays[year][month] = new Dictionary<int, int>();
+        }
+        if (!SubmitExaminationCountDays[year][month].TryAdd(day, 1))
+        {
+            SubmitExaminationCountDays[year][month][day]++;
+        }
     }
     
     public void AddSubmitExaminationCount(ConfigureService service, bool saveChanges = true)
@@ -431,14 +555,14 @@ public class ApplicationStatistics
     public int GetSubmitExaminationCountYear(int? year = null)
     {
         var dataYear = year ?? DateTime.UtcNow.Year;
-        return SubmitExaminationCountYears.TryGetValue(dataYear, out var count) ? count : 0;
+        return SubmitExaminationCountYears.GetValueOrDefault(dataYear, 0);
     }
     
     public int GetSubmitExaminationCountMonth(int? year = null, int? month = null)
     {
         var dataYear = year ?? DateTime.UtcNow.Year;
         var dataMonth = month ?? DateTime.UtcNow.Month;
-        return SubmitExaminationCountMonths.TryGetValue(dataYear, out var months) && months.TryGetValue(dataMonth, out var count) ? count : 0;
+        return SubmitExaminationCountMonths.GetValueOrDefault(dataYear, new Dictionary<int, int>()).GetValueOrDefault(dataMonth, 0);
     }
     
     public int GetSubmitExaminationCountWeek(int? year = null, int? week = null)
@@ -446,8 +570,19 @@ public class ApplicationStatistics
         Calendar calendar = CultureInfo.InvariantCulture.Calendar;
         
         var dataYear = year ?? DateTime.UtcNow.Year;
-        var dataWeek = week ?? calendar.GetWeekOfYear(DateTime.UtcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);;
-        return SubmitExaminationCountWeeks.TryGetValue(dataYear, out var weeks) && weeks.TryGetValue(dataWeek, out var count) ? count : 0;
+        var dataWeek = week ?? calendar.GetWeekOfYear(DateTime.UtcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+        return SubmitExaminationCountWeeks.GetValueOrDefault(dataYear, new Dictionary<int, int>()).GetValueOrDefault(dataWeek, 0);
+    }
+    
+    public int GetSubmitExaminationCountDay(int? year = null, int? month = null, int? day = null)
+    {
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        var dataMonth = month ?? DateTime.UtcNow.Month;
+        var dataDay = day ?? DateTime.UtcNow.Day;
+        return SubmitExaminationCountDays
+            .GetValueOrDefault(dataYear, new Dictionary<int, Dictionary<int, int>>())
+            .GetValueOrDefault(dataMonth, new Dictionary<int, int>())
+            .GetValueOrDefault(dataDay, 0);
     }
     
     #endregion
@@ -459,6 +594,7 @@ public class ApplicationStatistics
     public Dictionary<int, int> StartStudyCountYears { get; set; } = new();
     public Dictionary<int, Dictionary<int, int>> StartStudyCountMonths { get; set; } = new();
     public Dictionary<int, Dictionary<int, int>> StartStudyCountWeeks { get; set; } = new();
+    public Dictionary<int, Dictionary<int, Dictionary<int, int>>> StartStudyCountDays { get; set; } = new();
 
     public void AddStartStudyCount()
     {
@@ -467,6 +603,7 @@ public class ApplicationStatistics
         DateTime utcNow = DateTime.UtcNow;
         int year = utcNow.Year;
         int month = utcNow.Month;
+        int day = utcNow.Day;
         
         // 获取当前UTC时间所在的ISO周数
         Calendar calendar = CultureInfo.InvariantCulture.Calendar;
@@ -496,6 +633,20 @@ public class ApplicationStatistics
         if (!StartStudyCountWeeks[year].TryAdd(week, 1))
         {
             StartStudyCountWeeks[year][week]++;
+        }
+        
+        // 更新日统计
+        if (!StartStudyCountDays.ContainsKey(year))
+        {
+            StartStudyCountDays[year] = new Dictionary<int, Dictionary<int, int>>();
+        }
+        if (!StartStudyCountDays[year].ContainsKey(month))
+        {
+            StartStudyCountDays[year][month] = new Dictionary<int, int>();
+        }
+        if (!StartStudyCountDays[year][month].TryAdd(day, 1))
+        {
+            StartStudyCountDays[year][month][day]++;
         }
     }
 
@@ -537,6 +688,17 @@ public class ApplicationStatistics
         var dataWeek = week ?? calendar.GetWeekOfYear(DateTime.UtcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
         return StartStudyCountWeeks.GetValueOrDefault(dataYear, new Dictionary<int, int>()).GetValueOrDefault(dataWeek, 0);
     }
+    
+    public int GetStartStudyCountDay(int? year = null, int? month = null, int? day = null)
+    {
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        var dataMonth = month ?? DateTime.UtcNow.Month;
+        var dataDay = day ?? DateTime.UtcNow.Day;
+        return StartStudyCountDays
+            .GetValueOrDefault(dataYear, new Dictionary<int, Dictionary<int, int>>())
+            .GetValueOrDefault(dataMonth, new Dictionary<int, int>())
+            .GetValueOrDefault(dataDay, 0);
+    }
 
     #endregion
 
@@ -547,6 +709,7 @@ public class ApplicationStatistics
     public Dictionary<int, int> CompleteStudyCountYears { get; set; } = new();
     public Dictionary<int, Dictionary<int, int>> CompleteStudyCountMonths { get; set; } = new();
     public Dictionary<int, Dictionary<int, int>> CompleteStudyCountWeeks { get; set; } = new();
+    public Dictionary<int, Dictionary<int, Dictionary<int, int>>> CompleteStudyCountDays { get; set; } = new();
 
     public void AddCompleteStudyCount()
     {
@@ -555,6 +718,7 @@ public class ApplicationStatistics
         DateTime utcNow = DateTime.UtcNow;
         int year = utcNow.Year;
         int month = utcNow.Month;
+        int day = utcNow.Day;
         
         // 获取当前UTC时间所在的ISO周数
         Calendar calendar = CultureInfo.InvariantCulture.Calendar;
@@ -584,6 +748,20 @@ public class ApplicationStatistics
         if (!CompleteStudyCountWeeks[year].TryAdd(week, 1))
         {
             CompleteStudyCountWeeks[year][week]++;
+        }
+        
+        // 更新日统计
+        if (!CompleteStudyCountDays.ContainsKey(year))
+        {
+            CompleteStudyCountDays[year] = new Dictionary<int, Dictionary<int, int>>();
+        }
+        if (!CompleteStudyCountDays[year].ContainsKey(month))
+        {
+            CompleteStudyCountDays[year][month] = new Dictionary<int, int>();
+        }
+        if (!CompleteStudyCountDays[year][month].TryAdd(day, 1))
+        {
+            CompleteStudyCountDays[year][month][day]++;
         }
     }
 
@@ -624,6 +802,17 @@ public class ApplicationStatistics
         var dataYear = year ?? DateTime.UtcNow.Year;
         var dataWeek = week ?? calendar.GetWeekOfYear(DateTime.UtcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
         return CompleteStudyCountWeeks.GetValueOrDefault(dataYear, new Dictionary<int, int>()).GetValueOrDefault(dataWeek, 0);
+    }
+    
+    public int GetCompleteStudyCountDay(int? year = null, int? month = null, int? day = null)
+    {
+        var dataYear = year ?? DateTime.UtcNow.Year;
+        var dataMonth = month ?? DateTime.UtcNow.Month;
+        var dataDay = day ?? DateTime.UtcNow.Day;
+        return CompleteStudyCountDays
+            .GetValueOrDefault(dataYear, new Dictionary<int, Dictionary<int, int>>())
+            .GetValueOrDefault(dataMonth, new Dictionary<int, int>())
+            .GetValueOrDefault(dataDay, 0);
     }
 
     #endregion
