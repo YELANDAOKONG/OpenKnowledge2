@@ -160,9 +160,12 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private void OpenStatistics()
     {
-        // TODO...
-        // To be implemented
+        StatisticsWindow window = new StatisticsWindow();
+        IsWindowsVisible = false;
+        window.Show();
+        window.Closed += (s, e) => IsWindowsVisible = true;
     }
+
     
     [RelayCommand]
     private void OpenSettings()

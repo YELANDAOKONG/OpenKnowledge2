@@ -1,0 +1,608 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DesktopKnowledgeAvalonia.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:loc="using:DesktopKnowledgeAvalonia.Localization"
+        xmlns:converters="clr-namespace:DesktopKnowledgeAvalonia.Converters"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="550"
+        x:Class="DesktopKnowledgeAvalonia.Views.StatisticsWindow"
+        x:DataType="vm:StatisticsWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        ExtendClientAreaToDecorationsHint="True"
+        Title="{loc:Translate Key=statistics.window.title}"
+        Width="800" Height="550"
+        MinWidth="700" MinHeight="450"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <converters:PercentToGridLengthConverter x:Key="PercentToGridLengthConverter"/>
+        <converters:MonthConverter x:Key="MonthConverter"/>
+    </Window.Resources>
+
+    <Grid RowDefinitions="Auto,*" Margin="20,40,20,20">
+        <!-- Header -->
+        <TextBlock Grid.Row="0" 
+                   Text="{loc:Translate Key=statistics.header}" 
+                   FontSize="24" 
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,20"/>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="1" ColumnDefinitions="230,*">
+            <!-- Left Side: Categories -->
+            <Border Grid.Column="0"
+                    BorderBrush="#20FFFFFF"
+                    BorderThickness="0,0,1,0"
+                    Margin="0,0,20,0">
+                <ListBox ItemsSource="{Binding Categories}"
+                         SelectedItem="{Binding SelectedCategory}"
+                         Background="Transparent"
+                         Padding="0">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="Auto,*" Margin="10" Height="25">
+                                <PathIcon Grid.Column="0"
+                                          Width="22"
+                                          Height="22"
+                                          Margin="0,0,15,0"
+                                          Data="{Binding IconPath}"
+                                          Foreground="#569AFF"/>
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding DisplayName}"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+
+            <!-- Right Side: Statistics Content -->
+            <Grid Grid.Column="1" Margin="20,0,0,0" RowDefinitions="*,Auto">
+                <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                    <!-- Statistics Content -->
+                    <ContentControl Content="{Binding SelectedCategory.Content}">
+                        <ContentControl.DataTemplates>
+                            <!-- Overview Statistics Template -->
+                            <DataTemplate DataType="vm:OverviewStatisticsViewModel">
+                                <StackPanel Spacing="20" Margin="0,0,0,20">
+                                    <!-- Initialization Information -->
+                                    <Border Background="#10FFFFFF" CornerRadius="8" Padding="15">
+                                        <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*">
+                                            <TextBlock Grid.Row="0" Grid.Column="0" 
+                                                       Text="{loc:Translate Key=statistics.init.date}"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,0,10,5"/>
+                                            <TextBlock Grid.Row="0" Grid.Column="1" 
+                                                       Text="{Binding InitializationDate}"/>
+                                            <TextBlock Grid.Row="1" Grid.Column="0" 
+                                                       Text="{loc:Translate Key=statistics.days.since.init}"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,0,10,0"/>
+                                            <TextBlock Grid.Row="1" Grid.Column="1" 
+                                                       Text="{Binding DaysSinceInit}"/>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Activity Counts -->
+                                    <Border Background="#10FFFFFF" CornerRadius="8" Padding="15">
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="{loc:Translate Key=statistics.activity.counts}"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,0,0,5"/>
+                                            
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0" 
+                                                           Text="{loc:Translate Key=statistics.app.starts}"/>
+                                                <TextBlock Grid.Column="1" 
+                                                           Text="{Binding TotalAppStarts}"/>
+                                            </Grid>
+                                            
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0" 
+                                                           Text="{loc:Translate Key=statistics.ai.calls}"/>
+                                                <TextBlock Grid.Column="1" 
+                                                           Text="{Binding TotalAiCalls}"/>
+                                            </Grid>
+                                            
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0" 
+                                                           Text="{loc:Translate Key=statistics.question.interactions}"/>
+                                                <TextBlock Grid.Column="1" 
+                                                           Text="{Binding TotalQuestionInteractions}"/>
+                                            </Grid>
+                                            
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0" 
+                                                           Text="{loc:Translate Key=statistics.exams.loaded}"/>
+                                                <TextBlock Grid.Column="1" 
+                                                           Text="{Binding TotalLoadExaminations}"/>
+                                            </Grid>
+                                            
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0" 
+                                                           Text="{loc:Translate Key=statistics.exams.submitted}"/>
+                                                <TextBlock Grid.Column="1" 
+                                                           Text="{Binding TotalSubmitExaminations}"/>
+                                            </Grid>
+                                            
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0" 
+                                                           Text="{loc:Translate Key=statistics.study.started}"/>
+                                                <TextBlock Grid.Column="1" 
+                                                           Text="{Binding TotalStartStudy}"/>
+                                            </Grid>
+                                            
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0" 
+                                                           Text="{loc:Translate Key=statistics.study.completed}"/>
+                                                <TextBlock Grid.Column="1" 
+                                                           Text="{Binding TotalCompleteStudy}"/>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Time Statistics -->
+                                    <Border Background="#10FFFFFF" CornerRadius="8" Padding="15">
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="{loc:Translate Key=statistics.time.stats}"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,0,0,5"/>
+                                            
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0" 
+                                                           Text="{loc:Translate Key=statistics.examination.time}"/>
+                                                <TextBlock Grid.Column="1" 
+                                                           Text="{Binding TotalExaminationTime}"/>
+                                            </Grid>
+                                            
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0" 
+                                                           Text="{loc:Translate Key=statistics.study.time}"/>
+                                                <TextBlock Grid.Column="1" 
+                                                           Text="{Binding TotalStudyTime}"/>
+                                            </Grid>
+                                            
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0" 
+                                                           Text="{loc:Translate Key=statistics.app.runtime}"/>
+                                                <TextBlock Grid.Column="1" 
+                                                           Text="{Binding TotalAppRunTime}"/>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </DataTemplate>
+                            
+                            <!-- Daily Statistics Template -->
+                            <DataTemplate DataType="vm:DailyStatisticsViewModel">
+                                <StackPanel Spacing="20" Margin="0,0,0,20">
+                                    <!-- Date Selector -->
+                                    <Border Background="#10FFFFFF" CornerRadius="8" Padding="15">
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="{loc:Translate Key=statistics.select.date}"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,0,0,5"/>
+                                            
+                                            <DatePicker SelectedDate="{Binding SelectedDate}"
+                                                        HorizontalAlignment="Left"/>
+                                            
+                                            <Button Content="{loc:Translate Key=statistics.update}"
+                                                    Command="{Binding DateChangedCommand}"
+                                                    HorizontalAlignment="Left"
+                                                    Margin="0,10,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Daily Statistics -->
+                                    <Border Background="#10FFFFFF" CornerRadius="8" Padding="15">
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="{loc:Translate Key=statistics.daily.stats}"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,0,0,10"/>
+                                            
+                                            <!-- Header -->
+                                            <Border Background="#20FFFFFF" Padding="10,5">
+                                                <Grid ColumnDefinitions="*,Auto">
+                                                    <TextBlock Grid.Column="0" 
+                                                               Text="{loc:Translate Key=statistics.activity}"
+                                                               FontWeight="SemiBold"/>
+                                                    <TextBlock Grid.Column="1" 
+                                                               Text="{loc:Translate Key=statistics.count}"
+                                                               FontWeight="SemiBold"
+                                                               MinWidth="50"
+                                                               HorizontalAlignment="Right"/>
+                                                </Grid>
+                                            </Border>
+                                            
+                                            <!-- Stats List -->
+                                            <ItemsControl ItemsSource="{Binding DailyStats}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Padding="10,5" Margin="0,1,0,0"
+                                                                Background="#10FFFFFF">
+                                                            <Grid ColumnDefinitions="*,Auto">
+                                                                <TextBlock Grid.Column="0" 
+                                                                           Text="{Binding StatName}"/>
+                                                                <TextBlock Grid.Column="1" 
+                                                                           Text="{Binding Count}"
+                                                                           MinWidth="50"
+                                                                           HorizontalAlignment="Right"/>
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </DataTemplate>
+                            
+                            <!-- Weekly Statistics Template -->
+                            <DataTemplate DataType="vm:WeeklyStatisticsViewModel">
+                                <StackPanel Spacing="20" Margin="0,0,0,20">
+                                    <!-- Year and Week Selectors -->
+                                    <Border Background="#10FFFFFF" CornerRadius="8" Padding="15">
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="{loc:Translate Key=statistics.select.year.week}"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,0,0,5"/>
+                                            
+                                            <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto,Auto">
+                                                <TextBlock Grid.Row="0" Grid.Column="0" 
+                                                           Text="{loc:Translate Key=statistics.year}"
+                                                           VerticalAlignment="Center"
+                                                           Margin="0,0,10,0"/>
+                                                <ComboBox Grid.Row="0" Grid.Column="1" 
+                                                          ItemsSource="{Binding AvailableYears}"
+                                                          SelectedItem="{Binding SelectedYear}"
+                                                          MinWidth="100"
+                                                          Margin="0,0,20,0"/>
+                                                
+                                                <TextBlock Grid.Row="0" Grid.Column="2" 
+                                                           Text="{loc:Translate Key=statistics.week}"
+                                                           VerticalAlignment="Center"
+                                                           Margin="0,0,10,0"/>
+                                                <ComboBox Grid.Row="0" Grid.Column="3" 
+                                                          ItemsSource="{Binding AvailableWeeks}"
+                                                          SelectedItem="{Binding SelectedWeek}"
+                                                          MinWidth="100"/>
+                                                
+                                                <Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4"
+                                                        Content="{loc:Translate Key=statistics.update}"
+                                                        Command="{Binding YearOrWeekChangedCommand}"
+                                                        HorizontalAlignment="Left"
+                                                        Margin="0,10,0,0"/>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Weekly Statistics -->
+                                    <Border Background="#10FFFFFF" CornerRadius="8" Padding="15">
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="{loc:Translate Key=statistics.weekly.stats}"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,0,0,10"/>
+                                            
+                                            <!-- Header -->
+                                            <Border Background="#20FFFFFF" Padding="10,5">
+                                                <Grid ColumnDefinitions="*,Auto">
+                                                    <TextBlock Grid.Column="0" 
+                                                               Text="{loc:Translate Key=statistics.activity}"
+                                                               FontWeight="SemiBold"/>
+                                                    <TextBlock Grid.Column="1" 
+                                                               Text="{loc:Translate Key=statistics.count}"
+                                                               FontWeight="SemiBold"
+                                                               MinWidth="50"
+                                                               HorizontalAlignment="Right"/>
+                                                </Grid>
+                                            </Border>
+                                            
+                                            <!-- Stats List -->
+                                            <ItemsControl ItemsSource="{Binding WeeklyStats}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Padding="10,5" Margin="0,1,0,0"
+                                                                Background="#10FFFFFF">
+                                                            <Grid ColumnDefinitions="*,Auto">
+                                                                <TextBlock Grid.Column="0" 
+                                                                           Text="{Binding StatName}"/>
+                                                                <TextBlock Grid.Column="1" 
+                                                                           Text="{Binding Count}"
+                                                                           MinWidth="50"
+                                                                           HorizontalAlignment="Right"/>
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </DataTemplate>
+                            
+                            <!-- Monthly Statistics Template -->
+                            <DataTemplate DataType="vm:MonthlyStatisticsViewModel">
+                                <StackPanel Spacing="20" Margin="0,0,0,20">
+                                    <!-- Year and Month Selectors -->
+                                    <Border Background="#10FFFFFF" CornerRadius="8" Padding="15">
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="{loc:Translate Key=statistics.select.year.month}"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,0,0,5"/>
+                                            
+                                            <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto,Auto">
+                                                <TextBlock Grid.Row="0" Grid.Column="0" 
+                                                           Text="{loc:Translate Key=statistics.year}"
+                                                           VerticalAlignment="Center"
+                                                           Margin="0,0,10,0"/>
+                                                <ComboBox Grid.Row="0" Grid.Column="1" 
+                                                          ItemsSource="{Binding AvailableYears}"
+                                                          SelectedItem="{Binding SelectedYear}"
+                                                          MinWidth="100"
+                                                          Margin="0,0,20,0"/>
+                                                
+                                                <TextBlock Grid.Row="0" Grid.Column="2" 
+                                                           Text="{loc:Translate Key=statistics.month}"
+                                                           VerticalAlignment="Center"
+                                                           Margin="0,0,10,0"/>
+                                                <ComboBox Grid.Row="0" Grid.Column="3" 
+                                                          ItemsSource="{Binding AvailableMonths}"
+                                                          SelectedItem="{Binding SelectedMonth, Converter={StaticResource MonthConverter}}"
+                                                          DisplayMemberBinding="{Binding Name}"
+                                                          MinWidth="100"/>
+                                                
+                                                <Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4"
+                                                        Content="{loc:Translate Key=statistics.update}"
+                                                        Command="{Binding YearOrMonthChangedCommand}"
+                                                        HorizontalAlignment="Left"
+                                                        Margin="0,10,0,0"/>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Monthly Statistics -->
+                                    <Border Background="#10FFFFFF" CornerRadius="8" Padding="15">
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="{loc:Translate Key=statistics.monthly.stats}"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,0,0,10"/>
+                                            
+                                            <!-- Header -->
+                                            <Border Background="#20FFFFFF" Padding="10,5">
+                                                <Grid ColumnDefinitions="*,Auto">
+                                                    <TextBlock Grid.Column="0" 
+                                                               Text="{loc:Translate Key=statistics.activity}"
+                                                               FontWeight="SemiBold"/>
+                                                    <TextBlock Grid.Column="1" 
+                                                               Text="{loc:Translate Key=statistics.count}"
+                                                               FontWeight="SemiBold"
+                                                               MinWidth="50"
+                                                               HorizontalAlignment="Right"/>
+                                                </Grid>
+                                            </Border>
+                                            
+                                            <!-- Stats List -->
+                                            <ItemsControl ItemsSource="{Binding MonthlyStats}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Padding="10,5" Margin="0,1,0,0"
+                                                                Background="#10FFFFFF">
+                                                            <Grid ColumnDefinitions="*,Auto">
+                                                                <TextBlock Grid.Column="0" 
+                                                                           Text="{Binding StatName}"/>
+                                                                <TextBlock Grid.Column="1" 
+                                                                           Text="{Binding Count}"
+                                                                           MinWidth="50"
+                                                                           HorizontalAlignment="Right"/>
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </DataTemplate>
+                            
+                            <!-- Yearly Statistics Template -->
+                            <DataTemplate DataType="vm:YearlyStatisticsViewModel">
+                                <StackPanel Spacing="20" Margin="0,0,0,20">
+                                    <!-- Year Selector -->
+                                    <Border Background="#10FFFFFF" CornerRadius="8" Padding="15">
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="{loc:Translate Key=statistics.select.year}"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,0,0,5"/>
+                                            
+                                            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto">
+                                                <TextBlock Grid.Row="0" Grid.Column="0" 
+                                                           Text="{loc:Translate Key=statistics.year}"
+                                                           VerticalAlignment="Center"
+                                                           Margin="0,0,10,0"/>
+                                                <ComboBox Grid.Row="0" Grid.Column="1" 
+                                                          ItemsSource="{Binding AvailableYears}"
+                                                          SelectedItem="{Binding SelectedYear}"
+                                                          MinWidth="100"
+                                                          HorizontalAlignment="Left"/>
+                                                
+                                                <Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                                        Content="{loc:Translate Key=statistics.update}"
+                                                        Command="{Binding YearChangedCommand}"
+                                                        HorizontalAlignment="Left"
+                                                        Margin="0,10,0,0"/>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Yearly Statistics -->
+                                    <Border Background="#10FFFFFF" CornerRadius="8" Padding="15">
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="{loc:Translate Key=statistics.yearly.stats}"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,0,0,10"/>
+                                            
+                                            <!-- Header -->
+                                            <Border Background="#20FFFFFF" Padding="10,5">
+                                                <Grid ColumnDefinitions="*,Auto">
+                                                    <TextBlock Grid.Column="0" 
+                                                               Text="{loc:Translate Key=statistics.activity}"
+                                                               FontWeight="SemiBold"/>
+                                                    <TextBlock Grid.Column="1" 
+                                                               Text="{loc:Translate Key=statistics.count}"
+                                                               FontWeight="SemiBold"
+                                                               MinWidth="50"
+                                                               HorizontalAlignment="Right"/>
+                                                </Grid>
+                                            </Border>
+                                            
+                                            <!-- Stats List -->
+                                            <ItemsControl ItemsSource="{Binding YearlyStats}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Padding="10,5" Margin="0,1,0,0"
+                                                                Background="#10FFFFFF">
+                                                            <Grid ColumnDefinitions="*,Auto">
+                                                                <TextBlock Grid.Column="0" 
+                                                                           Text="{Binding StatName}"/>
+                                                                <TextBlock Grid.Column="1" 
+                                                                           Text="{Binding Count}"
+                                                                           MinWidth="50"
+                                                                           HorizontalAlignment="Right"/>
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </DataTemplate>
+                            
+                            <!-- Time Statistics Template -->
+                            <DataTemplate DataType="vm:TimeStatisticsViewModel">
+                                <StackPanel Spacing="20" Margin="0,0,0,20">
+                                    <!-- Time Usage -->
+                                    <Border Background="#10FFFFFF" CornerRadius="8" Padding="15">
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="{loc:Translate Key=statistics.time.usage}"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,0,0,10"/>
+                                            
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0" 
+                                                           Text="{loc:Translate Key=statistics.examination.time}"/>
+                                                <TextBlock Grid.Column="1" 
+                                                           Text="{Binding TotalExaminationTime}"/>
+                                            </Grid>
+                                            
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0" 
+                                                           Text="{loc:Translate Key=statistics.study.time}"/>
+                                                <TextBlock Grid.Column="1" 
+                                                           Text="{Binding TotalStudyTime}"/>
+                                            </Grid>
+                                            
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Grid.Column="0" 
+                                                           Text="{loc:Translate Key=statistics.app.runtime}"/>
+                                                <TextBlock Grid.Column="1" 
+                                                           Text="{Binding TotalAppRunTime}"/>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Time Distribution -->
+                                    <Border Background="#10FFFFFF" CornerRadius="8" Padding="15">
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="{loc:Translate Key=statistics.time.distribution}"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,0,0,10"/>
+                                            
+                                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+                                                <TextBlock Grid.Row="0" Grid.Column="0" 
+                                                           Text="{loc:Translate Key=statistics.examination.time}"/>
+                                                <TextBlock Grid.Row="0" Grid.Column="1" 
+                                                           Text="{Binding ExamPercentage, StringFormat={}{0}%}"/>
+                                                
+                                                <TextBlock Grid.Row="1" Grid.Column="0" 
+                                                           Text="{loc:Translate Key=statistics.study.time}"/>
+                                                <TextBlock Grid.Row="1" Grid.Column="1" 
+                                                           Text="{Binding StudyPercentage, StringFormat={}{0}%}"/>
+                                                
+                                                <TextBlock Grid.Row="2" Grid.Column="0" 
+                                                           Text="{loc:Translate Key=statistics.other.time}"/>
+                                                <TextBlock Grid.Row="2" Grid.Column="1" 
+                                                           Text="{Binding OtherPercentage, StringFormat={}{0}%}"/>
+                                            </Grid>
+                                            
+                                            <!-- Visual representation of time distribution -->
+                                            <Grid Height="20" Margin="0,10,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="{Binding ExamPercentage, Converter={StaticResource PercentToGridLengthConverter}}"/>
+                                                    <ColumnDefinition Width="{Binding StudyPercentage, Converter={StaticResource PercentToGridLengthConverter}}"/>
+                                                    <ColumnDefinition Width="{Binding OtherPercentage, Converter={StaticResource PercentToGridLengthConverter}}"/>
+                                                </Grid.ColumnDefinitions>
+                                                
+                                                <Rectangle Grid.Column="0" Fill="#569AFF" />
+                                                <Rectangle Grid.Column="1" Fill="#34C759" />
+                                                <Rectangle Grid.Column="2" Fill="#FF9500" />
+                                            </Grid>
+                                            
+                                            <!-- Legend -->
+                                            <StackPanel Orientation="Horizontal" Spacing="15" Margin="0,5,0,0">
+                                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                                    <Rectangle Width="12" Height="12" Fill="#569AFF" />
+                                                    <TextBlock Text="{loc:Translate Key=statistics.examination}" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                                
+                                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                                    <Rectangle Width="12" Height="12" Fill="#34C759" />
+                                                    <TextBlock Text="{loc:Translate Key=statistics.study}" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                                
+                                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                                    <Rectangle Width="12" Height="12" Fill="#FF9500" />
+                                                    <TextBlock Text="{loc:Translate Key=statistics.other}" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ContentControl.DataTemplates>
+                    </ContentControl>
+                </ScrollViewer>
+
+                <!-- Bottom Button -->
+                <Button Grid.Row="1" 
+                        Content="{loc:Translate Key=statistics.exit}"
+                        HorizontalAlignment="Right"
+                        Margin="0,20,0,0"
+                        Command="{Binding ExitCommand}"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

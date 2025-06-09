@@ -75,7 +75,7 @@
         <UniformGrid Grid.Row="1" Columns="3" Rows="2" Margin="0,10">
             <!-- Top Row -->
             <!-- Examination Button -->
-            <Button Classes="MenuButton" Command="{Binding OpenExaminationCommand}" Margin="5">
+            <Button Classes="MenuButton" Command="{Binding OpenExaminationCommand}" Margin="5" IsEnabled="True">
                 <StackPanel>
                     <PathIcon Data="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17zM19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" 
                               Width="64" Height="64" 
@@ -88,7 +88,7 @@
             </Button>
             
             <!-- Study Button -->
-            <Button Classes="MenuButton" Command="{Binding OpenStudyCommand}" Margin="5">
+            <Button Classes="MenuButton" Command="{Binding OpenStudyCommand}" Margin="5" IsEnabled="False">
                 <StackPanel>
                     <PathIcon Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" 
                               Width="64" Height="64" 
@@ -128,7 +128,7 @@
             </Button>
             
             <!-- Statistics Button -->
-            <Button Classes="MenuButton" Command="{Binding OpenStatisticsCommand}" Margin="5" IsEnabled="False">
+            <Button Classes="MenuButton" Command="{Binding OpenStatisticsCommand}" Margin="5" IsEnabled="True">
                 <StackPanel>
                     <PathIcon Data="M7 19h10V4H7v15zm-5-2h4V6H2v11zM18 6v11h4V6h-4z" 
                               Width="64" Height="64" 
