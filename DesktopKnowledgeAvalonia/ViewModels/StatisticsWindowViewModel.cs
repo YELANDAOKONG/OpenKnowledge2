@@ -186,7 +186,7 @@ public partial class OverviewStatisticsViewModel : StatisticsViewModelBase
 // Daily Statistics View
 public partial class DailyStatisticsViewModel : StatisticsViewModelBase
 {
-    [ObservableProperty] private DateTime _selectedDate;
+    [ObservableProperty] private DateTimeOffset? _selectedDate;
     [ObservableProperty] private List<DailyStatItem> _dailyStats = new();
 
     public DailyStatisticsViewModel(ConfigureService configService, LocalizationService localizationService) 
@@ -205,9 +205,11 @@ public partial class DailyStatisticsViewModel : StatisticsViewModelBase
     private void LoadStatistics()
     {
         var stats = ConfigService.AppStatistics;
-        int year = SelectedDate.Year;
-        int month = SelectedDate.Month;
-        int day = SelectedDate.Day;
+        DateTime dateToUse = SelectedDate?.DateTime ?? DateTime.Today;
+    
+        int year = dateToUse.Year;
+        int month = dateToUse.Month;
+        int day = dateToUse.Day;
         
         DailyStats.Clear();
         
@@ -575,36 +577,47 @@ public partial class TimeStatisticsViewModel : StatisticsViewModelBase
     private void LoadStatistics()
     {
         var stats = ConfigService.AppStatistics;
-        
-        // Time statistics in milliseconds
+    
+        // 时间统计（毫秒）
         long examTimeMs = stats.GetExaminationTime();
         long studyTimeMs = stats.GetStudyTime();
         long appRunTimeMs = stats.GetApplicationRunTime();
-        
-        // Convert to hours for display
+    
+        // 转换为小时显示
         double examTimeHours = examTimeMs / 3600000.0;
         double studyTimeHours = studyTimeMs / 3600000.0;
         double appRunTimeHours = appRunTimeMs / 3600000.0;
-        
+    
         TotalExaminationTime = $"{examTimeHours:F1} {LocalizationService["time.hours"]}";
         TotalStudyTime = $"{studyTimeHours:F1} {LocalizationService["time.hours"]}";
         TotalAppRunTime = $"{appRunTimeHours:F1} {LocalizationService["time.hours"]}";
-        
-        // Calculate percentages for a pie chart or similar visualization
+    
+        // 计算百分比用于可视化
         if (appRunTimeMs > 0)
         {
-            ExamPercentage = Math.Round((double)examTimeMs / appRunTimeMs * 100, 1);
-            StudyPercentage = Math.Round((double)studyTimeMs / appRunTimeMs * 100, 1);
+            // 计算原始百分比
+            double examPercent = (double)examTimeMs / appRunTimeMs * 100;
+            double studyPercent = (double)studyTimeMs / appRunTimeMs * 100;
+        
+            // 确保非零值有最小可见百分比
+            if (examTimeMs > 0 && examPercent < 0.1) examPercent = 0.1;
+            if (studyTimeMs > 0 && studyPercent < 0.1) studyPercent = 0.1;
+        
+            // 设置最终值
+            ExamPercentage = Math.Round(examPercent, 1);
+            StudyPercentage = Math.Round(studyPercent, 1);
             OtherPercentage = Math.Round(100 - ExamPercentage - StudyPercentage, 1);
-            
-            // Ensure we don't have negative "other" time due to rounding
+        
+            // 确保没有负值
             if (OtherPercentage < 0) OtherPercentage = 0;
         }
         else
         {
+            // 如果没有应用运行时间，设置默认值
             ExamPercentage = 0;
             StudyPercentage = 0;
             OtherPercentage = 100;
         }
     }
+
 }
