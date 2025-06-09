@@ -17,8 +17,14 @@ public partial class App : Application
 {
     private static IServiceProvider? _serviceProvider;
     
+    private DateTime _applicationStartTime;
+    private DateTime _lastStatisticsSaveTime;
+    private DispatcherTimer? _statisticsTimer = null;
+    
     public override void Initialize()
     {
+        _applicationStartTime = DateTime.UtcNow;
+        _lastStatisticsSaveTime = _applicationStartTime;
         AvaloniaXamlLoader.Load(this);
     }
 
@@ -35,6 +41,16 @@ public partial class App : Application
         
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            {
+                desktop.ShutdownRequested += OnShutdownRequested;
+                _statisticsTimer = new DispatcherTimer
+                {
+                    Interval = TimeSpan.FromSeconds(10) 
+                };
+                _statisticsTimer.Tick += SaveRuntimeStatistics;
+                _statisticsTimer.Start();
+            }
+            
             // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
             // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
             DisableAvaloniaDataAnnotationValidation();
@@ -141,4 +157,49 @@ public partial class App : Application
     {
         return _serviceProvider?.GetService<T>() ?? throw new InvalidOperationException($"Service {typeof(T).Name} not found");
     }
+
+    #region Statistics
+    
+    private void SaveRuntimeStatistics(object? sender, EventArgs e)
+    {
+        try
+        {
+            var now = DateTime.UtcNow;
+            var intervalRunTime = (long)(now - _lastStatisticsSaveTime).TotalMilliseconds;
+            
+            var configService = GetService<ConfigureService>();
+            if (configService.AppConfig.EnableStatistics)
+            {
+                configService.AppStatistics.AddApplicationRunTime(configService, intervalRunTime, true);
+                _lastStatisticsSaveTime = now;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving runtime statistics: {ex.Message}");
+        }
+    }
+    
+    private void OnShutdownRequested(object? sender, ShutdownRequestedEventArgs e)
+    {
+        try
+        {
+            _statisticsTimer?.Stop();
+            var finalIntervalRunTime = (long)(DateTime.UtcNow - _lastStatisticsSaveTime).TotalMilliseconds;
+            
+            var configService = GetService<ConfigureService>();
+            if (configService.AppConfig.EnableStatistics && finalIntervalRunTime > 0)
+            {
+                configService.AppStatistics.AddApplicationRunTime(configService, finalIntervalRunTime);
+                configService.SaveChangesAsync().Wait();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving final application runtime statistics: {ex.Message}");
+        }
+    }
+    
+    #endregion
+
 }
