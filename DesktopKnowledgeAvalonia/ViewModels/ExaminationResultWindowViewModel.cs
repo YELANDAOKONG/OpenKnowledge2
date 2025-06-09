@@ -577,7 +577,8 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             UserAnswer = question.UserAnswer,
             Answer = question.Answer,
             ReferenceAnswer = question.ReferenceAnswer,
-            ReferenceMaterials = allReferenceMaterials.ToArray(),
+            // ReferenceMaterials = allReferenceMaterials.ToArray(),
+            ReferenceMaterials = question.ReferenceMaterials,
             IsAiJudge = question.IsAiJudge,
             IgnoreSpace = question.IgnoreSpace,
             Commits = question.Commits
@@ -588,7 +589,10 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             extendedQuestion, 
             _configService.AppConfig.PromptGradingTemplate,
             true,
-            _localizationService.CurrentLanguage);
+            _localizationService.CurrentLanguage,
+            examinationReferenceMaterials: Examination.ExaminationMetadata.ReferenceMaterials,
+            sectionReferenceMaterials: section.ReferenceMaterials,
+            parentReferenceMaterials: (parentQuestion != null && parentQuestion.ReferenceMaterials != null) ? parentQuestion.ReferenceMaterials : null);
     }
 
     [RelayCommand]
