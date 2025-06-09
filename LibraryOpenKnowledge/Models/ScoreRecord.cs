@@ -210,6 +210,66 @@ public class ScoreRecord
             return result;
         };
         
+        // 当任何问题类型禁用AI判题时，都应该回退到直接字符串比较，
+        // 无需根据题目类型做不同处理
+        if (!question.IsAiJudge)
+        {
+            return preprocessText(question.UserAnswer[0]).Equals(preprocessText(question.Answer[0]));
+        }
+        
+        // 以下仅处理启用AI判题但尚未评分的情况
+        switch (question.Type)
+        {
+            case QuestionTypes.SingleChoice:
+                return preprocessText(question.UserAnswer[0]).Equals(preprocessText(question.Answer[0]));
+                
+            case QuestionTypes.MultipleChoice:
+                // 所有选项必须完全匹配
+                if (question.UserAnswer.Length != question.Answer.Length)
+                    return false;
+                    
+                var userOptions = new HashSet<string>(question.UserAnswer.Select(a => preprocessText(a)), StringComparer.Ordinal);
+                var correctOptions = new HashSet<string>(question.Answer.Select(a => preprocessText(a)), StringComparer.Ordinal);
+                return userOptions.SetEquals(correctOptions);
+                
+            case QuestionTypes.Judgment:
+                return preprocessText(question.UserAnswer[0]).Equals(preprocessText(question.Answer[0]));
+                
+            case QuestionTypes.FillInTheBlank:
+                return preprocessText(question.UserAnswer[0]).Equals(preprocessText(question.Answer[0]));
+                
+            case QuestionTypes.Math:
+            case QuestionTypes.Calculation: 
+            case QuestionTypes.Essay:
+            case QuestionTypes.ShortAnswer:
+            case QuestionTypes.Complex:
+            default:
+                // 对于需要AI判题的题目类型，返回false表示需要AI评分
+                return false;
+        }
+    }
+
+
+    
+    private bool IsAnswerCorrectClassic(Question question)
+    {
+        if (question.UserAnswer == null || question.UserAnswer.Length == 0 || question.Answer == null || question.Answer.Length == 0)
+            return false;
+        
+        // 根据问题设置预处理文本
+        Func<string, string> preprocessText = (text) => {
+            if (string.IsNullOrEmpty(text)) return string.Empty;
+            
+            string result = text;
+            if (question.IgnoreSpace)
+                result = result.Replace(" ", "");
+            if (question.IgnoreLineBreak)
+                result = result.Replace("\r\n", "").Replace("\n", "").Replace("\r", "");
+            if (question.IgnoreCase)
+                result = result.ToLowerInvariant();
+            return result;
+        };
+        
         switch (question.Type)
         {
             case QuestionTypes.SingleChoice:
