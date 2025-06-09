@@ -101,7 +101,7 @@ public class StatisticsCategory
 }
 
 // Base class for all statistics views
-public abstract class StatisticsViewModelBase : ViewModelBase
+public abstract partial class StatisticsViewModelBase : ViewModelBase
 {
     protected readonly ConfigureService ConfigService;
     protected readonly LocalizationService LocalizationService;
@@ -111,6 +111,23 @@ public abstract class StatisticsViewModelBase : ViewModelBase
         ConfigService = configService;
         LocalizationService = localizationService;
     }
+    
+    [RelayCommand]
+    public virtual void Update()
+    {
+        Console.WriteLine("Update command executed");
+        try
+        {
+            LoadStatistics();
+            Console.WriteLine("Statistics loaded successfully");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in Update command: {ex}");
+        }
+    }
+    
+    protected abstract void LoadStatistics();
 }
 
 // Overview Statistics View
@@ -140,7 +157,7 @@ public partial class OverviewStatisticsViewModel : StatisticsViewModelBase
         LoadStatistics();
     }
 
-    private void LoadStatistics()
+    protected override void LoadStatistics()
     {
         var stats = ConfigService.AppStatistics;
         
@@ -187,12 +204,12 @@ public partial class OverviewStatisticsViewModel : StatisticsViewModelBase
 public partial class DailyStatisticsViewModel : StatisticsViewModelBase
 {
     [ObservableProperty] private DateTimeOffset? _selectedDate;
-    [ObservableProperty] private List<DailyStatItem> _dailyStats = new();
+    [ObservableProperty] private ObservableCollection<DailyStatItem> _dailyStats = new();
 
     public DailyStatisticsViewModel(ConfigureService configService, LocalizationService localizationService) 
         : base(configService, localizationService)
     {
-        SelectedDate = DateTime.Today;
+        SelectedDate = DateTimeOffset.Now;
         LoadStatistics();
     }
 
@@ -202,7 +219,7 @@ public partial class DailyStatisticsViewModel : StatisticsViewModelBase
         LoadStatistics();
     }
 
-    private void LoadStatistics()
+    protected override void LoadStatistics()
     {
         var stats = ConfigService.AppStatistics;
         DateTime dateToUse = SelectedDate?.DateTime ?? DateTime.Today;
@@ -211,51 +228,53 @@ public partial class DailyStatisticsViewModel : StatisticsViewModelBase
         int month = dateToUse.Month;
         int day = dateToUse.Day;
         
-        DailyStats.Clear();
+        // 创建新的集合实例
+        var newStats = new ObservableCollection<DailyStatItem>();
         
-        DailyStats.Add(new DailyStatItem 
+        newStats.Add(new DailyStatItem 
         { 
             StatName = LocalizationService["statistics.app.starts"], 
             Count = stats.GetApplicationStartCountDay(year, month, day) 
         });
         
-        DailyStats.Add(new DailyStatItem 
+        newStats.Add(new DailyStatItem 
         { 
             StatName = LocalizationService["statistics.ai.calls"], 
             Count = stats.GetAiCallCountDay(year, month, day)
         });
         
-        DailyStats.Add(new DailyStatItem 
+        newStats.Add(new DailyStatItem 
         { 
             StatName = LocalizationService["statistics.question.interactions"], 
             Count = stats.GetQuestionInteractionCountDay(year, month, day)
         });
         
-        DailyStats.Add(new DailyStatItem 
+        newStats.Add(new DailyStatItem 
         { 
             StatName = LocalizationService["statistics.exams.loaded"], 
             Count = stats.GetLoadExaminationCountDay(year, month, day)
         });
         
-        DailyStats.Add(new DailyStatItem 
+        newStats.Add(new DailyStatItem 
         { 
             StatName = LocalizationService["statistics.exams.submitted"], 
             Count = stats.GetSubmitExaminationCountDay(year, month, day)
         });
         
-        DailyStats.Add(new DailyStatItem 
+        newStats.Add(new DailyStatItem 
         { 
             StatName = LocalizationService["statistics.study.started"], 
             Count = stats.GetStartStudyCountDay(year, month, day)
         });
         
-        DailyStats.Add(new DailyStatItem 
+        newStats.Add(new DailyStatItem 
         { 
             StatName = LocalizationService["statistics.study.completed"], 
             Count = stats.GetCompleteStudyCountDay(year, month, day)
         });
         
-        OnPropertyChanged(nameof(DailyStats));
+        // 替换整个集合
+        DailyStats = newStats;
     }
 }
 
@@ -272,7 +291,7 @@ public partial class WeeklyStatisticsViewModel : StatisticsViewModelBase
     [ObservableProperty] private int _selectedWeek;
     [ObservableProperty] private List<int> _availableYears = new();
     [ObservableProperty] private List<int> _availableWeeks = new();
-    [ObservableProperty] private List<WeeklyStatItem> _weeklyStats = new();
+    [ObservableProperty] private ObservableCollection<WeeklyStatItem> _weeklyStats = new();
 
     public WeeklyStatisticsViewModel(ConfigureService configService, LocalizationService localizationService) 
         : base(configService, localizationService)
@@ -284,7 +303,8 @@ public partial class WeeklyStatisticsViewModel : StatisticsViewModelBase
     private void InitializeYearsAndWeeks()
     {
         int currentYear = DateTime.UtcNow.Year;
-        AvailableYears = Enumerable.Range(currentYear - 5, 6).ToList();
+        // 扩展年份范围：从2015年到当前年份后5年
+        AvailableYears = Enumerable.Range(2015, currentYear - 2015 + 6).ToList();
         
         SelectedYear = currentYear;
         
@@ -302,55 +322,57 @@ public partial class WeeklyStatisticsViewModel : StatisticsViewModelBase
         LoadStatistics();
     }
 
-    private void LoadStatistics()
+    protected override void LoadStatistics()
     {
         var stats = ConfigService.AppStatistics;
         
-        WeeklyStats.Clear();
+        // 创建新的集合实例
+        var newStats = new ObservableCollection<WeeklyStatItem>();
         
-        WeeklyStats.Add(new WeeklyStatItem 
+        newStats.Add(new WeeklyStatItem 
         { 
             StatName = LocalizationService["statistics.app.starts"], 
             Count = stats.GetApplicationStartCountWeek(SelectedYear, SelectedWeek) 
         });
         
-        WeeklyStats.Add(new WeeklyStatItem 
+        newStats.Add(new WeeklyStatItem 
         { 
             StatName = LocalizationService["statistics.ai.calls"], 
             Count = stats.GetAiCallCountWeek(SelectedYear, SelectedWeek)
         });
         
-        WeeklyStats.Add(new WeeklyStatItem 
+        newStats.Add(new WeeklyStatItem 
         { 
             StatName = LocalizationService["statistics.question.interactions"], 
             Count = stats.GetQuestionInteractionCountWeek(SelectedYear, SelectedWeek)
         });
         
-        WeeklyStats.Add(new WeeklyStatItem 
+        newStats.Add(new WeeklyStatItem 
         { 
             StatName = LocalizationService["statistics.exams.loaded"], 
             Count = stats.GetLoadExaminationCountWeek(SelectedYear, SelectedWeek)
         });
         
-        WeeklyStats.Add(new WeeklyStatItem 
+        newStats.Add(new WeeklyStatItem 
         { 
             StatName = LocalizationService["statistics.exams.submitted"], 
             Count = stats.GetSubmitExaminationCountWeek(SelectedYear, SelectedWeek)
         });
         
-        WeeklyStats.Add(new WeeklyStatItem 
+        newStats.Add(new WeeklyStatItem 
         { 
             StatName = LocalizationService["statistics.study.started"], 
             Count = stats.GetStartStudyCountWeek(SelectedYear, SelectedWeek)
         });
         
-        WeeklyStats.Add(new WeeklyStatItem 
+        newStats.Add(new WeeklyStatItem 
         { 
             StatName = LocalizationService["statistics.study.completed"], 
             Count = stats.GetCompleteStudyCountWeek(SelectedYear, SelectedWeek)
         });
         
-        OnPropertyChanged(nameof(WeeklyStats));
+        // 替换整个集合
+        WeeklyStats = newStats;
     }
 }
 
@@ -367,7 +389,7 @@ public partial class MonthlyStatisticsViewModel : StatisticsViewModelBase
     [ObservableProperty] private int _selectedMonth;
     [ObservableProperty] private List<int> _availableYears = new();
     [ObservableProperty] private List<MonthOption> _availableMonths = new();
-    [ObservableProperty] private List<MonthlyStatItem> _monthlyStats = new();
+    [ObservableProperty] private ObservableCollection<MonthlyStatItem> _monthlyStats = new();
 
     public MonthlyStatisticsViewModel(ConfigureService configService, LocalizationService localizationService) 
         : base(configService, localizationService)
@@ -379,7 +401,8 @@ public partial class MonthlyStatisticsViewModel : StatisticsViewModelBase
     private void InitializeYearsAndMonths()
     {
         int currentYear = DateTime.UtcNow.Year;
-        AvailableYears = Enumerable.Range(currentYear - 5, 6).ToList();
+        // 扩展年份范围：从2015年到当前年份后5年
+        AvailableYears = Enumerable.Range(2015, currentYear - 2015 + 6).ToList();
         
         SelectedYear = currentYear;
         
@@ -408,55 +431,57 @@ public partial class MonthlyStatisticsViewModel : StatisticsViewModelBase
         LoadStatistics();
     }
 
-    private void LoadStatistics()
+    protected override void LoadStatistics()
     {
         var stats = ConfigService.AppStatistics;
         
-        MonthlyStats.Clear();
+        // 创建新的集合实例
+        var newStats = new ObservableCollection<MonthlyStatItem>();
         
-        MonthlyStats.Add(new MonthlyStatItem 
+        newStats.Add(new MonthlyStatItem 
         { 
             StatName = LocalizationService["statistics.app.starts"], 
             Count = stats.GetApplicationStartCountMonth(SelectedYear, SelectedMonth) 
         });
         
-        MonthlyStats.Add(new MonthlyStatItem 
+        newStats.Add(new MonthlyStatItem 
         { 
             StatName = LocalizationService["statistics.ai.calls"], 
             Count = stats.GetAiCallCountMonth(SelectedYear, SelectedMonth)
         });
         
-        MonthlyStats.Add(new MonthlyStatItem 
+        newStats.Add(new MonthlyStatItem 
         { 
             StatName = LocalizationService["statistics.question.interactions"], 
             Count = stats.GetQuestionInteractionCountMonth(SelectedYear, SelectedMonth)
         });
         
-        MonthlyStats.Add(new MonthlyStatItem 
+        newStats.Add(new MonthlyStatItem 
         { 
             StatName = LocalizationService["statistics.exams.loaded"], 
             Count = stats.GetLoadExaminationCountMonth(SelectedYear, SelectedMonth)
         });
         
-        MonthlyStats.Add(new MonthlyStatItem 
+        newStats.Add(new MonthlyStatItem 
         { 
             StatName = LocalizationService["statistics.exams.submitted"], 
             Count = stats.GetSubmitExaminationCountMonth(SelectedYear, SelectedMonth)
         });
         
-        MonthlyStats.Add(new MonthlyStatItem 
+        newStats.Add(new MonthlyStatItem 
         { 
             StatName = LocalizationService["statistics.study.started"], 
             Count = stats.GetStartStudyCountMonth(SelectedYear, SelectedMonth)
         });
         
-        MonthlyStats.Add(new MonthlyStatItem 
+        newStats.Add(new MonthlyStatItem 
         { 
             StatName = LocalizationService["statistics.study.completed"], 
             Count = stats.GetCompleteStudyCountMonth(SelectedYear, SelectedMonth)
         });
         
-        OnPropertyChanged(nameof(MonthlyStats));
+        // 替换整个集合
+        MonthlyStats = newStats;
     }
 }
 
@@ -477,7 +502,7 @@ public partial class YearlyStatisticsViewModel : StatisticsViewModelBase
 {
     [ObservableProperty] private int _selectedYear;
     [ObservableProperty] private List<int> _availableYears = new();
-    [ObservableProperty] private List<YearlyStatItem> _yearlyStats = new();
+    [ObservableProperty] private ObservableCollection<YearlyStatItem> _yearlyStats = new();
 
     public YearlyStatisticsViewModel(ConfigureService configService, LocalizationService localizationService) 
         : base(configService, localizationService)
@@ -489,7 +514,8 @@ public partial class YearlyStatisticsViewModel : StatisticsViewModelBase
     private void InitializeYears()
     {
         int currentYear = DateTime.UtcNow.Year;
-        AvailableYears = Enumerable.Range(currentYear - 5, 6).ToList();
+        // 扩展年份范围：从2015年到当前年份后5年
+        AvailableYears = Enumerable.Range(2015, currentYear - 2015 + 6).ToList();
         
         SelectedYear = currentYear;
     }
@@ -500,55 +526,57 @@ public partial class YearlyStatisticsViewModel : StatisticsViewModelBase
         LoadStatistics();
     }
 
-    private void LoadStatistics()
+    protected override void LoadStatistics()
     {
         var stats = ConfigService.AppStatistics;
         
-        YearlyStats.Clear();
+        // 创建新的集合实例
+        var newStats = new ObservableCollection<YearlyStatItem>();
         
-        YearlyStats.Add(new YearlyStatItem 
+        newStats.Add(new YearlyStatItem 
         { 
             StatName = LocalizationService["statistics.app.starts"], 
             Count = stats.GetApplicationStartCountYear(SelectedYear) 
         });
         
-        YearlyStats.Add(new YearlyStatItem 
+        newStats.Add(new YearlyStatItem 
         { 
             StatName = LocalizationService["statistics.ai.calls"], 
             Count = stats.GetAiCallCountYear(SelectedYear)
         });
         
-        YearlyStats.Add(new YearlyStatItem 
+        newStats.Add(new YearlyStatItem 
         { 
             StatName = LocalizationService["statistics.question.interactions"], 
             Count = stats.GetQuestionInteractionCountYear(SelectedYear)
         });
         
-        YearlyStats.Add(new YearlyStatItem 
+        newStats.Add(new YearlyStatItem 
         { 
             StatName = LocalizationService["statistics.exams.loaded"], 
             Count = stats.GetLoadExaminationCountYear(SelectedYear)
         });
         
-        YearlyStats.Add(new YearlyStatItem 
+        newStats.Add(new YearlyStatItem 
         { 
             StatName = LocalizationService["statistics.exams.submitted"], 
             Count = stats.GetSubmitExaminationCountYear(SelectedYear)
         });
         
-        YearlyStats.Add(new YearlyStatItem 
+        newStats.Add(new YearlyStatItem 
         { 
             StatName = LocalizationService["statistics.study.started"], 
             Count = stats.GetStartStudyCountYear(SelectedYear)
         });
         
-        YearlyStats.Add(new YearlyStatItem 
+        newStats.Add(new YearlyStatItem 
         { 
             StatName = LocalizationService["statistics.study.completed"], 
             Count = stats.GetCompleteStudyCountYear(SelectedYear)
         });
         
-        OnPropertyChanged(nameof(YearlyStats));
+        // 替换整个集合
+        YearlyStats = newStats;
     }
 }
 
@@ -574,7 +602,7 @@ public partial class TimeStatisticsViewModel : StatisticsViewModelBase
         LoadStatistics();
     }
 
-    private void LoadStatistics()
+    protected override void LoadStatistics()
     {
         var stats = ConfigService.AppStatistics;
     
@@ -619,5 +647,4 @@ public partial class TimeStatisticsViewModel : StatisticsViewModelBase
             OtherPercentage = 100;
         }
     }
-
 }
