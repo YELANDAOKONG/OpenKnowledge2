@@ -629,32 +629,55 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             IsAiScoringInProgress || !HasPerformedInitialAiScoring)
             return;
         
-        // Find the question
+        // Find the question and its parent (if it's a sub-question)
         Question? questionToScore = null;
-        string sectionTitle = string.Empty;
-    
+        ExaminationSection? questionSection = null;
+        Question? parentQuestion = null;
+
         foreach (var section in Examination.ExaminationSections)
         {
             if (section.Questions == null) 
                 continue;
         
+            // First check main questions
             foreach (var question in section.Questions)
             {
                 if (question.QuestionId == questionId)
                 {
                     questionToScore = question;
-                    sectionTitle = section.Title;
+                    questionSection = section;
                     break;
+                }
+                
+                // If not found, check sub-questions of complex questions
+                if (question.Type == QuestionTypes.Complex && 
+                    question.SubQuestions != null && 
+                    question.SubQuestions.Count > 0)
+                {
+                    foreach (var subQuestion in question.SubQuestions)
+                    {
+                        if (subQuestion.QuestionId == questionId)
+                        {
+                            questionToScore = subQuestion;
+                            questionSection = section;
+                            parentQuestion = question; // Store the parent question
+                            break;
+                        }
+                    }
+                    
+                    if (questionToScore != null)
+                        break;
                 }
             }
         
             if (questionToScore != null) 
                 break;
         }
-    
-        // 验证题目可以被重新评分：必须是AI评分题且有答案
+
+        // Verify the question can be rescored
         if (questionToScore == null || !questionToScore.IsAiJudge || 
-            questionToScore.UserAnswer == null || questionToScore.UserAnswer.Length == 0)
+            questionToScore.UserAnswer == null || questionToScore.UserAnswer.Length == 0 ||
+            questionSection == null)
             return;
         
         // Start rescoring
@@ -663,24 +686,24 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
         CanExit = false;
         CanExportScore = false;
         UpdateResultStatusText();
-    
+
         string cleanStem = questionToScore.Stem
             .Replace("\r\n", " ")
             .Replace("\n", " ")
             .Replace("\r", " ");
         
         CurrentScoringQuestionProgress = $"1 / 1 ({_localizationService["exam.result.rescore"]})";
-        CurrentScoringQuestion = $"{sectionTitle}: {cleanStem.Substring(0, Math.Min(50, cleanStem.Length))}...";
-    
+        CurrentScoringQuestion = $"{questionSection.Title}: {cleanStem.Substring(0, Math.Min(50, cleanStem.Length))}...";
+
         try
         {
             var aiClient = AiTools.CreateOpenAiClient(_configService.SystemConfig);
         
-            string prompt = PromptTemplateManager.GenerateGradingPrompt(
+            // Use the comprehensive grading method to include all reference materials
+            string prompt = GenerateComprehensiveGradingPrompt(
+                questionSection,
                 questionToScore, 
-                _configService.AppConfig.PromptGradingTemplate,
-                true,
-                _localizationService.CurrentLanguage);
+                parentQuestion);
         
             _configService.AppStatistics.AddAiCallCount(_configService);
             string? response = await AiTools.SendChatMessageAsync(
@@ -726,6 +749,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             UpdateResultStatusText();
         }
     }
+
 
     [RelayCommand]
     private async Task RescoreAllAsync()
