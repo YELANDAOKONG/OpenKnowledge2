@@ -304,7 +304,8 @@ public partial class WeeklyStatisticsViewModel : StatisticsViewModelBase
     {
         int currentYear = DateTime.UtcNow.Year;
         // 扩展年份范围：从2015年到当前年份后5年
-        AvailableYears = Enumerable.Range(2015, currentYear - 2015 + 6).ToList();
+        // AvailableYears = Enumerable.Range(2015, currentYear - 2015 + 6).ToList();
+        AvailableYears = Enumerable.Range(currentYear - 5, 11).ToList();
         
         SelectedYear = currentYear;
         
@@ -402,7 +403,8 @@ public partial class MonthlyStatisticsViewModel : StatisticsViewModelBase
     {
         int currentYear = DateTime.UtcNow.Year;
         // 扩展年份范围：从2015年到当前年份后5年
-        AvailableYears = Enumerable.Range(2015, currentYear - 2015 + 6).ToList();
+        // AvailableYears = Enumerable.Range(2015, currentYear - 2015 + 6).ToList();
+        AvailableYears = Enumerable.Range(currentYear - 5, 11).ToList();
         
         SelectedYear = currentYear;
         
@@ -515,7 +517,8 @@ public partial class YearlyStatisticsViewModel : StatisticsViewModelBase
     {
         int currentYear = DateTime.UtcNow.Year;
         // 扩展年份范围：从2015年到当前年份后5年
-        AvailableYears = Enumerable.Range(2015, currentYear - 2015 + 6).ToList();
+        // AvailableYears = Enumerable.Range(2015, currentYear - 2015 + 6).ToList();
+        AvailableYears = Enumerable.Range(currentYear - 5, 11).ToList();
         
         SelectedYear = currentYear;
     }
