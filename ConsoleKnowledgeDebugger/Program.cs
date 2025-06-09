@@ -214,9 +214,56 @@ class Program
                 Answer = new string[]
                 {
                     "114521"
+                },
+                ReferenceMaterials = new ReferenceMaterial[]
+                { 
+                    new ReferenceMaterial
+                    {
+                        Materials = new string[]
+                        {
+                            "1 + 114514 + 2 * 3 = 114521"
+                        }
+                    }
+                },
+            },
+            language: null,
+            examinationReferenceMaterials: new ReferenceMaterial[]
+            {
+                new ReferenceMaterial
+                {
+                    Materials = new string[]
+                    {
+                        "https://example.com/#123"
+                    }
+                },
+                new ReferenceMaterial
+                {
+                    Materials = new string[]
+                    {
+                        "https://example.com/#123-2"
+                    }
                 }
             },
-            language: null
+            sectionReferenceMaterials: new ReferenceMaterial[]
+            {
+                new ReferenceMaterial
+                {
+                    Materials = new string[]
+                    {
+                        "https://example.com/#456"
+                    }
+                }
+            },
+            parentReferenceMaterials: new ReferenceMaterial[]
+            {
+                new ReferenceMaterial
+                {
+                    Materials = new string[]
+                    {
+                        "https://example.com/#789"
+                    }
+                }
+            }
         );
         Console.WriteLine(prompt);
         

@@ -26,12 +26,33 @@ Question:
 {{question_stem}}
 `````````
 
-{{#has_reference_materials}}
-Reference Materials:
+{{#has_examination_reference_materials}}
+Examination Reference Materials:
 `````````
-{{reference_materials}}
+{{examination_reference_materials}}
 `````````
-{{/has_reference_materials}}
+{{/has_examination_reference_materials}}
+
+{{#has_section_reference_materials}}
+Section Reference Materials:
+`````````
+{{section_reference_materials}}
+`````````
+{{/has_section_reference_materials}}
+
+{{#has_parent_reference_materials}}
+Parent Question Reference Materials:
+`````````
+{{parent_reference_materials}}
+`````````
+{{/has_parent_reference_materials}}
+
+{{#has_question_reference_materials}}
+Question Reference Materials:
+`````````
+{{question_reference_materials}}
+`````````
+{{/has_question_reference_materials}}
 
 Student's Answer:
 {{#has_user_answer}}
@@ -107,12 +128,33 @@ Question:
 {{question_stem}}
 `````````
 
-{{#has_reference_materials}}
-Reference Materials:
+{{#has_examination_reference_materials}}
+Examination Reference Materials:
 `````````
-{{reference_materials}}
+{{examination_reference_materials}}
 `````````
-{{/has_reference_materials}}
+{{/has_examination_reference_materials}}
+
+{{#has_section_reference_materials}}
+Section Reference Materials:
+`````````
+{{section_reference_materials}}
+`````````
+{{/has_section_reference_materials}}
+
+{{#has_parent_reference_materials}}
+Parent Question Reference Materials:
+`````````
+{{parent_reference_materials}}
+`````````
+{{/has_parent_reference_materials}}
+
+{{#has_question_reference_materials}}
+Question Reference Materials:
+`````````
+{{question_reference_materials}}
+`````````
+{{/has_question_reference_materials}}
 
 Student's Answer:
 {{#has_user_answer}}
@@ -174,12 +216,33 @@ Question:
 {{question_stem}}
 `````````
 
-{{#has_reference_materials}}
-Reference Materials:
+{{#has_examination_reference_materials}}
+Examination Reference Materials:
 `````````
-{{reference_materials}}
+{{examination_reference_materials}}
 `````````
-{{/has_reference_materials}}
+{{/has_examination_reference_materials}}
+
+{{#has_section_reference_materials}}
+Section Reference Materials:
+`````````
+{{section_reference_materials}}
+`````````
+{{/has_section_reference_materials}}
+
+{{#has_parent_reference_materials}}
+Parent Question Reference Materials:
+`````````
+{{parent_reference_materials}}
+`````````
+{{/has_parent_reference_materials}}
+
+{{#has_question_reference_materials}}
+Question Reference Materials:
+`````````
+{{question_reference_materials}}
+`````````
+{{/has_question_reference_materials}}
 
 Correct Answer:
 `````````
@@ -224,28 +287,56 @@ Only respond with the JSON object, no other text.";
     // Static methods to generate prompts from templates
 
     // Method 1: Generate grading prompt
-    public static string GenerateGradingPrompt(Question question, string? customTemplate = null, bool escapeInput = true, string? language = "en-US")
+    public static string GenerateGradingPrompt(
+        Question question, 
+        string? customTemplate = null, 
+        bool escapeInput = true, 
+        string? language = "en-US",
+        ReferenceMaterial[]? examinationReferenceMaterials = null,
+        ReferenceMaterial[]? sectionReferenceMaterials = null,
+        ReferenceMaterial[]? parentReferenceMaterials = null)
     {
         string template = customTemplate ?? DefaultGradingTemplate;
-        return ProcessTemplate(template, question, escapeInput, language);
+        return ProcessTemplate(template, question, escapeInput, language, examinationReferenceMaterials, sectionReferenceMaterials, parentReferenceMaterials);
     }
 
     // Method 2: Generate explanation prompt
-    public static string GenerateExplanationPrompt(Question question, string? customTemplate = null, bool escapeInput = true, string? language = "en-US")
+    public static string GenerateExplanationPrompt(
+        Question question, 
+        string? customTemplate = null, 
+        bool escapeInput = true, 
+        string? language = "en-US",
+        ReferenceMaterial[]? examinationReferenceMaterials = null,
+        ReferenceMaterial[]? sectionReferenceMaterials = null,
+        ReferenceMaterial[]? parentReferenceMaterials = null)
     {
         string template = customTemplate ?? DefaultExplanationTemplate;
-        return ProcessTemplate(template, question, escapeInput, language);
+        return ProcessTemplate(template, question, escapeInput, language, examinationReferenceMaterials, sectionReferenceMaterials, parentReferenceMaterials);
     }
 
     // Method 3: Generate error check prompt
-    public static string GenerateErrorCheckPrompt(Question question, string? customTemplate = null, bool escapeInput = true, string? language = "en-US")
+    public static string GenerateErrorCheckPrompt(
+        Question question, 
+        string? customTemplate = null, 
+        bool escapeInput = true, 
+        string? language = "en-US",
+        ReferenceMaterial[]? examinationReferenceMaterials = null,
+        ReferenceMaterial[]? sectionReferenceMaterials = null,
+        ReferenceMaterial[]? parentReferenceMaterials = null)
     {
         string template = customTemplate ?? DefaultErrorCheckTemplate;
-        return ProcessTemplate(template, question, escapeInput, language);
+        return ProcessTemplate(template, question, escapeInput, language, examinationReferenceMaterials, sectionReferenceMaterials, parentReferenceMaterials);
     }
 
     // Helper method to process a template
-    private static string ProcessTemplate(string template, Question question, bool escapeInput, string? language)
+    private static string ProcessTemplate(
+        string template, 
+        Question question, 
+        bool escapeInput, 
+        string? language,
+        ReferenceMaterial[]? examinationReferenceMaterials = null,
+        ReferenceMaterial[]? sectionReferenceMaterials = null,
+        ReferenceMaterial[]? parentReferenceMaterials = null)
     {
         // Prepare placeholder values
         var placeholders = new Dictionary<string, string>
@@ -263,7 +354,10 @@ Only respond with the JSON object, no other text.";
         }
 
         // Set conditional flags
-        bool hasReferenceMaterials = false;
+        bool hasExaminationReferenceMaterials = false;
+        bool hasSectionReferenceMaterials = false;
+        bool hasParentReferenceMaterials = false;
+        bool hasQuestionReferenceMaterials = false;
         bool hasUserAnswer = false;
         bool hasReferenceAnswer = false;
         bool hasInstructions = false;
@@ -277,23 +371,106 @@ Only respond with the JSON object, no other text.";
         // Process language section
         template = ProcessConditionalSection(template, "has_language", hasLanguage);
 
-        // Handle reference materials
-        var referenceMaterialsBuilder = new StringBuilder();
-        if (question.ReferenceMaterials != null)
+        // Process examination reference materials
+        var examinationReferenceMaterialsBuilder = new StringBuilder();
+        if (examinationReferenceMaterials != null && examinationReferenceMaterials.Length > 0)
         {
-            foreach (var referenceMaterial in question.ReferenceMaterials)
+            hasExaminationReferenceMaterials = true;
+            foreach (var referenceMaterial in examinationReferenceMaterials)
             {
                 if (referenceMaterial != null && referenceMaterial.Materials != null && referenceMaterial.Materials.Length > 0)
                 {
-                    hasReferenceMaterials = true;
                     foreach (var material in referenceMaterial.Materials)
                     {
-                        referenceMaterialsBuilder.AppendLine(escapeInput ? EscapeString(material) : material);
+                        examinationReferenceMaterialsBuilder.AppendLine(escapeInput ? EscapeString(material) : material);
                     }
                 }
             }
         }
-        placeholders["reference_materials"] = referenceMaterialsBuilder.ToString();
+        placeholders["examination_reference_materials"] = examinationReferenceMaterialsBuilder.ToString();
+
+        // Process section reference materials
+        var sectionReferenceMaterialsBuilder = new StringBuilder();
+        if (sectionReferenceMaterials != null && sectionReferenceMaterials.Length > 0)
+        {
+            hasSectionReferenceMaterials = true;
+            foreach (var referenceMaterial in sectionReferenceMaterials)
+            {
+                if (referenceMaterial != null && referenceMaterial.Materials != null && referenceMaterial.Materials.Length > 0)
+                {
+                    foreach (var material in referenceMaterial.Materials)
+                    {
+                        sectionReferenceMaterialsBuilder.AppendLine(escapeInput ? EscapeString(material) : material);
+                    }
+                }
+            }
+        }
+        placeholders["section_reference_materials"] = sectionReferenceMaterialsBuilder.ToString();
+
+        // Process parent reference materials
+        var parentReferenceMaterialsBuilder = new StringBuilder();
+        if (parentReferenceMaterials != null && parentReferenceMaterials.Length > 0)
+        {
+            hasParentReferenceMaterials = true;
+            foreach (var referenceMaterial in parentReferenceMaterials)
+            {
+                if (referenceMaterial != null && referenceMaterial.Materials != null && referenceMaterial.Materials.Length > 0)
+                {
+                    foreach (var material in referenceMaterial.Materials)
+                    {
+                        parentReferenceMaterialsBuilder.AppendLine(escapeInput ? EscapeString(material) : material);
+                    }
+                }
+            }
+        }
+        placeholders["parent_reference_materials"] = parentReferenceMaterialsBuilder.ToString();
+
+        // Process question reference materials
+        var questionReferenceMaterialsBuilder = new StringBuilder();
+        if (question.ReferenceMaterials != null && question.ReferenceMaterials.Length > 0)
+        {
+            hasQuestionReferenceMaterials = true;
+            foreach (var referenceMaterial in question.ReferenceMaterials)
+            {
+                if (referenceMaterial != null && referenceMaterial.Materials != null && referenceMaterial.Materials.Length > 0)
+                {
+                    foreach (var material in referenceMaterial.Materials)
+                    {
+                        questionReferenceMaterialsBuilder.AppendLine(escapeInput ? EscapeString(material) : material);
+                    }
+                }
+            }
+        }
+        placeholders["question_reference_materials"] = questionReferenceMaterialsBuilder.ToString();
+
+        // For backward compatibility, combine all reference materials into a single reference_materials placeholder
+        bool hasAnyReferenceMaterials = hasExaminationReferenceMaterials || 
+                                      hasSectionReferenceMaterials || 
+                                      hasParentReferenceMaterials || 
+                                      hasQuestionReferenceMaterials;
+                                      
+        var allReferenceMaterialsBuilder = new StringBuilder();
+        if (hasExaminationReferenceMaterials)
+        {
+            allReferenceMaterialsBuilder.AppendLine("# Examination Reference Materials");
+            allReferenceMaterialsBuilder.AppendLine(examinationReferenceMaterialsBuilder.ToString());
+        }
+        if (hasSectionReferenceMaterials)
+        {
+            allReferenceMaterialsBuilder.AppendLine("# Section Reference Materials");
+            allReferenceMaterialsBuilder.AppendLine(sectionReferenceMaterialsBuilder.ToString());
+        }
+        if (hasParentReferenceMaterials)
+        {
+            allReferenceMaterialsBuilder.AppendLine("# Parent Question Reference Materials");
+            allReferenceMaterialsBuilder.AppendLine(parentReferenceMaterialsBuilder.ToString());
+        }
+        if (hasQuestionReferenceMaterials)
+        {
+            allReferenceMaterialsBuilder.AppendLine("# Question Reference Materials");
+            allReferenceMaterialsBuilder.AppendLine(questionReferenceMaterialsBuilder.ToString());
+        }
+        placeholders["reference_materials"] = allReferenceMaterialsBuilder.ToString();
 
         // Handle user answer
         var userAnswerBuilder = new StringBuilder();
@@ -346,7 +523,11 @@ Only respond with the JSON object, no other text.";
         string result = template;
       
         // Replace the conditional sections first
-        result = ProcessConditionalSection(result, "has_reference_materials", hasReferenceMaterials);
+        result = ProcessConditionalSection(result, "has_examination_reference_materials", hasExaminationReferenceMaterials);
+        result = ProcessConditionalSection(result, "has_section_reference_materials", hasSectionReferenceMaterials);
+        result = ProcessConditionalSection(result, "has_parent_reference_materials", hasParentReferenceMaterials);
+        result = ProcessConditionalSection(result, "has_question_reference_materials", hasQuestionReferenceMaterials);
+        result = ProcessConditionalSection(result, "has_reference_materials", hasAnyReferenceMaterials);
         result = ProcessConditionalSection(result, "has_user_answer", hasUserAnswer);
         result = ProcessConditionalSection(result, "has_reference_answer", hasReferenceAnswer);
         result = ProcessConditionalSection(result, "has_instructions", hasInstructions);
