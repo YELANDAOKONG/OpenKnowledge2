@@ -297,7 +297,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                         question.SubQuestions.Count > 0)
                     {
                         // 递归处理子问题
-                        ProcessSubQuestions(questionViewModel, question, 0);
+                        ProcessSubQuestions(questionViewModel, question, 0, allScores);
                     }
                     
                     sectionVM.Questions.Add(questionViewModel);
@@ -351,11 +351,12 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
     private void ProcessSubQuestions(
         QuestionScoreViewModel parentViewModel,
         Question parentQuestion,
-        int depth)
+        int depth,
+        Dictionary<string, QuestionScore> allScores)  // Add this parameter
     {
         if (parentQuestion.SubQuestions == null || parentQuestion.SubQuestions.Count == 0)
             return;
-            
+                
         for (int i = 0; i < parentQuestion.SubQuestions.Count; i++)
         {
             var subQuestion = parentQuestion.SubQuestions[i];
@@ -367,6 +368,22 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                 subCorrectAnswer = string.Join(", ", subQuestion.Answer);
             }
             
+            // Get the score from allScores if available
+            double obtainedScore = 0;
+            bool isCorrect = false;
+            
+            if (allScores.TryGetValue(subQuestionId, out var scoreRecord))
+            {
+                obtainedScore = scoreRecord.ObtainedScore;
+                isCorrect = scoreRecord.IsCorrect;
+            }
+            else
+            {
+                // Fallback to the value in the Question if not found in allScores
+                obtainedScore = subQuestion.ObtainedScore ?? 0;
+                isCorrect = Math.Abs(obtainedScore - subQuestion.Score) < 0.001;
+            }
+            
             // 创建子问题的ViewModel
             var subViewModel = new QuestionScoreViewModel
             {
@@ -376,8 +393,8 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                 QuestionType = subQuestion.Type,
                 QuestionStem = subQuestion.Stem,
                 MaxScore = subQuestion.Score,
-                ObtainedScore = subQuestion.ObtainedScore ?? 0,
-                IsCorrect = Math.Abs((subQuestion.ObtainedScore ?? 0) - subQuestion.Score) < 0.001,
+                ObtainedScore = obtainedScore,  // Use the score from ScoreRecord
+                IsCorrect = isCorrect,
                 IsAiJudged = subQuestion.IsAiJudge,
                 IsEvaluated = subQuestion.IsAiEvaluated,
                 UserAnswer = subQuestion.UserAnswer != null && subQuestion.UserAnswer.Length > 0 
@@ -393,12 +410,13 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                 subQuestion.SubQuestions != null && 
                 subQuestion.SubQuestions.Count > 0)
             {
-                ProcessSubQuestions(subViewModel, subQuestion, depth + 1);
+                ProcessSubQuestions(subViewModel, subQuestion, depth + 1, allScores);  // Pass allScores
             }
             
             parentViewModel.SubQuestions.Add(subViewModel);
         }
     }
+
 
 
     [RelayCommand]
