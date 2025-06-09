@@ -165,6 +165,13 @@ public partial class MainWindowViewModel : ViewModelBase
         window.Show();
         window.Closed += (s, e) => IsWindowsVisible = true;
     }
+    
+    [RelayCommand]
+    private void OpenTools()
+    {
+        // TODO...
+        // To be implemented
+    }
 
     
     [RelayCommand]
