@@ -8,7 +8,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-latest, macos-latest]
         configuration: [Debug, Release]
 
     runs-on: ${{ matrix.os }}
@@ -52,6 +52,24 @@ jobs:
             --self-contained true \
             --runtime linux-x64 \
             --output ./publish/linux-x64
+
+      - name: Build for macOS x64 (if macOS runner)
+        if: matrix.os == 'macos-latest'
+        run: |
+          dotnet publish ${{ env.Project_Path }} \
+            --configuration ${{ matrix.configuration }} \
+            --self-contained true \
+            --runtime osx-x64 \
+            --output ./publish/osx-x64
+
+      - name: Build for macOS arm64 (if macOS runner)
+        if: matrix.os == 'macos-latest'
+        run: |
+          dotnet publish ${{ env.Project_Path }} \
+            --configuration ${{ matrix.configuration }} \
+            --self-contained true \
+            --runtime osx-arm64 \
+            --output ./publish/osx-arm64
       
       # Upload build artifacts
       - name: Upload Windows build artifacts
@@ -68,3 +86,16 @@ jobs:
           name: DesktopKnowledge-Linux-${{ matrix.configuration }}
           path: ./publish/linux-x64
 
+      - name: Upload macOS x64 build artifacts
+        if: matrix.os == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: DesktopKnowledge-macOS-x64-${{ matrix.configuration }}
+          path: ./publish/osx-x64
+
+      - name: Upload macOS arm64 build artifacts
+        if: matrix.os == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: DesktopKnowledge-macOS-arm64-${{ matrix.configuration }}
+          path: ./publish/osx-arm64
