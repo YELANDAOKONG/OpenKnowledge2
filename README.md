@@ -24,9 +24,9 @@ OpenKnowledge 是一个完全开源的知识学习框架协议规范。
 ```json
 {
   "ExaminationVersion": {
-    "Major": 1,
+    "Major": 3,
     "Minor": 0,
-    "Patch": 0
+    "Patch": 1
   },
   "ExaminationMetadata": {
     "ExamId": "TEST-ID",
@@ -59,12 +59,12 @@ OpenKnowledge 是一个完全开源的知识学习框架协议规范。
           "Stem": "1 and 100 which is bigger?",
           "Options": [
             {
-              "Item1": "A",
-              "Item2": "1"
+              "Id": "A",
+              "Text": "1"
             },
             {
-              "Item1": "B",
-              "Item2": "100"
+              "Id": "B",
+              "Text": "100"
             }
           ],
           "Score": 10.0,
@@ -83,12 +83,12 @@ OpenKnowledge 是一个完全开源的知识学习框架协议规范。
           "Stem": "1000 and 100 which is bigger?",
           "Options": [
             {
-              "Item1": "A",
-              "Item2": "1000"
+              "Id": "A",
+              "Text": "1000"
             },
             {
-              "Item1": "B",
-              "Item2": "100"
+              "Id": "B",
+              "Text": "100"
             }
           ],
           "Score": 80.0,
