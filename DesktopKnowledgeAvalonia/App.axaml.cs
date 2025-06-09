@@ -4,6 +4,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using DesktopKnowledgeAvalonia.Services;
@@ -43,6 +44,8 @@ public partial class App : Application
         {
             {
                 desktop.ShutdownRequested += OnShutdownRequested;
+                desktop.Exit += OnExit;
+                
                 _statisticsTimer = new DispatcherTimer
                 {
                     Interval = TimeSpan.FromSeconds(10) 
@@ -184,19 +187,55 @@ public partial class App : Application
     {
         try
         {
-            _statisticsTimer?.Stop();
+            if (_statisticsTimer != null)
+            {
+                _statisticsTimer.Stop();
+                _statisticsTimer.Tick -= SaveRuntimeStatistics;
+                _statisticsTimer = null;
+            }
             var finalIntervalRunTime = (long)(DateTime.UtcNow - _lastStatisticsSaveTime).TotalMilliseconds;
             
             var configService = GetService<ConfigureService>();
             if (configService.AppConfig.EnableStatistics && finalIntervalRunTime > 0)
             {
-                configService.AppStatistics.AddApplicationRunTime(configService, finalIntervalRunTime);
-                configService.SaveChangesAsync().Wait();
+                configService.AppStatistics.AddApplicationRunTime(configService, finalIntervalRunTime, saveChanges: false);
+                
+                bool completed = Task.Run(async () => {
+                    await configService.SaveChangesAsync();
+                }).Wait(3000);
+                
+                if (!completed)
+                {
+                    Console.WriteLine("Warning: Failed to save statistics within timeout period.");
+                }
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error saving final application runtime statistics: {ex.Message}");
+        }
+    }
+    
+    private void OnExit(object? sender, EventArgs e)
+    {
+        try
+        {
+            if (_statisticsTimer != null)
+            {
+                _statisticsTimer.Stop();
+                _statisticsTimer.Tick -= SaveRuntimeStatistics;
+                _statisticsTimer = null;
+            }
+            
+            if (_serviceProvider is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+            _serviceProvider = null;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during application exit: {ex.Message}");
         }
     }
     
