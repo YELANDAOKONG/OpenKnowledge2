@@ -52,6 +52,28 @@ public class ConfigureService
         if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
         return folder;
     }
+    
+    public static string GetAvatarDirectory()
+    {
+        var rootPath = GetConfigDirectory();
+        var folder = Path.Combine(rootPath, "Avatars");
+        if (!File.Exists(folder)) Directory.CreateDirectory(folder);
+        return folder;
+    }
+    
+    public static Task ClearAvatars(string? currentAvatarPath)
+    { 
+        var path = GetAvatarDirectory();
+        foreach (var file in Directory.GetFiles(path))
+        {
+            if (currentAvatarPath == null || !file.Equals(currentAvatarPath))
+            {
+                File.Delete(file);
+            }
+        }
+
+        return Task.CompletedTask;
+    }
 
     public static string GetCacheDirectory()
     {

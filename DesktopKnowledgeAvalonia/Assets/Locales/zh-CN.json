@@ -287,6 +287,8 @@
   "settings.general.avatar.change": "更改头像",
   "settings.general.avatar.remove": "移除头像",
   "settings.general.avatar.error.size": "头像文件不能超过64MB",
+  "settings.general.avatar.error.format": "头像文件格式不正确",
+  "settings.general.avatar.error.loading": "头像文件加载失败",
   "settings.general.avatar.file.types": "图像文件 (*.jpg;*.jpeg;*.png;*.bmp)"
 
 

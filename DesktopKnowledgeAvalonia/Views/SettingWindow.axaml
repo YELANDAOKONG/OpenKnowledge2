@@ -80,17 +80,21 @@
                                                    Margin="0,0,0,10"/>
                                         
                                         <Grid ColumnDefinitions="Auto,*">
+                                            <!-- Circular Avatar Container -->
                                             <Border Grid.Column="0" 
                                                     Width="80" 
                                                     Height="80" 
                                                     CornerRadius="40" 
                                                     Background="#569AFF"
-                                                    Margin="0,0,15,0">
+                                                    Margin="0,0,15,0"
+                                                    ClipToBounds="True">
                                                 <!-- Avatar Image -->
                                                 <Panel>
                                                     <Image Source="{Binding AvatarImage}" 
                                                            IsVisible="{Binding AvatarImage, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                           Stretch="UniformToFill"/>
+                                                           Stretch="UniformToFill"
+                                                           Width="80"
+                                                           Height="80"/>
                                                     
                                                     <!-- Fallback Text Avatar -->
                                                     <TextBlock Text="{Binding UserInitials}" 
@@ -108,12 +112,23 @@
                                                         Spacing="10" 
                                                         VerticalAlignment="Center">
                                                 <Button Content="{loc:Translate Key=settings.general.avatar.change}" 
-                                                        Command="{Binding ChangeAvatarCommand}"/>
+                                                        Click="OnChangeAvatarClicked"/>
                                                 <Button Content="{loc:Translate Key=settings.general.avatar.remove}" 
-                                                        Command="{Binding RemoveAvatarCommand}"
+                                                        Click="OnRemoveAvatarClicked"
                                                         IsEnabled="{Binding AvatarImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                                             </StackPanel>
                                         </Grid>
+                                        
+                                        <!-- Avatar notification area -->
+                                        <Border IsVisible="{Binding IsAvatarMessageVisible}" 
+                                                Background="{Binding AvatarMessageBackground}" 
+                                                CornerRadius="4" 
+                                                Padding="10"
+                                                Margin="0,10,0,0">
+                                            <TextBlock Text="{Binding AvatarMessage}" 
+                                                       Foreground="White" 
+                                                       TextWrapping="Wrap"/>
+                                        </Border>
                                     </StackPanel>
                                     
                                     <!-- Username Section -->
@@ -152,6 +167,7 @@
                                     </StackPanel>
                                 </StackPanel>
                             </DataTemplate>
+
 
                             
                             <!-- Appearance Settings Template -->

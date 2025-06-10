@@ -287,6 +287,8 @@
   "settings.general.avatar.change": "Change Avatar",
   "settings.general.avatar.remove": "Remove Avatar",
   "settings.general.avatar.error.size": "Avatar file cannot exceed 64MB",
+  "settings.general.avatar.error.format": "Avatar file format is not correct",
+  "settings.general.avatar.error.loading": "Avatar file loading failed",
   "settings.general.avatar.file.types": "Image Files (*.jpg;*.jpeg;*.png;*.bmp)"
 
 

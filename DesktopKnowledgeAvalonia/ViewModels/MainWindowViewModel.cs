@@ -142,6 +142,10 @@ public partial class MainWindowViewModel : ViewModelBase
                 Console.WriteLine($"Error loading avatar: {ex.Message}");
                 AvatarImage = null;
                 HasCustomAvatar = false;
+                
+                var configService = App.GetService<ConfigureService>();
+                configService.AppConfig.AvatarFilePath = null;
+                _ = configService.SaveChangesAsync();
             }
         }
         else

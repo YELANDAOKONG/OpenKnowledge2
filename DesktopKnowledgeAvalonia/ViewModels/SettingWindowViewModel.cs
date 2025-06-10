@@ -142,6 +142,16 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
     
     [ObservableProperty]
     private string? _userInitials;
+    
+    
+    [ObservableProperty]
+    private bool _isAvatarMessageVisible;
+    
+    [ObservableProperty]
+    private string _avatarMessage = "";
+    
+    [ObservableProperty]
+    private Avalonia.Media.IBrush _avatarMessageBackground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#569AFF"));
 
     public GeneralSettingsViewModel(ConfigureService configService, LocalizationService localizationService)
     {
@@ -193,14 +203,41 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
             }
             catch (Exception ex)
             {
+                ShowAvatarSizeError("settings.general.avatar.error.loading");
                 Console.WriteLine($"Error loading avatar: {ex.Message}");
                 AvatarImage = null;
+                
+                var configService = App.GetService<ConfigureService>();
+                configService.AppConfig.AvatarFilePath = null;
+                _ = configService.SaveChangesAsync();
             }
         }
         else
         {
             AvatarImage = null;
         }
+    }
+    
+    // Method to display avatar notifications (will be called from code-behind)
+    public void ShowAvatarSizeError(string? localizationKey = null)
+    {
+        var key = localizationKey ?? "settings.general.avatar.error.size";
+        AvatarMessage = _localizationService[key];
+        AvatarMessageBackground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#E74C3C"));
+        IsAvatarMessageVisible = true;
+    }
+    
+    // Reset notification
+    public void ResetAvatarMessage()
+    {
+        IsAvatarMessageVisible = false;
+    }
+    
+    // Add a method to update avatar from code-behind
+    public async Task UpdateAvatarAsync(string? avatarPath)
+    {
+        _configService.AppConfig.AvatarFilePath = avatarPath;
+        await LoadAvatarAsync();
     }
     
     [RelayCommand]
@@ -250,9 +287,7 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
             }
             
             // Create avatar directory
-            var avatarDir = Path.Combine(ConfigureService.GetConfigDirectory(), "Avatars");
-            if (!Directory.Exists(avatarDir))
-                Directory.CreateDirectory(avatarDir);
+            var avatarDir = ConfigureService.GetAvatarDirectory();
                 
             // Generate target file path
             var extension = Path.GetExtension((string) file.Name);
@@ -298,6 +333,8 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
                 Console.WriteLine($"Error deleting avatar file: {ex.Message}");
             }
         }
+
+        await ConfigureService.ClearAvatars(null);
     }
 
     public override async Task SaveAsync()
