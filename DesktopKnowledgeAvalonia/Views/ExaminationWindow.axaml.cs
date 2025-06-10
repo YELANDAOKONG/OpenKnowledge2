@@ -29,6 +29,7 @@ public partial class ExaminationWindow : AppWindowBase
     private readonly Dictionary<string, object> _choiceAnswers = new();
     private System.Timers.Timer _autoSaveTimer;
     private System.Timers.Timer _uiUpdateTimer;
+    private long _sessionStartTime; // Track when this session started
     
     // Constructor with optional parameters for loading examinations
     public ExaminationWindow(string? filePath = null, bool force = false)
@@ -81,6 +82,7 @@ public partial class ExaminationWindow : AppWindowBase
         BackButton.Click += async (s, e) => 
         {
             SaveCurrentAnswer();
+            SaveAccumulatedTime(); // Save the accumulated time when navigating back
             await _viewModel.SaveProgressSilently();
             Close();
         };
@@ -117,6 +119,8 @@ public partial class ExaminationWindow : AppWindowBase
                 {
                     // First save current answer
                     SaveCurrentAnswer();
+                    // Also save accumulated time
+                    SaveAccumulatedTime();
                     // Then silently save to disk
                     await _viewModel.SaveProgressSilently();
                 }
@@ -129,8 +133,14 @@ public partial class ExaminationWindow : AppWindowBase
     {
         if (_configService.AppData.ExaminationTimer.HasValue)
         {
-            var elapsed = DateTimeOffset.Now.ToUnixTimeMilliseconds() - _configService.AppData.ExaminationTimer.Value;
-            var timeSpan = TimeSpan.FromMilliseconds(elapsed);
+            // Calculate time spent in current session
+            var currentSessionTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() - _configService.AppData.ExaminationTimer.Value;
+            
+            // Add to accumulated time from previous sessions
+            var totalTimeMs = _configService.AppData.AccumulatedExaminationTime + currentSessionTime;
+            
+            // Convert to TimeSpan for formatting
+            var timeSpan = TimeSpan.FromMilliseconds(totalTimeMs);
             string timeFormat = $"{timeSpan.Hours:00}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}";
             _viewModel.TimeRemaining = timeFormat;
             
@@ -151,6 +161,11 @@ public partial class ExaminationWindow : AppWindowBase
             if (hasOngoingExam)
             {
                 examination = _configService.AppData.CurrentExamination;
+                
+                // Start a new session with the current timestamp
+                _configService.AppData.ExaminationTimer = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                _sessionStartTime = _configService.AppData.ExaminationTimer.Value;
+                _ = _configService.SaveChangesAsync();
             }
             else
             {
@@ -166,6 +181,11 @@ public partial class ExaminationWindow : AppWindowBase
             {
                 // Continue with ongoing exam
                 examination = _configService.AppData.CurrentExamination;
+                
+                // Start a new session with the current timestamp
+                _configService.AppData.ExaminationTimer = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                _sessionStartTime = _configService.AppData.ExaminationTimer.Value;
+                _ = _configService.SaveChangesAsync();
             }
             else
             {
@@ -177,7 +197,14 @@ public partial class ExaminationWindow : AppWindowBase
                     // Set as current examination
                     _configService.AppData.CurrentExamination = examination;
                     _configService.AppData.IsInExamination = true;
+                    
+                    // Initialize timers for a new examination
                     _configService.AppData.ExaminationTimer = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                    _sessionStartTime = _configService.AppData.ExaminationTimer.Value;
+                    
+                    // Reset accumulated time for a new examination
+                    _configService.AppData.AccumulatedExaminationTime = 0;
+                    
                     _ = _configService.SaveChangesAsync();
                 }
                 else
@@ -222,6 +249,23 @@ public partial class ExaminationWindow : AppWindowBase
         
         // Update time display
         UpdateTimeDisplay();
+    }
+    
+    // Save the accumulated time to the config
+    private void SaveAccumulatedTime()
+    {
+        if (_configService.AppData.ExaminationTimer.HasValue)
+        {
+            // Calculate time spent in current session
+            var currentTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            var sessionTime = currentTime - _configService.AppData.ExaminationTimer.Value;
+            
+            // Add to accumulated time
+            _configService.AppData.AccumulatedExaminationTime += sessionTime;
+            
+            // Reset the timer for the next interval
+            _configService.AppData.ExaminationTimer = currentTime;
+        }
     }
     
     private void BuildSectionsUI()
@@ -1153,6 +1197,9 @@ public partial class ExaminationWindow : AppWindowBase
             // Save current answers
             SaveCurrentAnswer();
             
+            // Save accumulated time before submitting
+            SaveAccumulatedTime();
+            
             // Call ViewModel's submit method
             await _viewModel.SubmitExamination();
             
@@ -1241,6 +1288,10 @@ public partial class ExaminationWindow : AppWindowBase
         
         // Save any pending changes
         SaveCurrentAnswer();
+        
+        // Save accumulated time before closing
+        SaveAccumulatedTime();
+        
         _ = _viewModel.SaveProgressSilently();
         
         // Stop timers

@@ -102,22 +102,6 @@ public partial class ExaminationWindowViewModel : ViewModelBase
         ExaminationLoaded?.Invoke(this, EventArgs.Empty);
     }
     
-    private void StartTimer()
-    {
-        // Set up a timer to update the time remaining
-        var timer = new System.Timers.Timer(1000);
-        timer.Elapsed += (sender, args) =>
-        {
-            if (_configService.AppData.ExaminationTimer.HasValue)
-            {
-                var elapsed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - _configService.AppData.ExaminationTimer.Value;
-                var timeSpan = TimeSpan.FromMilliseconds(elapsed);
-                TimeRemaining = $"{timeSpan.Hours:00}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}";
-            }
-        };
-        timer.Start();
-    }
-    
     public void UpdateProgress()
     {
         if (Examination == null) return;
@@ -253,7 +237,6 @@ public partial class ExaminationWindowViewModel : ViewModelBase
         }
     }
     
-
     public async Task SaveProgressSilently()
     {
         if (Examination == null) return;
@@ -273,12 +256,7 @@ public partial class ExaminationWindowViewModel : ViewModelBase
                 _configService.AppData.CurrentExamination = examinationCopy;
                 _configService.AppData.IsInExamination = true;
                 
-                // Set or update timer
-                if (!_configService.AppData.ExaminationTimer.HasValue)
-                {
-                    _configService.AppData.ExaminationTimer = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                }
-                
+                // The timer will be managed in the view to properly accumulate time
                 await _configService.SaveChangesAsync();
             }
         }
@@ -312,12 +290,6 @@ public partial class ExaminationWindowViewModel : ViewModelBase
                 _configService.AppData.CurrentExamination = examinationCopy;
                 _configService.AppData.IsInExamination = true;
                 
-                // Set or update timer
-                if (!_configService.AppData.ExaminationTimer.HasValue)
-                {
-                    _configService.AppData.ExaminationTimer = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                }
-                
                 await _configService.SaveChangesAsync();
                 
                 StatusMessage = _localizationService["exam.save.success"];
@@ -344,17 +316,15 @@ public partial class ExaminationWindowViewModel : ViewModelBase
         SaveCurrentAnswer();
         
         // 计算考试时间并累加到统计数据
-        if (_configService.AppData.ExaminationTimer.HasValue)
+        // 直接使用已经累加好的时间 AccumulatedExaminationTime
+        if (_configService.AppData.AccumulatedExaminationTime > 0)
         {
-            long startTime = _configService.AppData.ExaminationTimer.Value;
-            long endTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            long timeSpent = endTime - startTime;
+            // 将累计考试时间添加到统计数据
+            _configService.AppStatistics.AddExaminationTime(_configService, _configService.AppData.AccumulatedExaminationTime);
         
-            // 将考试时间添加到统计数据
-            _configService.AppStatistics.AddExaminationTime(_configService, timeSpent);
-        
-            // 重置计时器
+            // 重置计时器和累计时间
             _configService.AppData.ExaminationTimer = null;
+            _configService.AppData.AccumulatedExaminationTime = 0;
         }
         
         // 累加统计计数
@@ -392,7 +362,6 @@ public partial class ExaminationWindowViewModel : ViewModelBase
         };
         resultWindow.Show();
     }
-
     
     public void BackToMain()
     {
