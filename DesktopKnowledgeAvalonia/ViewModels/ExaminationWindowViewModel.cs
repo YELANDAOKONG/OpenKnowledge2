@@ -265,7 +265,7 @@ public partial class ExaminationWindowViewModel : ViewModelBase
             
             // Create a deep copy to avoid issues with Options
             var examinationJson = ExaminationSerializer.SerializeToJson(Examination);
-            var examinationCopy = ExaminationSerializer.DeserializeFromJson(examinationJson);
+            var examinationCopy = ExaminationSerializer.DeserializeFromJson(examinationJson!);
             
             if (examinationCopy != null)
             {
@@ -304,7 +304,7 @@ public partial class ExaminationWindowViewModel : ViewModelBase
             
             // Create a deep copy to avoid issues with Options
             var examinationJson = ExaminationSerializer.SerializeToJson(Examination);
-            var examinationCopy = ExaminationSerializer.DeserializeFromJson(examinationJson);
+            var examinationCopy = ExaminationSerializer.DeserializeFromJson(examinationJson!);
             
             if (examinationCopy != null)
             {
@@ -398,9 +398,9 @@ public partial class ExaminationWindowViewModel : ViewModelBase
     {
         // Save progress before exiting
         SaveCurrentAnswer();
-        SaveProgressSilently();
+        _ = SaveProgressSilently();
         
-        // TODO: Navigate back to main window
+        WindowCloseRequested?.Invoke(this, EventArgs.Empty);
     }
     
     public string GetLocalizedQuestionType(QuestionTypes type)

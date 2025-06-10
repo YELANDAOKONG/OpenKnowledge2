@@ -178,7 +178,7 @@ public partial class ExaminationWindow : AppWindowBase
                     _configService.AppData.CurrentExamination = examination;
                     _configService.AppData.IsInExamination = true;
                     _configService.AppData.ExaminationTimer = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                    _configService.SaveChangesAsync();
+                    _ = _configService.SaveChangesAsync();
                 }
                 else
                 {
@@ -1241,7 +1241,7 @@ public partial class ExaminationWindow : AppWindowBase
         
         // Save any pending changes
         SaveCurrentAnswer();
-        _viewModel.SaveProgressSilently();
+        _ = _viewModel.SaveProgressSilently();
         
         // Stop timers
         _uiUpdateTimer.Stop();
