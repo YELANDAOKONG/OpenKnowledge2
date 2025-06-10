@@ -73,6 +73,50 @@
                             <!-- General Settings Template -->
                             <DataTemplate DataType="vm:GeneralSettingsViewModel">
                                 <StackPanel Margin="20" Spacing="20">
+                                    <!-- Avatar Settings Section -->
+                                    <StackPanel Margin="5" Spacing="10">
+                                        <TextBlock Text="{loc:Translate Key=settings.general.avatar}" 
+                                                   FontWeight="SemiBold" 
+                                                   Margin="0,0,0,10"/>
+                                        
+                                        <Grid ColumnDefinitions="Auto,*">
+                                            <Border Grid.Column="0" 
+                                                    Width="80" 
+                                                    Height="80" 
+                                                    CornerRadius="40" 
+                                                    Background="#569AFF"
+                                                    Margin="0,0,15,0">
+                                                <!-- Avatar Image -->
+                                                <Panel>
+                                                    <Image Source="{Binding AvatarImage}" 
+                                                           IsVisible="{Binding AvatarImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                           Stretch="UniformToFill"/>
+                                                    
+                                                    <!-- Fallback Text Avatar -->
+                                                    <TextBlock Text="{Binding UserInitials}" 
+                                                               IsVisible="{Binding AvatarImage, Converter={x:Static ObjectConverters.IsNull}}"
+                                                               HorizontalAlignment="Center" 
+                                                               VerticalAlignment="Center"
+                                                               FontSize="40" 
+                                                               FontWeight="SemiBold" 
+                                                               Foreground="White"/>
+                                                </Panel>
+                                            </Border>
+                                            
+                                            <StackPanel Grid.Column="1" 
+                                                        Orientation="Vertical" 
+                                                        Spacing="10" 
+                                                        VerticalAlignment="Center">
+                                                <Button Content="{loc:Translate Key=settings.general.avatar.change}" 
+                                                        Command="{Binding ChangeAvatarCommand}"/>
+                                                <Button Content="{loc:Translate Key=settings.general.avatar.remove}" 
+                                                        Command="{Binding RemoveAvatarCommand}"
+                                                        IsEnabled="{Binding AvatarImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                    
+                                    <!-- Username Section -->
                                     <StackPanel Margin="5" Spacing="10">
                                         <TextBlock Text="{loc:Translate Key=settings.general.username}" 
                                                    FontWeight="SemiBold" 
@@ -81,7 +125,7 @@
                                         <TextBox Text="{Binding UserName}" MaxLength="50"/>
                                     </StackPanel>
                                     
-                                    
+                                    <!-- Statistics Section -->
                                     <StackPanel Margin="5" Spacing="10">
                                         <TextBlock Text="{loc:Translate Key=settings.general.statistics}" 
                                                    FontWeight="SemiBold" 
@@ -108,6 +152,7 @@
                                     </StackPanel>
                                 </StackPanel>
                             </DataTemplate>
+
                             
                             <!-- Appearance Settings Template -->
                             <DataTemplate DataType="vm:AppearanceSettingsViewModel">

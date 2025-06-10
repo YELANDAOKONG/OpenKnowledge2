@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -39,6 +41,12 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] 
     private bool _isWindowsVisible = true;
     
+    [ObservableProperty]
+    private Bitmap? _avatarImage;
+    
+    [ObservableProperty]
+    private bool _hasCustomAvatar;
+    
     public event EventHandler? WindowCloseRequested;
     
     public string VersionInfo
@@ -71,6 +79,9 @@ public partial class MainWindowViewModel : ViewModelBase
         // Initialize user name from config
         _userName = _configureService.AppConfig.UserName;
         UpdateUserInitials();
+        
+        // Load avatar if available
+        LoadAvatarAsync().ConfigureAwait(false);
         
         // Set up clock timer
         _clockTimer = new DispatcherTimer
@@ -112,6 +123,32 @@ public partial class MainWindowViewModel : ViewModelBase
         UpdateUserInitials();
         _configureService.AppConfig.UserName = UserName;
         _configureService.SaveChangesAsync();
+    }
+    
+    private async Task LoadAvatarAsync()
+    {
+        var avatarPath = _configureService.AppConfig.AvatarFilePath;
+        
+        if (!string.IsNullOrEmpty(avatarPath) && File.Exists(avatarPath))
+        {
+            try
+            {
+                await using var stream = File.OpenRead(avatarPath);
+                AvatarImage = new Bitmap(stream);
+                HasCustomAvatar = true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading avatar: {ex.Message}");
+                AvatarImage = null;
+                HasCustomAvatar = false;
+            }
+        }
+        else
+        {
+            AvatarImage = null;
+            HasCustomAvatar = false;
+        }
     }
     
     [RelayCommand]

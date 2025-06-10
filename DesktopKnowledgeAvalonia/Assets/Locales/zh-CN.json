@@ -281,7 +281,14 @@
   "month.october": "十月",
   "month.november": "十一月",
   "month.december": "十二月",
-  "time.hours": "小时"
+  "time.hours": "小时",
+
+  "settings.general.avatar": "头像",
+  "settings.general.avatar.change": "更改头像",
+  "settings.general.avatar.remove": "移除头像",
+  "settings.general.avatar.error.size": "头像文件不能超过64MB",
+  "settings.general.avatar.file.types": "图像文件 (*.jpg;*.jpeg;*.png;*.bmp)"
+
 
 
 }

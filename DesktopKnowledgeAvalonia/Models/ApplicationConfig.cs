@@ -11,6 +11,7 @@ public class ApplicationConfig
     public string? ThemeVariant { get; set; } = "Dark";
     public string? PreferredLanguage { get; set; } = null;
     public string UserName { get; set; } = "Default";
+    public string? AvatarFilePath { get; set; } = null;
     
     public bool EnableStatistics { get; set; } = true;
     public bool RandomizeWelcomeMessage { get; set; } = false;

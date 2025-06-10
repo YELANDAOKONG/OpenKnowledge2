@@ -27,13 +27,23 @@
             <!-- Avatar -->
             <Border Grid.Column="0" Width="80" Height="80" CornerRadius="40" 
                     Background="#569AFF" Margin="0,0,15,0">
-                <TextBlock Text="{Binding UserInitials}" 
-                           HorizontalAlignment="Center" 
-                           VerticalAlignment="Center"
-                           FontSize="50" 
-                           FontWeight="SemiBold" 
-                           Foreground="White"/>
+                <Panel>
+                    <!-- Custom Avatar Image -->
+                    <Image Source="{Binding AvatarImage}" 
+                           IsVisible="{Binding HasCustomAvatar}"
+                           Stretch="UniformToFill"/>
+               
+                    <!-- Text Avatar Fallback -->
+                    <TextBlock Text="{Binding UserInitials}" 
+                               IsVisible="{Binding !HasCustomAvatar}"
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Center"
+                               FontSize="50" 
+                               FontWeight="SemiBold" 
+                               Foreground="White"/>
+                </Panel>
             </Border>
+
             
             <!-- Username and Welcome -->
             <StackPanel Grid.Column="1" VerticalAlignment="Center">

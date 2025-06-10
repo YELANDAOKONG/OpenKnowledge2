@@ -281,7 +281,14 @@
   "month.october": "October",
   "month.november": "November",
   "month.december": "December",
-  "time.hours": "hours"
+  "time.hours": "hours",
+
+  "settings.general.avatar": "Avatar",
+  "settings.general.avatar.change": "Change Avatar",
+  "settings.general.avatar.remove": "Remove Avatar",
+  "settings.general.avatar.error.size": "Avatar file cannot exceed 64MB",
+  "settings.general.avatar.file.types": "Image Files (*.jpg;*.jpeg;*.png;*.bmp)"
+
 
 
 }

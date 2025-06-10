@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DesktopKnowledgeAvalonia.Models;
@@ -131,7 +136,12 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
     
     [ObservableProperty]
     private bool _randomizeWelcomeMessage;
-
+    
+    [ObservableProperty]
+    private Bitmap? _avatarImage;
+    
+    [ObservableProperty]
+    private string? _userInitials;
 
     public GeneralSettingsViewModel(ConfigureService configService, LocalizationService localizationService)
     {
@@ -140,6 +150,154 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
         _userName = _configService.AppConfig.UserName;
         _enableStatistics = _configService.AppConfig.EnableStatistics;
         _randomizeWelcomeMessage = _configService.AppConfig.RandomizeWelcomeMessage;
+        
+        UpdateUserInitials();
+        LoadAvatarAsync().ConfigureAwait(false);
+    }
+    
+    private void UpdateUserInitials()
+    {
+        if (string.IsNullOrWhiteSpace(UserName))
+        {
+            UserInitials = "?";
+            return;
+        }
+        
+        var parts = UserName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0)
+        {
+            UserInitials = "?";
+        }
+        else if (parts.Length == 1)
+        {
+            UserInitials = parts[0].Length > 0 ? parts[0][0].ToString().ToUpper() : "?";
+        }
+        else
+        {
+            UserInitials = (parts[0].Length > 0 ? parts[0][0].ToString() : "") + 
+                          (parts[^1].Length > 0 ? parts[^1][0].ToString() : "");
+            UserInitials = UserInitials.ToUpper();
+        }
+    }
+    
+    private async Task LoadAvatarAsync()
+    {
+        var avatarPath = _configService.AppConfig.AvatarFilePath;
+        
+        if (!string.IsNullOrEmpty(avatarPath) && File.Exists(avatarPath))
+        {
+            try
+            {
+                await using var stream = File.OpenRead(avatarPath);
+                AvatarImage = new Bitmap(stream);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading avatar: {ex.Message}");
+                AvatarImage = null;
+            }
+        }
+        else
+        {
+            AvatarImage = null;
+        }
+    }
+    
+    [RelayCommand]
+    private async Task ChangeAvatarAsync()
+    {
+        if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
+            return;
+            
+        // Create storage provider
+        var topLevel = desktop.MainWindow;
+        var storageProvider = topLevel?.StorageProvider;
+        if (storageProvider == null)
+            return;
+            
+        // Set up file picker options
+        var options = new FilePickerOpenOptions
+        {
+            Title = _localizationService["settings.general.avatar.change"],
+            AllowMultiple = false,
+            FileTypeFilter = new[]
+            {
+                new FilePickerFileType(_localizationService["settings.general.avatar.file.types"])
+                {
+                    Patterns = new[] { "*.jpg", "*.jpeg", "*.png", "*.bmp" },
+                    MimeTypes = new[] { "image/jpeg", "image/png", "image/bmp" }
+                }
+            }
+        };
+        
+        // Show file picker
+        var files = await storageProvider.OpenFilePickerAsync(options);
+        if (files.Count == 0)
+            return;
+            
+        var file = files[0];
+        
+        try
+        {
+            // Check file size
+            var fileInfo = await file.GetBasicPropertiesAsync();
+            if (fileInfo.Size > 64 * 1024 * 1024) // 64MB limit
+            {
+                // Show error message
+                // In a real app, you'd show a dialog here
+                Console.WriteLine(_localizationService["settings.general.avatar.error.size"]);
+                return;
+            }
+            
+            // Create avatar directory
+            var avatarDir = Path.Combine(ConfigureService.GetConfigDirectory(), "Avatars");
+            if (!Directory.Exists(avatarDir))
+                Directory.CreateDirectory(avatarDir);
+                
+            // Generate target file path
+            var extension = Path.GetExtension((string) file.Name);
+            var avatarFileName = $"avatar_{Guid.NewGuid()}{extension}";
+            var avatarPath = Path.Combine(avatarDir, avatarFileName);
+            
+            // Copy the file
+            await using (var sourceStream = await file.OpenReadAsync())
+            await using (var destinationStream = File.Create(avatarPath))
+            {
+                await sourceStream.CopyToAsync(destinationStream);
+            }
+            
+            // Save the new path and load the image
+            _configService.AppConfig.AvatarFilePath = avatarPath;
+            await LoadAvatarAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error handling avatar: {ex.Message}");
+        }
+    }
+    
+    [RelayCommand]
+    private async Task RemoveAvatarAsync()
+    {
+        // Remove avatar path from config
+        var oldPath = _configService.AppConfig.AvatarFilePath;
+        _configService.AppConfig.AvatarFilePath = null;
+        
+        // Clear avatar image
+        AvatarImage = null;
+        
+        // Delete the old avatar file if it exists
+        if (!string.IsNullOrEmpty(oldPath) && File.Exists(oldPath))
+        {
+            try
+            {
+                File.Delete(oldPath);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting avatar file: {ex.Message}");
+            }
+        }
     }
 
     public override async Task SaveAsync()
@@ -150,6 +308,7 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
         await Task.CompletedTask;
     }
 }
+
 
 
 // Appearance Settings View - contains theme and transparency settings
