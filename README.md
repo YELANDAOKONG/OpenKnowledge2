@@ -1,20 +1,29 @@
 # OpenKnowledge2
-[C#/Study] OpenKnowledge System, Open-Sources for everyone! 
+
+> [C#/Study] OpenKnowledge System, Open-Sources for everyone! 
 
 ---
 
-# 关于此项目
+## 关于此项目
 
 OpenKnowledge 是一个完全开源的知识学习框架协议规范。
 
 此仓库存放的是 OpenKnowledge 的 C# 实现。
+
+![图片](README.png)
+
+> **部分功能仍在开发中...**
+
+---
+
+## 格式
 
 由于暂时没有详细的规范文档来规范 Exam 数据格式，
 目前请参考 C# 代码的数据结构来了解相关数据结构。
 
 **当前代码实现并不是最完美的解决方案，请等待后续优化。**
 
-[协议规范文档](PROTOCOL.MD)
+[协议规范文档（数据结构）](PROTOCOL.MD)
 
 > **示例试卷格式 (JSON)**
 
