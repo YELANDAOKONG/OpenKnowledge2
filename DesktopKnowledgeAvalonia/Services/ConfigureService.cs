@@ -9,6 +9,8 @@ namespace DesktopKnowledgeAvalonia.Services;
 
 public class ConfigureService
 {
+    public static readonly string ApplicationName = "OpenKnowledge";
+    
     private readonly JsonSerializerOptions _jsonOptions = new() 
     { 
         WriteIndented = true,
@@ -47,14 +49,14 @@ public class ConfigureService
     public static string GetRootDirectory()
     {
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        var folder = Path.Combine(appDataPath, "OpenKnowledge");
+        var folder = Path.Combine(appDataPath, ApplicationName);
         if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
         return folder;
     }
     
     public static string GetRootTemporaryDirectory()
     {
-        var tempFolder = Path.Combine(Path.GetTempPath(), "OpenKnowledge");
+        var tempFolder = Path.Combine(Path.GetTempPath(), ApplicationName);
         if (!Directory.Exists(tempFolder)) Directory.CreateDirectory(tempFolder);
         return tempFolder;
     }
