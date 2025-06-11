@@ -122,7 +122,7 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         UpdateUserInitials();
         _configureService.AppConfig.UserName = UserName;
-        _configureService.SaveChangesAsync();
+        _ = _configureService.SaveChangesAsync();
     }
     
     private async Task LoadAvatarAsync()
