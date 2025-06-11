@@ -44,11 +44,25 @@ public class ConfigureService
         }
     }
     
+    public static string GetRootDirectory()
+    {
+        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        var folder = Path.Combine(appDataPath, "OpenKnowledge");
+        if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+        return folder;
+    }
+    
+    public static string GetRootTemporaryDirectory()
+    {
+        var tempFolder = Path.Combine(Path.GetTempPath(), "OpenKnowledge");
+        if (!Directory.Exists(tempFolder)) Directory.CreateDirectory(tempFolder);
+        return tempFolder;
+    }
     
     public static string GetConfigDirectory()
     {
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        var folder = Path.Combine(appDataPath, "OpenKnowledge", "Desktop");
+        var root = GetRootDirectory();
+        var folder = Path.Combine(root, "Desktop");
         if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
         return folder;
     }
@@ -77,15 +91,16 @@ public class ConfigureService
 
     public static string GetCacheDirectory()
     {
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        var folder = Path.Combine(appDataPath, "OpenKnowledge", "Cache");
+        var root = GetRootDirectory();
+        var folder = Path.Combine(root, "Cache");
         if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
         return folder;
     }
     
     public static string GetTempDirectory()
     {
-        var tempFolder = Path.Combine(Path.GetTempPath(), "OpenKnowledge");
+        var root = GetRootTemporaryDirectory();
+        var tempFolder = Path.Combine(root, "Temporary");
         if (!Directory.Exists(tempFolder)) Directory.CreateDirectory(tempFolder);
         return tempFolder;
     }
@@ -112,8 +127,8 @@ public class ConfigureService
     
     public static string GetDefaultStatisticsPath()
     {
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        var statisticsFolder = Path.Combine(appDataPath, "OpenKnowledge", "Desktop");
+        var root = GetRootDirectory();
+        var statisticsFolder = Path.Combine(root, "Desktop");
         
         if (!Directory.Exists(statisticsFolder))
             Directory.CreateDirectory(statisticsFolder);
