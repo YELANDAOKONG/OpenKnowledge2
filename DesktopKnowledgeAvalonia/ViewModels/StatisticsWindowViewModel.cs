@@ -176,10 +176,10 @@ public partial class OverviewStatisticsViewModel : StatisticsViewModelBase
         TotalAppRunTime = FormatTimeSpan(TimeSpan.FromMilliseconds(stats.GetApplicationRunTime()));
         
         // Initialization date
-        var initDate = DateTimeOffset.FromUnixTimeMilliseconds(stats.InitializationTime).DateTime;
+        var initDate = DateTimeOffset.FromUnixTimeMilliseconds(stats.InitializationTime).ToLocalTime().DateTime;
         InitializationDate = initDate.ToString("yyyy-MM-dd");
         
-        var daysSince = (DateTime.UtcNow - initDate).Days;
+        var daysSince = (DateTime.Now - initDate).Days;
         DaysSinceInit = daysSince.ToString();
     }
     
@@ -222,21 +222,28 @@ public partial class DailyStatisticsViewModel : StatisticsViewModelBase
     protected override void LoadStatistics()
     {
         var stats = ConfigService.AppStatistics;
-        DateTime dateToUse = SelectedDate?.DateTime ?? DateTime.Today;
-    
-        int year = dateToUse.Year;
-        int month = dateToUse.Month;
-        int day = dateToUse.Day;
+        
+        // 获取用户选择的本地时间
+        DateTime localDate = SelectedDate?.DateTime ?? DateTime.Today;
+        
+        // 将本地时间转换为UTC时间用于查询
+        DateTime utcDate = localDate.ToUniversalTime();
+        
+        int year = utcDate.Year;
+        int month = utcDate.Month;
+        int day = utcDate.Day;
         
         // 创建新的集合实例
         var newStats = new ObservableCollection<DailyStatItem>();
         
+        // 查询UTC时间对应的统计数据
         newStats.Add(new DailyStatItem 
         { 
             StatName = LocalizationService["statistics.app.starts"], 
             Count = stats.GetApplicationStartCountDay(year, month, day) 
         });
         
+        // 其他统计项保持相同模式...
         newStats.Add(new DailyStatItem 
         { 
             StatName = LocalizationService["statistics.ai.calls"], 
@@ -302,7 +309,7 @@ public partial class WeeklyStatisticsViewModel : StatisticsViewModelBase
 
     private void InitializeYearsAndWeeks()
     {
-        int currentYear = DateTime.UtcNow.Year;
+        int currentYear = DateTime.Now.Year;
         // 扩展年份范围：从2015年到当前年份后5年
         // AvailableYears = Enumerable.Range(2015, currentYear - 2015 + 6).ToList();
         AvailableYears = Enumerable.Range(currentYear - 5, 11).ToList();
@@ -314,7 +321,7 @@ public partial class WeeklyStatisticsViewModel : StatisticsViewModelBase
         
         // Get current week
         Calendar calendar = CultureInfo.InvariantCulture.Calendar;
-        SelectedWeek = calendar.GetWeekOfYear(DateTime.UtcNow, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+        SelectedWeek = calendar.GetWeekOfYear(DateTime.Now, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
     }
 
     [RelayCommand]
@@ -327,53 +334,83 @@ public partial class WeeklyStatisticsViewModel : StatisticsViewModelBase
     {
         var stats = ConfigService.AppStatistics;
         
+        // 从本地时间年份和周转换为UTC时间范围
+        // 获取选定年份和周的日期范围
+        DateTime firstDayOfWeek = GetFirstDayOfWeek(SelectedYear, SelectedWeek);
+        
+        // 将本地时间转换为UTC
+        DateTime utcFirstDayOfWeek = firstDayOfWeek.ToUniversalTime();
+        int utcYear = utcFirstDayOfWeek.Year;
+        int utcWeek = CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(
+            utcFirstDayOfWeek, 
+            CalendarWeekRule.FirstFourDayWeek, 
+            DayOfWeek.Monday);
+        
         // 创建新的集合实例
         var newStats = new ObservableCollection<WeeklyStatItem>();
         
+        // 使用UTC年份和周查询统计数据
         newStats.Add(new WeeklyStatItem 
         { 
             StatName = LocalizationService["statistics.app.starts"], 
-            Count = stats.GetApplicationStartCountWeek(SelectedYear, SelectedWeek) 
+            Count = stats.GetApplicationStartCountWeek(utcYear, utcWeek) 
         });
         
+        // 其他统计项保持相同模式...
         newStats.Add(new WeeklyStatItem 
         { 
             StatName = LocalizationService["statistics.ai.calls"], 
-            Count = stats.GetAiCallCountWeek(SelectedYear, SelectedWeek)
+            Count = stats.GetAiCallCountWeek(utcYear, utcWeek)
         });
         
         newStats.Add(new WeeklyStatItem 
         { 
             StatName = LocalizationService["statistics.question.interactions"], 
-            Count = stats.GetQuestionInteractionCountWeek(SelectedYear, SelectedWeek)
+            Count = stats.GetQuestionInteractionCountWeek(utcYear, utcWeek)
         });
         
         newStats.Add(new WeeklyStatItem 
         { 
             StatName = LocalizationService["statistics.exams.loaded"], 
-            Count = stats.GetLoadExaminationCountWeek(SelectedYear, SelectedWeek)
+            Count = stats.GetLoadExaminationCountWeek(utcYear, utcWeek)
         });
         
         newStats.Add(new WeeklyStatItem 
         { 
             StatName = LocalizationService["statistics.exams.submitted"], 
-            Count = stats.GetSubmitExaminationCountWeek(SelectedYear, SelectedWeek)
+            Count = stats.GetSubmitExaminationCountWeek(utcYear, utcWeek)
         });
         
         newStats.Add(new WeeklyStatItem 
         { 
             StatName = LocalizationService["statistics.study.started"], 
-            Count = stats.GetStartStudyCountWeek(SelectedYear, SelectedWeek)
+            Count = stats.GetStartStudyCountWeek(utcYear, utcWeek)
         });
         
         newStats.Add(new WeeklyStatItem 
         { 
             StatName = LocalizationService["statistics.study.completed"], 
-            Count = stats.GetCompleteStudyCountWeek(SelectedYear, SelectedWeek)
+            Count = stats.GetCompleteStudyCountWeek(utcYear, utcWeek)
         });
         
         // 替换整个集合
         WeeklyStats = newStats;
+    }
+    
+    // 辅助方法：获取指定年份和周的第一天
+    private DateTime GetFirstDayOfWeek(int year, int weekOfYear)
+    {
+        DateTime jan1 = new DateTime(year, 1, 1);
+        int daysOffset = DayOfWeek.Monday - jan1.DayOfWeek;
+        
+        if (daysOffset > 0) daysOffset -= 7;
+        
+        DateTime firstMonday = jan1.AddDays(daysOffset);
+        
+        // 周数从1开始，所以需要减1再乘以7天
+        int firstDayOfWeek = (weekOfYear - 1) * 7;
+        
+        return firstMonday.AddDays(firstDayOfWeek);
     }
 }
 
@@ -401,7 +438,7 @@ public partial class MonthlyStatisticsViewModel : StatisticsViewModelBase
 
     private void InitializeYearsAndMonths()
     {
-        int currentYear = DateTime.UtcNow.Year;
+        int currentYear = DateTime.Now.Year;
         // 扩展年份范围：从2015年到当前年份后5年
         // AvailableYears = Enumerable.Range(2015, currentYear - 2015 + 6).ToList();
         AvailableYears = Enumerable.Range(currentYear - 5, 11).ToList();
@@ -424,7 +461,7 @@ public partial class MonthlyStatisticsViewModel : StatisticsViewModelBase
             new() { Number = 12, Name = LocalizationService["month.december"] }
         };
         
-        SelectedMonth = DateTime.UtcNow.Month;
+        SelectedMonth = DateTime.Now.Month;
     }
 
     [RelayCommand]
@@ -436,52 +473,56 @@ public partial class MonthlyStatisticsViewModel : StatisticsViewModelBase
     protected override void LoadStatistics()
     {
         var stats = ConfigService.AppStatistics;
-        
+        int year = SelectedYear;
+        int month = SelectedMonth;
+    
         // 创建新的集合实例
         var newStats = new ObservableCollection<MonthlyStatItem>();
-        
+    
+        // 使用UTC年份和月份查询统计数据
         newStats.Add(new MonthlyStatItem 
         { 
-            StatName = LocalizationService["statistics.app.starts"], 
-            Count = stats.GetApplicationStartCountMonth(SelectedYear, SelectedMonth) 
+            StatName = LocalizationService["statistics.app.starts"],    
+            Count = stats.GetApplicationStartCountMonth(year, month) 
         });
-        
+    
         newStats.Add(new MonthlyStatItem 
         { 
             StatName = LocalizationService["statistics.ai.calls"], 
-            Count = stats.GetAiCallCountMonth(SelectedYear, SelectedMonth)
+            Count = stats.GetAiCallCountMonth(year, month)
         });
-        
+    
+        // 其他统计项同样需要修改...
         newStats.Add(new MonthlyStatItem 
         { 
             StatName = LocalizationService["statistics.question.interactions"], 
-            Count = stats.GetQuestionInteractionCountMonth(SelectedYear, SelectedMonth)
+            Count = stats.GetQuestionInteractionCountMonth(year, month)
         });
-        
+    
         newStats.Add(new MonthlyStatItem 
         { 
             StatName = LocalizationService["statistics.exams.loaded"], 
-            Count = stats.GetLoadExaminationCountMonth(SelectedYear, SelectedMonth)
+            Count = stats.GetLoadExaminationCountMonth(year, month)
         });
-        
+    
         newStats.Add(new MonthlyStatItem 
         { 
             StatName = LocalizationService["statistics.exams.submitted"], 
-            Count = stats.GetSubmitExaminationCountMonth(SelectedYear, SelectedMonth)
+            Count = stats.GetSubmitExaminationCountMonth(year, month)
         });
-        
+    
         newStats.Add(new MonthlyStatItem 
         { 
             StatName = LocalizationService["statistics.study.started"], 
-            Count = stats.GetStartStudyCountMonth(SelectedYear, SelectedMonth)
+            Count = stats.GetStartStudyCountMonth(year, month)
         });
-        
+    
         newStats.Add(new MonthlyStatItem 
         { 
             StatName = LocalizationService["statistics.study.completed"], 
-            Count = stats.GetCompleteStudyCountMonth(SelectedYear, SelectedMonth)
+            Count = stats.GetCompleteStudyCountMonth(year, month)
         });
-        
+    
         // 替换整个集合
         MonthlyStats = newStats;
     }
@@ -515,7 +556,7 @@ public partial class YearlyStatisticsViewModel : StatisticsViewModelBase
 
     private void InitializeYears()
     {
-        int currentYear = DateTime.UtcNow.Year;
+        int currentYear = DateTime.Now.Year;
         // 扩展年份范围：从2015年到当前年份后5年
         // AvailableYears = Enumerable.Range(2015, currentYear - 2015 + 6).ToList();
         AvailableYears = Enumerable.Range(currentYear - 5, 11).ToList();
@@ -532,6 +573,7 @@ public partial class YearlyStatisticsViewModel : StatisticsViewModelBase
     protected override void LoadStatistics()
     {
         var stats = ConfigService.AppStatistics;
+        int year = SelectedYear;
         
         // 创建新的集合实例
         var newStats = new ObservableCollection<YearlyStatItem>();
@@ -539,43 +581,43 @@ public partial class YearlyStatisticsViewModel : StatisticsViewModelBase
         newStats.Add(new YearlyStatItem 
         { 
             StatName = LocalizationService["statistics.app.starts"], 
-            Count = stats.GetApplicationStartCountYear(SelectedYear) 
+            Count = stats.GetApplicationStartCountYear(year) 
         });
         
         newStats.Add(new YearlyStatItem 
         { 
             StatName = LocalizationService["statistics.ai.calls"], 
-            Count = stats.GetAiCallCountYear(SelectedYear)
+            Count = stats.GetAiCallCountYear(year)
         });
         
         newStats.Add(new YearlyStatItem 
         { 
             StatName = LocalizationService["statistics.question.interactions"], 
-            Count = stats.GetQuestionInteractionCountYear(SelectedYear)
+            Count = stats.GetQuestionInteractionCountYear(year)
         });
         
         newStats.Add(new YearlyStatItem 
         { 
             StatName = LocalizationService["statistics.exams.loaded"], 
-            Count = stats.GetLoadExaminationCountYear(SelectedYear)
+            Count = stats.GetLoadExaminationCountYear(year)
         });
         
         newStats.Add(new YearlyStatItem 
         { 
             StatName = LocalizationService["statistics.exams.submitted"], 
-            Count = stats.GetSubmitExaminationCountYear(SelectedYear)
+            Count = stats.GetSubmitExaminationCountYear(year)
         });
         
         newStats.Add(new YearlyStatItem 
         { 
             StatName = LocalizationService["statistics.study.started"], 
-            Count = stats.GetStartStudyCountYear(SelectedYear)
+            Count = stats.GetStartStudyCountYear(year)
         });
         
         newStats.Add(new YearlyStatItem 
         { 
             StatName = LocalizationService["statistics.study.completed"], 
-            Count = stats.GetCompleteStudyCountYear(SelectedYear)
+            Count = stats.GetCompleteStudyCountYear(year)
         });
         
         // 替换整个集合
