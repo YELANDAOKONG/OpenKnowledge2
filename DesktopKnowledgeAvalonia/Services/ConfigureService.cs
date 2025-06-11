@@ -123,10 +123,17 @@ public class ConfigureService
     
     public static void ClearCache(bool throwExceptions = false)
     {
-        var cacheFolder = GetCacheDirectory();
-        if (Directory.Exists(cacheFolder))
+        try
         {
-            Directory.Delete(cacheFolder, true);
+            var cacheFolder = GetCacheDirectory();
+            if (Directory.Exists(cacheFolder))
+            {
+                Directory.Delete(cacheFolder, true);
+            }
+        }
+        catch (Exception) when(!throwExceptions)
+        {
+            return;
         }
     }
     

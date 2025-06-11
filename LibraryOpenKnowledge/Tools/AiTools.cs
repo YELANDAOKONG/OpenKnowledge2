@@ -111,7 +111,6 @@ public class AiTools
         }
         catch (Exception ex) when (!throwExceptions)
         {
-            throw;
             return null;
         }
     }
