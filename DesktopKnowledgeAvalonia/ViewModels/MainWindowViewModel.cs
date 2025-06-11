@@ -158,7 +158,6 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private void OpenExamination()
     {
-        // Simply open the examination dialog window
         var dialog = new ExaminationDialogWindow();
         IsWindowsVisible = false;
         dialog.Closed += (s, e) =>
@@ -175,13 +174,22 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private void OpenStudy()
     {
-        StudyWindowViewModel model = new();
-        StudyWindow window = new StudyWindow(model);
+        // StudyWindowViewModel model = new();
+        // StudyWindow window = new StudyWindow(model);
+        // IsWindowsVisible = false;
+        // window.Show();
+        // window.Closed += (s, e) => IsWindowsVisible = true;
+        var dialog = new StudyDialogWindow();
         IsWindowsVisible = false;
-        window.Show();
-        window.Closed += (s, e) => IsWindowsVisible = true;
-        // TODO...
-        // To be implemented
+        dialog.Closed += (s, e) =>
+        {
+            // IsWindowsVisible = true;
+            // WindowCloseRequested?.Invoke(this, EventArgs.Empty);
+            MainWindow newWindows = new MainWindow();
+            WindowCloseRequested?.Invoke(this, EventArgs.Empty);
+            newWindows.Show();
+        };
+        dialog.Show();
     }
     
     [RelayCommand]
