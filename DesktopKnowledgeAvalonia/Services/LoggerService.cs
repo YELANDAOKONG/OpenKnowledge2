@@ -12,14 +12,16 @@ public class LoggerService
     public Microsoft.Extensions.Logging.ILogger Logging { get; }
     
     public string? LogFilePath { get; }
+    public string ModuleName { get; }
     
     private readonly bool _writeToFile;
     private readonly ILoggerFactory? _loggerFactory;
     
-    public LoggerService(string? logFilePath = null, CustomLogger? logger = null, ILoggerFactory? loggerFactory = null, bool writeToFile = true)
+    public LoggerService(string? logFilePath = null, CustomLogger? logger = null, string? moduleName = null, ILoggerFactory? loggerFactory = null, bool writeToFile = true)
     {
         _writeToFile = writeToFile;
         LogFilePath = logFilePath;
+        ModuleName = moduleName ?? "Application";
         
         if (!string.IsNullOrEmpty(logFilePath))
         {
@@ -30,21 +32,24 @@ public class LoggerService
             }
         }
         
-        Logger = logger ?? new ConsoleSimpleLogger("APP", true);
+        Logger = logger ?? new ConsoleSimpleLogger(ModuleName, true); // "APP"
         
         _loggerFactory = loggerFactory ?? CreateDefaultLoggerFactory(logFilePath);
-        Logging = _loggerFactory.CreateLogger<LoggerService>();
+        // Logging = _loggerFactory.CreateLogger<LoggerService>();
+        Logging = _loggerFactory.CreateLogger(ModuleName);
     }
     
-    public LoggerService CreateSubModule(string moduleName)
+    public LoggerService CreateSubModule(string moduleName, bool directName = false)
     {
-        var subCustomLogger = Logger is ConsoleSimpleLogger consoleLogger 
-            ? new ConsoleSimpleLogger($"{consoleLogger.Title}.{moduleName}", consoleLogger.Colorful)
-            : new ConsoleSimpleLogger($"APP.{moduleName}", true);
+        var newCustomLoggerName = directName ? moduleName : $"{ModuleName}.{moduleName}";
+        var subCustomLogger = new ConsoleSimpleLogger(newCustomLoggerName, true);
+        
+        var newName = directName ? moduleName : $"{ModuleName}.{moduleName}";
         
         return new LoggerService(
             logFilePath: LogFilePath,
             logger: subCustomLogger,
+            moduleName: newName,
             loggerFactory: _loggerFactory,
             writeToFile: _writeToFile
         );
@@ -71,7 +76,7 @@ public class LoggerService
                     .MinimumLevel.Information()
                     .WriteTo.File(logFilePath, 
                         rollingInterval: RollingInterval.Day,
-                        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level}] {Message}{NewLine}{Exception}")
+                        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level}] [{SourceContext}] {Message}{NewLine}{Exception}")
                     .CreateLogger();
                     
                 builder.AddSerilog(serilogLogger, dispose: true);

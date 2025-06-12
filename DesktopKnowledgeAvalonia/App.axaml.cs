@@ -104,7 +104,7 @@ public partial class App : Application
         services.AddSingleton<LoggerService>(serviceProvider => {
             string logFilePath = Path.Combine(ConfigureService.NewLogFilePath());
             var customLogger = new ConsoleSimpleLogger("APP", true);
-            return new LoggerService(logFilePath, customLogger, null, true);
+            return new LoggerService(logFilePath, customLogger, null, null, true);
         });
         
         // Register services
