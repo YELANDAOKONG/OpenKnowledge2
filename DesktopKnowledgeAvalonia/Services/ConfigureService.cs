@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using LibraryOpenKnowledge.Models;
 using DesktopKnowledgeAvalonia.Models;
+using Serilog;
 
 namespace DesktopKnowledgeAvalonia.Services;
 
@@ -26,12 +27,20 @@ public class ConfigureService
     public ApplicationConfig AppConfig { get; private set; } = new();
     public ApplicationData AppData { get; private set; } = new();
     public ApplicationStatistics AppStatistics { get; set; } = new();
+
+    protected readonly LoggerService Logger;
     
     public ConfigureService(string? configFilePath = null, string? dataFilePath = null, string? statisticsFilePath = null)
     {
         _configFilePath = configFilePath ?? GetDefaultConfigPath();
         _dataFilePath = dataFilePath ?? GetDefaultAppDataPath();
         _statisticsFilePath = statisticsFilePath ?? GetDefaultStatisticsPath();
+
+        Logger = App.GetService<LoggerService>();
+        Logger.Info("Initializing configure service...");
+        Logger.Info($"Configuration file path: {_configFilePath}");
+        Logger.Info($"Data file path: {_dataFilePath}");
+        Logger.Info($"Statistics file path: {_statisticsFilePath}");
         
         try
         {
@@ -39,7 +48,8 @@ public class ConfigureService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Critical error loading configuration: {ex}");
+            Logger.Error($"Critical error loading configuration: {ex.Message}");
+            Logger.Trace($"Critical error loading configuration: {ex.StackTrace}");
             SystemConfig = new SystemConfig();
             AppConfig = new ApplicationConfig();
             AppData = new ApplicationData();
@@ -371,7 +381,8 @@ public class ConfigureService
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error loading config file: {ex.Message}");
+                Logger.Error($"Error loading config file: {ex.Message}");
+                Logger.Trace($"Error loading config file: {ex.StackTrace}");
             }
         }
         
@@ -387,7 +398,8 @@ public class ConfigureService
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error loading app data file: {ex.Message}");
+                Logger.Error($"Error loading data file: {ex.Message}");
+                Logger.Trace($"Error loading data file: {ex.StackTrace}");
             }
         }
         
@@ -403,7 +415,8 @@ public class ConfigureService
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error loading statistics file: {ex.Message}");
+                Logger.Error($"Error loading statistics file: {ex.Message}");
+                Logger.Trace($"Error loading statistics file: {ex.StackTrace}");
             }
         }
     }
@@ -444,7 +457,8 @@ public class ConfigureService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading configuration: {ex.Message}");
+            Logger.Error($"Error loading configuration: {ex.Message}");
+            Logger.Trace($"Error loading configuration: {ex.StackTrace}");
         }
     }
     
@@ -473,7 +487,8 @@ public class ConfigureService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error saving configuration: {ex.Message}");
+            Logger.Error($"Error saving configuration: {ex.Message}");
+            Logger.Trace($"Error saving configuration: {ex.StackTrace}");
         }
         
         // Save data file separately with the same pattern
@@ -487,7 +502,8 @@ public class ConfigureService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error saving app data: {ex.Message}");
+            Logger.Error($"Error saving app data: {ex.Message}");
+            Logger.Trace($"Error saving app data: {ex.StackTrace}");
         }
         
         // Save statistics file separately with the same pattern
@@ -501,7 +517,8 @@ public class ConfigureService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error saving statistics: {ex.Message}");
+            Logger.Error($"Error saving statistics: {ex.Message}");
+            Logger.Trace($"Error saving statistics: {ex.StackTrace}");
         }
     }
     
