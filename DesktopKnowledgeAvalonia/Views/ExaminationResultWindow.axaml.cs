@@ -28,6 +28,8 @@ public partial class ExaminationResultWindow : AppWindowBase
     private readonly CorrectColorConverter _correctColorConverter = new CorrectColorConverter();
     private StackPanel _questionsPanel;
     
+    private readonly LoggerService _logger;
+    
     public ExaminationResultWindow()
     {
         InitializeComponent();
@@ -35,6 +37,7 @@ public partial class ExaminationResultWindow : AppWindowBase
         _configService = App.GetService<ConfigureService>();
         _localizationService = App.GetService<LocalizationService>();
         _themeService = App.GetService<ThemeService>();
+        _logger = App.GetWindowsLogger("ExaminationResultWindow");
         
         if (_configService.AppData != null)
         {
@@ -762,7 +765,8 @@ public partial class ExaminationResultWindow : AppWindowBase
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error saving examination: {ex.Message}");
+            _logger.Error($"Error saving examination: {ex.Message}");
+            _logger.Trace($"Error saving examination: {ex.StackTrace}");
         }
     }
     

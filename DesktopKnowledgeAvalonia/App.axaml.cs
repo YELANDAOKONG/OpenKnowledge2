@@ -170,6 +170,22 @@ public partial class App : Application
     {
         return _serviceProvider?.GetService<T>() ?? throw new InvalidOperationException($"Service {typeof(T).Name} not found");
     }
+    
+    public static LoggerService GetLogger()
+    {
+        return GetService<LoggerService>();
+    }
+    
+    public static LoggerService GetLogger(string moduleName)
+    {
+        return GetService<LoggerService>().CreateSubModule(moduleName);
+    }
+    
+    public static LoggerService GetWindowsLogger(string windowName)
+    {
+        return GetService<LoggerService>().CreateSubModule("Windows").CreateSubModule(windowName);
+    }
+
 
     #region Statistics
     

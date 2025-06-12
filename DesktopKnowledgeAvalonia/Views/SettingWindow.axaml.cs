@@ -15,11 +15,15 @@ public partial class SettingWindow : AppWindowBase
     private SettingWindowViewModel? ViewModel => DataContext as SettingWindowViewModel;
     private GeneralSettingsViewModel? GeneralSettings => ViewModel?.SelectedCategory?.Content as GeneralSettingsViewModel;
     private LocalizationService? _localizationService;
+    
+    private readonly LoggerService _logger;
 
     public SettingWindow()
     {
         InitializeComponent();
         _localizationService = App.GetService<LocalizationService>();
+        _logger = App.GetWindowsLogger("SettingWindow");
+        
         var model = new SettingWindowViewModel();
         DataContext = model;
         model.WindowCloseRequested += (s, e) => Close();
@@ -29,6 +33,8 @@ public partial class SettingWindow : AppWindowBase
     {
         InitializeComponent();
         _localizationService = App.GetService<LocalizationService>();
+        _logger = App.GetWindowsLogger("SettingWindow");
+        
         model.WindowCloseRequested += (s, e) => Close();
         DataContext = model;
     }
@@ -72,8 +78,11 @@ public partial class SettingWindow : AppWindowBase
         {
             // Check file size
             var fileInfo = await file.GetBasicPropertiesAsync();
+            _logger.Info($"File path: {file.Path}");
+            _logger.Info($"File size: {fileInfo.Size} Bytes");
             if (fileInfo.Size > 64 * 1024 * 1024) // 64MB limit
             {
+                _logger.Info($"File size exceeds limit ( {fileInfo.Size} Bytes / 64MB)");
                 // Show error message in UI
                 GeneralSettings.ShowAvatarSizeError();
                 return;
@@ -89,6 +98,7 @@ public partial class SettingWindow : AppWindowBase
             var extension = Path.GetExtension(file.Name);
             var avatarFileName = $"avatar_{Guid.NewGuid()}{extension}";
             var avatarPath = Path.Combine(avatarDir, avatarFileName);
+            _logger.Info($"Use file name: {avatarFileName}");
             
             // Copy the file
             await using (var sourceStream = await file.OpenReadAsync())
@@ -96,13 +106,15 @@ public partial class SettingWindow : AppWindowBase
             {
                 await sourceStream.CopyToAsync(destinationStream);
             }
+            _logger.Info($"Avatar copied to: {avatarPath}");
             
             // Update the avatar in the view model
             await GeneralSettings.UpdateAvatarAsync(avatarPath);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error handling avatar: {ex.Message}");
+            _logger.Error($"Error handling avatar: {ex.Message}");
+            _logger.Trace($"Error handling avatar: {ex.StackTrace}");
         }
     }
     
@@ -125,11 +137,17 @@ public partial class SettingWindow : AppWindowBase
             try
             {
                 File.Delete(oldPath);
+                _logger.Info($"Avatar file deleted: {oldPath}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error deleting avatar file: {ex.Message}");
+                _logger.Error($"Error deleting avatar file: {ex.Message}");
+                _logger.Trace($"Error deleting avatar file: {ex.StackTrace}");
             }
+        }
+        else
+        {
+            _logger.Warn($"Avatar file does not exist: {oldPath}");
         }
         
         await ConfigureService.ClearAvatars(null);

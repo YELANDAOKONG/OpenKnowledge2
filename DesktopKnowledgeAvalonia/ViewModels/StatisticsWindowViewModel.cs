@@ -22,11 +22,14 @@ public partial class StatisticsWindowViewModel : ViewModelBase
 
     [ObservableProperty]
     private StatisticsCategory? _selectedCategory;
+    
+    private readonly LoggerService _logger;
 
     public StatisticsWindowViewModel()
     {
         _configService = App.GetService<ConfigureService>();
         _localizationService = App.GetService<LocalizationService>();
+        _logger = App.GetWindowsLogger("StatisticsWindow");
 
         InitializeCategories();
     }

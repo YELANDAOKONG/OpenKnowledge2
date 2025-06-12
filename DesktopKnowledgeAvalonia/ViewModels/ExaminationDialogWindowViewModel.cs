@@ -66,10 +66,13 @@ public partial class ExaminationDialogWindowViewModel : ViewModelBase
     
     public event EventHandler? WindowCloseRequested;
     
+    private readonly LoggerService _logger;
+    
     public ExaminationDialogWindowViewModel(ConfigureService configService, LocalizationService localizationService)
     {
         _configService = configService;
         _localizationService = localizationService;
+        _logger = App.GetWindowsLogger("ExaminationDialog");
         _isWindowsVisible = true;
         
         // Setup status message timer
@@ -195,7 +198,8 @@ public partial class ExaminationDialogWindowViewModel : ViewModelBase
         catch (Exception ex)
         {
             // Log the error
-            Console.WriteLine($"Error loading examination: {ex.Message}");
+            _logger.Error($"Error loading examination: {ex.Message}");
+            _logger.Trace($"Error loading examination: {ex.StackTrace}");
             
             // Show error message
             ShowTemporaryStatusMessage(_localizationService["exam.dialog.load.error"]);
@@ -271,7 +275,8 @@ public partial class ExaminationDialogWindowViewModel : ViewModelBase
         catch (Exception ex)
         {
             // Log the error
-            Console.WriteLine($"Error saving examination: {ex.Message}");
+            _logger.Error($"Error saving examination: {ex.Message}");
+            _logger.Trace($"Error saving examination: {ex.StackTrace}");
             
             // Show error message
             ShowTemporaryStatusMessage(_localizationService["exam.dialog.save.error"]);

@@ -85,10 +85,13 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
     public event EventHandler<SaveExaminationEventArgs>? SaveExaminationRequested;
     public event EventHandler? ExitRequested;
     
+    private readonly LoggerService _logger;
+    
     public ExaminationResultWindowViewModel(ConfigureService configService, LocalizationService localizationService)
     {
         _configService = configService;
         _localizationService = localizationService;
+        _logger = App.GetWindowsLogger("ExaminationResultWindow");
     
         // Default values
         SubStatusText = _localizationService["exam.result.thank.you"];
@@ -533,7 +536,8 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error scoring question {question.QuestionId}: {ex.Message}");
+                _logger.Error($"Error scoring question {question.QuestionId}: {ex.Message}");
+                _logger.Trace($"Error scoring question {question.QuestionId}: {ex.StackTrace}");
                 // 即使评分失败也标记为已评估
                 question.IsAiEvaluated = true;
                 question.ObtainedScore = 0.0;
@@ -732,7 +736,8 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error rescoring question {questionId}: {ex.Message}");
+            _logger.Error($"Error rescoring question {questionId}: {ex.Message}");
+            _logger.Trace($"Error rescoring question {questionId}: {ex.StackTrace}");
             questionToScore.AiFeedback = "Error occurred during AI evaluation.";
         }
         finally

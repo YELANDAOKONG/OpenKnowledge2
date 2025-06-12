@@ -30,12 +30,15 @@ public partial class SettingWindowViewModel : ViewModelBase
 
     [ObservableProperty]
     private SettingCategory? _selectedCategory;
+    
+    private readonly LoggerService _logger;
 
     public SettingWindowViewModel()
     {
         _configService = App.GetService<ConfigureService>();
         _localizationService = App.GetService<LocalizationService>();
         _themeService = App.GetService<ThemeService>();
+        _logger = App.GetWindowsLogger("SettingWindow");
 
         InitializeCategories();
     }
@@ -46,43 +49,43 @@ public partial class SettingWindowViewModel : ViewModelBase
         var general = new SettingCategory(
             _localizationService["settings.category.general"],
             "M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z",
-            new GeneralSettingsViewModel(_configService, _localizationService));
+            new GeneralSettingsViewModel(_logger, _configService, _localizationService));
 
         // AI Settings - Add this new category
         var ai = new SettingCategory(
             _localizationService["settings.category.ai"],
             "M21 11.5v-1c0-.8-.7-1.5-1.5-1.5H16v-2c0-.8-.7-1.5-1.5-1.5H9.5C8.7 5.5 8 6.2 8 7v2H4.5c-.8 0-1.5.7-1.5 1.5v1C2.2 11.5 1.5 12.2 1.5 13v9c0 .8.7 1.5 1.5 1.5h18c.8 0 1.5-.7 1.5-1.5v-9c0-.8-.7-1.5-1.5-1.5zM9 7.5h6v2H9v-2zm10 14H5v-9h14v9zm-9-7.5c0-1.1.9-2 2-2s2 .9 2 2c0 1.1-.9 2-2 2s-2-.9-2-2z",
-            new AISettingsViewModel(_configService, _localizationService));
+            new AISettingsViewModel(_logger, _configService, _localizationService));
 
         // Prompt Templates Settings
         var promptTemplates = new SettingCategory(
             _localizationService["settings.category.prompts"],
             "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 16H7v-2h10v2zm0-4H7v-2h10v2zm0-4H7V9h10v2zm0-4H7V5h10v2z",
-            new PromptTemplatesViewModel(_configService, _localizationService));
+            new PromptTemplatesViewModel(_logger, _configService, _localizationService));
         
         // Appearance Settings
         var appearance = new SettingCategory(
             _localizationService["settings.category.appearance"],
             "M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 16c-3.86 0-7-3.14-7-7s3.14-7 7-7 7 3.14 7 7-3.14 7-7 7zm-3-9h6v2H9z",
-            new AppearanceSettingsViewModel(_configService, _themeService, _localizationService));
+            new AppearanceSettingsViewModel(_logger, _configService, _themeService, _localizationService));
 
         // Language Settings
         var language = new SettingCategory(
             _localizationService["settings.category.language"],
             "M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z",
-            new LanguageSettingsViewModel(_configService, _localizationService));
+            new LanguageSettingsViewModel(_logger, _configService, _localizationService));
         
         // Storage Settings
         var storage = new SettingCategory(
             _localizationService["settings.category.storage"],
             "M6 2c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6H6zm7 7V3.5L18.5 9H13z",
-            new StorageSettingsViewModel(_configService, _localizationService));
+            new StorageSettingsViewModel(_logger, _configService, _localizationService));
         
         // About Settings
         var about = new SettingCategory(
             _localizationService["settings.category.about"],
             "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z", // Info icon path
-            new AboutSettingsViewModel(_configService, _localizationService));
+            new AboutSettingsViewModel(_logger, _configService, _localizationService));
 
         Categories.Add(general);
         Categories.Add(ai); // Add the AI category
@@ -152,9 +155,12 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
     
     [ObservableProperty]
     private Avalonia.Media.IBrush _avatarMessageBackground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#569AFF"));
+    
+    private readonly LoggerService _logger;
 
-    public GeneralSettingsViewModel(ConfigureService configService, LocalizationService localizationService)
+    public GeneralSettingsViewModel(LoggerService logger, ConfigureService configService, LocalizationService localizationService)
     {
+        _logger = logger.CreateSubModule("GeneralSettings");
         _configService = configService;
         _localizationService = localizationService;
         _userName = _configService.AppConfig.UserName;
@@ -196,6 +202,7 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
         
         if (!string.IsNullOrEmpty(avatarPath) && File.Exists(avatarPath))
         {
+            _logger.Info($"Loading avatar from {avatarPath}");
             try
             {
                 await using var stream = File.OpenRead(avatarPath);
@@ -204,7 +211,8 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
             catch (Exception ex)
             {
                 ShowAvatarSizeError("settings.general.avatar.error.loading");
-                Console.WriteLine($"Error loading avatar: {ex.Message}");
+                _logger.Error($"Error loading avatar: {ex.Message}");
+                _logger.Trace($"Error loading avatar: {ex.StackTrace}");
                 AvatarImage = null;
                 
                 var configService = App.GetService<ConfigureService>();
@@ -278,8 +286,11 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
         {
             // Check file size
             var fileInfo = await file.GetBasicPropertiesAsync();
+            _logger.Info($"File path: {file.Path}");
+            _logger.Info($"File size: {fileInfo.Size} Bytes");
             if (fileInfo.Size > 64 * 1024 * 1024) // 64MB limit
             {
+                _logger.Info($"File size exceeds limit ( {fileInfo.Size} Bytes / 64MB)");
                 // Show error message
                 // In a real app, you'd show a dialog here
                 Console.WriteLine(_localizationService["settings.general.avatar.error.size"]);
@@ -293,6 +304,7 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
             var extension = Path.GetExtension((string) file.Name);
             var avatarFileName = $"avatar_{Guid.NewGuid()}{extension}";
             var avatarPath = Path.Combine(avatarDir, avatarFileName);
+            _logger.Info($"Use file name: {avatarFileName}");
             
             // Copy the file
             await using (var sourceStream = await file.OpenReadAsync())
@@ -300,6 +312,7 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
             {
                 await sourceStream.CopyToAsync(destinationStream);
             }
+            _logger.Info($"Avatar copied to: {avatarPath}");
             
             // Save the new path and load the image
             _configService.AppConfig.AvatarFilePath = avatarPath;
@@ -307,7 +320,8 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error handling avatar: {ex.Message}");
+            _logger.Error($"Error handling avatar: {ex.Message}");
+            _logger.Trace($"Error handling avatar: {ex.StackTrace}");
         }
     }
     
@@ -327,10 +341,12 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
             try
             {
                 File.Delete(oldPath);
+                _logger.Info($"Avatar file deleted: {oldPath}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error deleting avatar file: {ex.Message}");
+                _logger.Error($"Error deleting avatar file: {ex.Message}");
+                _logger.Trace($"Error deleting avatar file: {ex.StackTrace}");
             }
         }
 
@@ -364,9 +380,12 @@ public partial class AppearanceSettingsViewModel : SettingsViewModelBase
     
     [ObservableProperty]
     private string _selectedTransparency;
+    
+    private readonly LoggerService _logger;
 
-    public AppearanceSettingsViewModel(ConfigureService configService, ThemeService themeService, LocalizationService localizationService)
+    public AppearanceSettingsViewModel(LoggerService logger,ConfigureService configService, ThemeService themeService, LocalizationService localizationService)
     {
+        _logger = logger.CreateSubModule("AppearanceSettings");
         _configService = configService;
         _themeService = themeService;
         _localizationService = localizationService;
@@ -434,8 +453,11 @@ public partial class LanguageSettingsViewModel : SettingsViewModelBase
     [ObservableProperty]
     private string _selectedLanguage;
 
-    public LanguageSettingsViewModel(ConfigureService configService, LocalizationService localizationService)
+    private readonly LoggerService _logger;
+    
+    public LanguageSettingsViewModel(LoggerService logger,ConfigureService configService, LocalizationService localizationService)
     {
+        _logger = logger.CreateSubModule("LanguageSettings");
         _configService = configService;
         _localizationService = localizationService;
 
@@ -515,8 +537,11 @@ public partial class AISettingsViewModel : SettingsViewModelBase
 
     public string TemperatureFormatted => Temperature.ToString("F2");
     
-    public AISettingsViewModel(ConfigureService configService, LocalizationService localizationService)
+    private readonly LoggerService _logger;
+    
+    public AISettingsViewModel(LoggerService logger,ConfigureService configService, LocalizationService localizationService)
     {
+        _logger = logger.CreateSubModule("AISettings");
         _configService = configService;
         _localizationService = localizationService;
         
@@ -664,9 +689,12 @@ public partial class PromptTemplatesViewModel : SettingsViewModelBase
 
     [ObservableProperty]
     private bool _isCheckExpanded;
+    
+    private readonly LoggerService _logger;
 
-    public PromptTemplatesViewModel(ConfigureService configService, LocalizationService localizationService)
+    public PromptTemplatesViewModel(LoggerService logger,ConfigureService configService, LocalizationService localizationService)
     {
+        _logger = logger.CreateSubModule("PromptTemplates");
         _configService = configService;
         _localizationService = localizationService;
         
@@ -736,10 +764,11 @@ public partial class StorageSettingsViewModel : SettingsViewModelBase
     [ObservableProperty]
     private bool _isLogsClearing = false;
     
+    private readonly LoggerService _logger;
     
-    
-    public StorageSettingsViewModel(ConfigureService configService, LocalizationService localizationService)
+    public StorageSettingsViewModel(LoggerService logger,ConfigureService configService, LocalizationService localizationService)
     {
+        _logger = logger.CreateSubModule("StorageSettings");
         _configService = configService;
         _localizationService = localizationService;
         
@@ -766,7 +795,8 @@ public partial class StorageSettingsViewModel : SettingsViewModelBase
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error calculating cache size: {ex.Message}");
+            _logger.Error($"Error calculating cache size: {ex.Message}");
+            _logger.Trace($"Error calculating cache size: {ex.StackTrace}");
             CacheSize = _localizationService["settings.storage.calculation.error"];
         }
         finally
@@ -793,7 +823,8 @@ public partial class StorageSettingsViewModel : SettingsViewModelBase
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error calculating logs size: {ex.Message}");
+            _logger.Error($"Error calculating logs size: {ex.Message}");
+            _logger.Trace($"Error calculating logs size: {ex.StackTrace}");
             LogsSize = _localizationService["settings.storage.calculation.error"];
         }
         finally
@@ -820,7 +851,8 @@ public partial class StorageSettingsViewModel : SettingsViewModelBase
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error clearing cache: {ex.Message}");
+            _logger.Error($"Error clearing cache: {ex.Message}");
+            _logger.Trace($"Error clearing cache: {ex.StackTrace}");
         }
         finally
         {
@@ -839,14 +871,15 @@ public partial class StorageSettingsViewModel : SettingsViewModelBase
         try
         {
             // Clear cache on a background thread
-            await Task.Run(() => ConfigureService.ClearLogs(null, true, throwExceptions: false));
+            await Task.Run(() => ConfigureService.ClearLogs(_logger.LogFilePath, true, throwExceptions: false));
             
             // Recalculate the cache size after clearing
             await CalculateLogsSizeAsync();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error clearing logs: {ex.Message}");
+            _logger.Error($"Error clearing logs: {ex.Message}");
+            _logger.Trace($"Error clearing logs: {ex.StackTrace}");
         }
         finally
         {
@@ -887,8 +920,11 @@ public partial class AboutSettingsViewModel : SettingsViewModelBase
     [ObservableProperty]
     private string _protocolVersion;
     
-    public AboutSettingsViewModel(ConfigureService configService, LocalizationService localizationService)
+    private readonly LoggerService _logger;
+    
+    public AboutSettingsViewModel(LoggerService logger, ConfigureService configService, LocalizationService localizationService)
     {
+        _logger = logger.CreateSubModule("AboutSettings");
         _configService = configService;
         _localizationService = localizationService;
         

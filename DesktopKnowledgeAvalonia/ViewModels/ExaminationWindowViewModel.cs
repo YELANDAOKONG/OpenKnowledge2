@@ -63,10 +63,13 @@ public partial class ExaminationWindowViewModel : ViewModelBase
     // This will be assigned by the view
     public Action SaveCurrentAnswer { get; set; } = () => { };
     
+    private readonly LoggerService _logger;
+    
     public ExaminationWindowViewModel(ConfigureService configService, LocalizationService localizationService)
     {
         _configService = configService;
         _localizationService = localizationService;
+        _logger = App.GetWindowsLogger("ExaminationWindow");
         _isWindowVisible = true;
     }
     
@@ -263,7 +266,8 @@ public partial class ExaminationWindowViewModel : ViewModelBase
         catch (Exception ex)
         {
             // Silently log the error
-            Console.WriteLine($"Error saving progress silently: {ex.Message}");
+            _logger.Error($"Error saving progress silently: {ex.Message}");
+            _logger.Trace($"Error saving progress silently: {ex.StackTrace}");
         }
     }
     

@@ -12,10 +12,14 @@ namespace DesktopKnowledgeAvalonia.Services;
 public class ThemeService
 {
     private readonly ConfigureService _configureService;
+    
+    private readonly LoggerService _logger;
         
     public ThemeService(ConfigureService configureService)
     {
         _configureService = configureService;
+        _logger = App.GetLogger("ThemeService");
+        _logger.Info("Initializing theme service...");
     }
         
     public async Task ApplyThemeSettingsAsync()

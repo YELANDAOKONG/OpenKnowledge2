@@ -69,12 +69,13 @@ public partial class MainWindowViewModel : ViewModelBase
         }
     }
     
-    
+    private readonly LoggerService _logger;
 
     public MainWindowViewModel()
     {
         _configureService = App.GetService<ConfigureService>();
         _localizationService = App.GetService<LocalizationService>();
+        _logger = App.GetWindowsLogger("MainWindow");
         
         // Initialize user name from config
         _userName = _configureService.AppConfig.UserName;
@@ -131,6 +132,7 @@ public partial class MainWindowViewModel : ViewModelBase
         
         if (!string.IsNullOrEmpty(avatarPath) && File.Exists(avatarPath))
         {
+            _logger.Info($"Loading avatar from {avatarPath}");
             try
             {
                 await using var stream = File.OpenRead(avatarPath);
@@ -139,7 +141,8 @@ public partial class MainWindowViewModel : ViewModelBase
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error loading avatar: {ex.Message}");
+                _logger.Error($"Error loading avatar: {ex.Message}");
+                _logger.Trace($"Error loading avatar: {ex.StackTrace}");
                 AvatarImage = null;
                 HasCustomAvatar = false;
                 

@@ -12,6 +12,8 @@ public class LocalizationService
 {
     private readonly Dictionary<string, Dictionary<string, string>> _translations = new();
     private string _currentLanguage = "en-US";
+    
+    private readonly LoggerService _logger;
 
     public event EventHandler? LanguageChanged;
 
@@ -33,6 +35,8 @@ public class LocalizationService
 
     public LocalizationService()
     {
+        _logger = App.GetLogger("LocalizationService");
+        _logger.Info("Initializing localization service...");
         LoadTranslations();
     }
 
@@ -66,6 +70,7 @@ public class LocalizationService
                 var jsonContent = File.ReadAllText(file);
                 var translations = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonContent);
                 
+                _logger.Info($"Loaded translations for \"{languageCode}\"");
                 if (translations != null) _translations[languageCode] = translations;
             }
 
@@ -75,9 +80,8 @@ public class LocalizationService
         }
         catch (Exception ex) when (!throwExceptions)
         {
-            // In a real app, you'd want to log this error
-            // TODO: Add error handling / Better Logger
-            Console.WriteLine($"Error loading translations: {ex.Message}");
+            _logger.Error($"Error loading translations: {ex.Message}");
+            _logger.Trace($"Error loading translations: {ex.StackTrace}");
         }
     }
 

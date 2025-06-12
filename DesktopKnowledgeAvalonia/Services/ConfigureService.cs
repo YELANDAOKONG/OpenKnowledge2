@@ -28,7 +28,7 @@ public class ConfigureService
     public ApplicationData AppData { get; private set; } = new();
     public ApplicationStatistics AppStatistics { get; set; } = new();
 
-    protected readonly LoggerService Logger;
+    private readonly LoggerService _logger;
     
     public ConfigureService(string? configFilePath = null, string? dataFilePath = null, string? statisticsFilePath = null)
     {
@@ -36,11 +36,11 @@ public class ConfigureService
         _dataFilePath = dataFilePath ?? GetDefaultAppDataPath();
         _statisticsFilePath = statisticsFilePath ?? GetDefaultStatisticsPath();
 
-        Logger = App.GetService<LoggerService>().CreateSubModule("ConfigureService");
-        Logger.Info("Initializing configure service...");
-        Logger.Info($"Configuration file path: {_configFilePath}");
-        Logger.Info($"Data file path: {_dataFilePath}");
-        Logger.Info($"Statistics file path: {_statisticsFilePath}");
+        _logger = App.GetLogger("ConfigureService");
+        _logger.Info("Initializing configure service...");
+        _logger.Info($"Configuration file path: {_configFilePath}");
+        _logger.Info($"Data file path: {_dataFilePath}");
+        _logger.Info($"Statistics file path: {_statisticsFilePath}");
         
         try
         {
@@ -48,8 +48,8 @@ public class ConfigureService
         }
         catch (Exception ex)
         {
-            Logger.Error($"Critical error loading configuration: {ex.Message}");
-            Logger.Trace($"Critical error loading configuration: {ex.StackTrace}");
+            _logger.Error($"Critical error loading configuration: {ex.Message}");
+            _logger.Trace($"Critical error loading configuration: {ex.StackTrace}");
             SystemConfig = new SystemConfig();
             AppConfig = new ApplicationConfig();
             AppData = new ApplicationData();
@@ -381,8 +381,8 @@ public class ConfigureService
             }
             catch (Exception ex)
             {
-                Logger.Error($"Error loading config file: {ex.Message}");
-                Logger.Trace($"Error loading config file: {ex.StackTrace}");
+                _logger.Error($"Error loading config file: {ex.Message}");
+                _logger.Trace($"Error loading config file: {ex.StackTrace}");
             }
         }
         
@@ -398,8 +398,8 @@ public class ConfigureService
             }
             catch (Exception ex)
             {
-                Logger.Error($"Error loading data file: {ex.Message}");
-                Logger.Trace($"Error loading data file: {ex.StackTrace}");
+                _logger.Error($"Error loading data file: {ex.Message}");
+                _logger.Trace($"Error loading data file: {ex.StackTrace}");
             }
         }
         
@@ -415,8 +415,8 @@ public class ConfigureService
             }
             catch (Exception ex)
             {
-                Logger.Error($"Error loading statistics file: {ex.Message}");
-                Logger.Trace($"Error loading statistics file: {ex.StackTrace}");
+                _logger.Error($"Error loading statistics file: {ex.Message}");
+                _logger.Trace($"Error loading statistics file: {ex.StackTrace}");
             }
         }
     }
@@ -457,8 +457,8 @@ public class ConfigureService
         }
         catch (Exception ex)
         {
-            Logger.Error($"Error loading configuration: {ex.Message}");
-            Logger.Trace($"Error loading configuration: {ex.StackTrace}");
+            _logger.Error($"Error loading configuration: {ex.Message}");
+            _logger.Trace($"Error loading configuration: {ex.StackTrace}");
         }
     }
     
@@ -484,11 +484,12 @@ public class ConfigureService
             await File.WriteAllTextAsync(tempConfigPath, configJson);
             File.Copy(tempConfigPath, _configFilePath, true);
             File.Delete(tempConfigPath);
+            _logger.Info("Configuration saved successfully.");
         }
         catch (Exception ex)
         {
-            Logger.Error($"Error saving configuration: {ex.Message}");
-            Logger.Trace($"Error saving configuration: {ex.StackTrace}");
+            _logger.Error($"Error saving configuration: {ex.Message}");
+            _logger.Trace($"Error saving configuration: {ex.StackTrace}");
         }
         
         // Save data file separately with the same pattern
@@ -499,11 +500,12 @@ public class ConfigureService
             await File.WriteAllTextAsync(tempDataPath, appDataJson);
             File.Copy(tempDataPath, _dataFilePath, true);
             File.Delete(tempDataPath);
+            _logger.Info("App data saved successfully.");
         }
         catch (Exception ex)
         {
-            Logger.Error($"Error saving app data: {ex.Message}");
-            Logger.Trace($"Error saving app data: {ex.StackTrace}");
+            _logger.Error($"Error saving app data: {ex.Message}");
+            _logger.Trace($"Error saving app data: {ex.StackTrace}");
         }
         
         // Save statistics file separately with the same pattern
@@ -514,11 +516,12 @@ public class ConfigureService
             await File.WriteAllTextAsync(tempStatisticsPath, statisticsJson);
             File.Copy(tempStatisticsPath, _statisticsFilePath, true);
             File.Delete(tempStatisticsPath);
+            _logger.Info("Statistics saved successfully.");
         }
         catch (Exception ex)
         {
-            Logger.Error($"Error saving statistics: {ex.Message}");
-            Logger.Trace($"Error saving statistics: {ex.StackTrace}");
+            _logger.Error($"Error saving statistics: {ex.Message}");
+            _logger.Trace($"Error saving statistics: {ex.StackTrace}");
         }
     }
     
