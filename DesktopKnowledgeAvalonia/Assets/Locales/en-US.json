@@ -178,8 +178,10 @@
   "settings.storage.calculating": "Calculating...",
   "settings.storage.clearing": "Clearing...",
   "settings.storage.calculation.error": "Error calculating size",
-  "settings.storage.refresh.tooltip": "Recalculate current cache size",
-  "settings.storage.clear.tooltip": "Clear all application cache data",
+  "settings.storage.cache.refresh.tooltip": "Recalculate current cache size",
+  "settings.storage.cache.clear.tooltip": "Clear all application cache data",  
+  "settings.storage.logs.refresh.tooltip": "Recalculate current logs size",
+  "settings.storage.logs.clear.tooltip": "Clear all application logs data",
 
   "settings.category.about": "About",
   "settings.about.title": "OpenKnowledge",

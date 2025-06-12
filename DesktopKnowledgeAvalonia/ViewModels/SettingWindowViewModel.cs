@@ -722,10 +722,21 @@ public partial class StorageSettingsViewModel : SettingsViewModelBase
     private string _cacheSize = "0 B";
     
     [ObservableProperty]
-    private bool _isCalculating = false;
+    private bool _isCacheCalculating = false;
     
     [ObservableProperty]
-    private bool _isClearing = false;
+    private bool _isCacheClearing = false;
+    
+    [ObservableProperty]
+    private string _logsSize = "0 B";
+    
+    [ObservableProperty]
+    private bool _isLogsCalculating = false;
+    
+    [ObservableProperty]
+    private bool _isLogsClearing = false;
+    
+    
     
     public StorageSettingsViewModel(ConfigureService configService, LocalizationService localizationService)
     {
@@ -734,20 +745,21 @@ public partial class StorageSettingsViewModel : SettingsViewModelBase
         
         // Calculate initial cache size when the tab is created
         CalculateCacheSizeAsync().ConfigureAwait(false);
+        CalculateLogsSizeAsync().ConfigureAwait(false);
     }
     
     [RelayCommand]
     private async Task CalculateCacheSizeAsync()
     {
-        if (IsCalculating)
+        if (IsCacheCalculating)
             return;
             
-        IsCalculating = true;
+        IsCacheCalculating = true;
         
         try
         {
             // Calculate cache size on a background thread
-            var size = await Task.Run(() => ConfigureService.CalculateCacheSize());
+            var size = await Task.Run(ConfigureService.CalculateCacheSize);
             
             // Format the size in a human-readable format
             CacheSize = FormatFileSize(size);
@@ -759,17 +771,44 @@ public partial class StorageSettingsViewModel : SettingsViewModelBase
         }
         finally
         {
-            IsCalculating = false;
+            IsCacheCalculating = false;
+        }
+    }
+    
+    [RelayCommand]
+    private async Task CalculateLogsSizeAsync()
+    {
+        if (IsLogsCalculating)
+            return;
+            
+        IsLogsCalculating = true;
+        
+        try
+        {
+            // Calculate cache size on a background thread
+            var size = await Task.Run(ConfigureService.CalculateLogsSize);
+            
+            // Format the size in a human-readable format
+            LogsSize = FormatFileSize(size);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error calculating logs size: {ex.Message}");
+            LogsSize = _localizationService["settings.storage.calculation.error"];
+        }
+        finally
+        {
+            IsLogsCalculating = false;
         }
     }
     
     [RelayCommand]
     private async Task ClearCacheAsync()
     {
-        if (IsClearing)
+        if (IsCacheClearing)
             return;
             
-        IsClearing = true;
+        IsCacheClearing = true;
         
         try
         {
@@ -785,7 +824,33 @@ public partial class StorageSettingsViewModel : SettingsViewModelBase
         }
         finally
         {
-            IsClearing = false;
+            IsCacheClearing = false;
+        }
+    }
+    
+    [RelayCommand]
+    private async Task ClearLogsAsync()
+    {
+        if (IsLogsClearing)
+            return;
+            
+        IsLogsClearing = true;
+        
+        try
+        {
+            // Clear cache on a background thread
+            await Task.Run(() => ConfigureService.ClearLogs(null, true, throwExceptions: false));
+            
+            // Recalculate the cache size after clearing
+            await CalculateLogsSizeAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error clearing logs: {ex.Message}");
+        }
+        finally
+        {
+            IsLogsClearing = false;
         }
     }
     

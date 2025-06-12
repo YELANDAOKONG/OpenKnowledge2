@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using LibraryOpenKnowledge.Models;
 using DesktopKnowledgeAvalonia.Models;
@@ -175,21 +176,97 @@ public class ConfigureService
         return size;
     }
 
-    public static void ClearLogs(bool throwExceptions = false)
+    /// <summary>
+    /// 清理日志文件夹
+    /// </summary>
+    /// <param name="currentLogFilePath">当前正在使用的日志文件路径</param>
+    /// <param name="ignoreIfCanNotDelete">无法删除文件时是否忽略</param>
+    /// <param name="throwExceptions">是否向上抛出异常</param>
+    public static void ClearLogs(string? currentLogFilePath = null, bool ignoreIfCanNotDelete = true, bool throwExceptions = false)
     {
         try
         {
             var logsFolder = GetLogsDirectory();
-            if (Directory.Exists(logsFolder))
+            if (!Directory.Exists(logsFolder))
+                return;
+
+            // 规范化当前日志文件路径用于比较
+            string? normalizedCurrentLogPath = null;
+            if (!string.IsNullOrEmpty(currentLogFilePath))
             {
-                Directory.Delete(logsFolder, true);
+                normalizedCurrentLogPath = Path.GetFullPath(currentLogFilePath);
+            }
+            
+            var files = Directory.GetFiles(logsFolder, "*", SearchOption.AllDirectories);
+            foreach (var file in files)
+            {
+                // 跳过当前正在使用的日志文件
+                if (normalizedCurrentLogPath != null && 
+                    Path.GetFullPath(file).Equals(normalizedCurrentLogPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    File.Delete(file);
+                }
+                catch (Exception)
+                {
+                    if (!ignoreIfCanNotDelete)
+                    {
+                        if (throwExceptions)
+                            throw;
+                        return;
+                    }
+                    continue;
+                }
+            }
+            var directories = Directory.GetDirectories(
+                    logsFolder, 
+                    "*",
+                    SearchOption.AllDirectories
+                    ).OrderByDescending(d => d.Length);
+
+            foreach (var dir in directories)
+            {
+                try
+                {
+                    if (!Directory.EnumerateFileSystemEntries(dir).Any())
+                    {
+                        Directory.Delete(dir);
+                    }
+                }
+                catch (Exception)
+                {
+                    if (!ignoreIfCanNotDelete)
+                    {
+                        if (throwExceptions)
+                            throw;
+                        break; 
+                    }
+                    continue;
+                }
+            }
+            
+            try
+            {
+                if (!Directory.EnumerateFileSystemEntries(logsFolder).Any())
+                {
+                    Directory.Delete(logsFolder);
+                }
+            }
+            catch (Exception)
+            {
+                if (!ignoreIfCanNotDelete && throwExceptions) throw;
             }
         }
-        catch (Exception) when(!throwExceptions)
+        catch (Exception) when (!throwExceptions)
         {
             return;
         }
     }
+
     
     public static long CalculateLogsSize()
     {
