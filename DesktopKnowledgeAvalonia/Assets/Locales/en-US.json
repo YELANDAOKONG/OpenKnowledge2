@@ -172,8 +172,9 @@
 
   "settings.category.storage": "Storage",
   "settings.storage.cache.size": "Cache Size:",
+  "settings.storage.logs.size": "Logs Size:",
   "settings.storage.refresh": "Refresh",
-  "settings.storage.clear": "Clear Cache",
+  "settings.storage.clear": "Clear",
   "settings.storage.calculating": "Calculating...",
   "settings.storage.clearing": "Clearing...",
   "settings.storage.calculation.error": "Error calculating size",

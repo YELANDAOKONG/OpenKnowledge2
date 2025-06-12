@@ -54,7 +54,7 @@ public class ConfigureService
         return folder;
     }
     
-    public static string GetRootTemporaryDirectory()
+    public static string GetRootTempDirectory()
     {
         var tempFolder = Path.Combine(Path.GetTempPath(), ApplicationName);
         if (!Directory.Exists(tempFolder)) Directory.CreateDirectory(tempFolder);
@@ -101,10 +101,18 @@ public class ConfigureService
     
     public static string GetTempDirectory()
     {
-        var root = GetRootTemporaryDirectory();
-        var tempFolder = Path.Combine(root, "Temporary");
+        var root = GetRootTempDirectory();
+        var tempFolder = Path.Combine(root, "Temp");
         if (!Directory.Exists(tempFolder)) Directory.CreateDirectory(tempFolder);
         return tempFolder;
+    }
+    
+    public static string GetLogsDirectory()
+    {
+        var root = GetRootDirectory();
+        var folder = Path.Combine(root, "Logs");
+        if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+        return folder;
     }
     
     public static string GetDefaultConfigPath()
@@ -167,6 +175,35 @@ public class ConfigureService
         return size;
     }
 
+    public static void ClearLogs(bool throwExceptions = false)
+    {
+        try
+        {
+            var logsFolder = GetLogsDirectory();
+            if (Directory.Exists(logsFolder))
+            {
+                Directory.Delete(logsFolder, true);
+            }
+        }
+        catch (Exception) when(!throwExceptions)
+        {
+            return;
+        }
+    }
+    
+    public static long CalculateLogsSize()
+    {
+        var logsFolder = GetLogsDirectory();
+        if (!Directory.Exists(logsFolder)) return 0;
+        
+        long size = 0;
+        foreach (var file in Directory.GetFiles(logsFolder, "*", SearchOption.AllDirectories))
+        {
+            size += new FileInfo(file).Length;
+        }
+        return size;
+    }
+
     public static string RandomFileName(string prefix = "temp", string extension = "dat")
     {
         var random = Random.Shared;
@@ -211,6 +248,27 @@ public class ConfigureService
         var dirPath = Path.Combine(tempFolder, dirName);
         if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
         return dirPath;
+    }
+    
+    public static string RandomLogFileName(string prefix = "log", string extension = "log")
+    {
+        var random = Random.Shared;
+        var rId = random.Next(Int32.MaxValue);
+        
+        var date = DateTime.UtcNow.ToString("yyyyMMdd");
+        var time = DateTime.UtcNow.ToString("HHmmss");
+        var times = DateTime.UtcNow.Second;
+        var timems = DateTime.UtcNow.Microsecond;
+        var timens = DateTime.UtcNow.Nanosecond;
+        return $"{prefix}_{date}{time}_{times}{timems}{timens}_{rId}.{extension}";
+    }
+    
+    public static string NewLogFilePath(string prefix = "log", string extension = "log")
+    {
+        var tempFolder = GetLogsDirectory();
+        var fileName = RandomLogFileName(prefix, extension);
+        var filePath = Path.Combine(tempFolder, fileName);
+        return filePath;
     }
     
     private class CombinedConfig

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core;
@@ -10,6 +11,7 @@ using Avalonia.Threading;
 using DesktopKnowledgeAvalonia.Services;
 using DesktopKnowledgeAvalonia.ViewModels;
 using DesktopKnowledgeAvalonia.Views;
+using LibraryOpenKnowledge.Tools;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DesktopKnowledgeAvalonia;
@@ -97,6 +99,14 @@ public partial class App : Application
     
     private void ConfigureServices(ServiceCollection services)
     {
+        // Register core services
+        // services.AddSingleton<LoggerService>();
+        services.AddSingleton<LoggerService>(serviceProvider => {
+            string logFilePath = Path.Combine(ConfigureService.NewLogFilePath());
+            var customLogger = new ConsoleSimpleLogger("APP", true);
+            return new LoggerService(logFilePath, customLogger, null, true);
+        });
+        
         // Register services
         services.AddSingleton<LocalizationService>();
         services.AddSingleton<ConfigureService>();
