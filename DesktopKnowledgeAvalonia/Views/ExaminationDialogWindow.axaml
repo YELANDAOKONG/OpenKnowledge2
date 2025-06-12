@@ -84,6 +84,34 @@
                     <TextBlock Text="{Binding ExamTotalScore}" 
                                TextWrapping="Wrap"/>
                 </StackPanel>
+                
+                <!-- Exam Time Recommended -->
+                <StackPanel IsVisible="{Binding !!ExamRecommendedTime}">
+                    <TextBlock Text="{loc:Translate Key=exam.dialog.time.recommended}" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,5"/>
+                    <TextBlock Text="{Binding ExamRecommendedTime}" 
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+                
+                <!-- Exam Time Range (Minimum) -->
+                <StackPanel IsVisible="{Binding !!ExamTimeRangeMinimum}">
+                    <TextBlock Text="{loc:Translate Key=exam.dialog.time.range.minimum}" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,5"/>
+                    <TextBlock Text="{Binding ExamTimeRangeMinimum}" 
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+                
+                <!-- Exam Time Range (Maximum) -->
+                <StackPanel IsVisible="{Binding !!ExamTimeRangeMaximum}">
+                    <TextBlock Text="{loc:Translate Key=exam.dialog.time.range.maximum}" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,5"/>
+                    <TextBlock Text="{Binding ExamTimeRangeMaximum}" 
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+                
             </StackPanel>
         </ScrollViewer>
         

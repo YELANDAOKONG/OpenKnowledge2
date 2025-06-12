@@ -28,4 +28,22 @@ public static class TimeUtil
     {
         return DateTime.UtcNow.Day;
     }
+
+    /// <summary>
+    /// 将从0开始的13位毫秒时间戳转换为计时器格式 (00:00:00:00 (DD:HH:MM:SS))
+    /// </summary>
+    /// <param name="timestamp">时间戳</param>
+    /// <param name="daily">是否显示天数</param>
+    /// <returns>计时器格式字符串</returns>
+    public static string ToTimerString(long timestamp, bool daily = false)
+    {
+        if (daily)
+        {
+            return $"{TimeSpan.FromMilliseconds(timestamp):dd\\:hh\\:mm\\:ss}";
+        }
+        else
+        {
+            return $"{TimeSpan.FromMilliseconds(timestamp):hh\\:mm\\:ss}";
+        }
+    }
 }

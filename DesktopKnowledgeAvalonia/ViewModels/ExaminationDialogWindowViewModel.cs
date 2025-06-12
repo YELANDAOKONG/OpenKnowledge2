@@ -1,4 +1,6 @@
-﻿namespace DesktopKnowledgeAvalonia.ViewModels;
+﻿using DesktopKnowledgeAvalonia.Utils;
+
+namespace DesktopKnowledgeAvalonia.ViewModels;
 
 using System;
 using System.IO;
@@ -43,6 +45,15 @@ public partial class ExaminationDialogWindowViewModel : ViewModelBase
     
     [ObservableProperty]
     private string? _examTotalScore;
+
+    [ObservableProperty]
+    private string? _examRecommendedTime;
+    
+    [ObservableProperty]
+    private string? _examTimeRangeMinimum;
+    
+    [ObservableProperty]
+    private string? _examTimeRangeMaximum;
     
     [ObservableProperty]
     private string _statusMessage = "";
@@ -117,7 +128,10 @@ public partial class ExaminationDialogWindowViewModel : ViewModelBase
             ExamDescription = exam.ExaminationMetadata.Description;
             ExamSubject = exam.ExaminationMetadata.Subject;
             ExamLanguage = exam.ExaminationMetadata.Language;
-            ExamTotalScore = exam.ExaminationMetadata.TotalScore.ToString();
+            ExamTotalScore = exam.ExaminationMetadata.TotalScore.ToString("F2");
+            if(exam.ExaminationMetadata.ExamTime != null) ExamRecommendedTime = TimeUtil.ToTimerString(exam.ExaminationMetadata.ExamTime.Value);
+            if (exam.ExaminationMetadata.MinimumExamTime != null) ExamTimeRangeMinimum = TimeUtil.ToTimerString(exam.ExaminationMetadata.MinimumExamTime.Value);
+            if (exam.ExaminationMetadata.MaximumExamTime != null) ExamTimeRangeMaximum = TimeUtil.ToTimerString(exam.ExaminationMetadata.MaximumExamTime.Value);
         }
         else
         {
@@ -181,7 +195,7 @@ public partial class ExaminationDialogWindowViewModel : ViewModelBase
                 _configService.AppData.IsTheExaminationStarted = false; // Mark as loaded but not started
                 
                 // Save changes to config
-                _configService.SaveChangesAsync();
+                _ = _configService.SaveChangesAsync();
                 
                 // Update the UI
                 UpdateExamInfo();
