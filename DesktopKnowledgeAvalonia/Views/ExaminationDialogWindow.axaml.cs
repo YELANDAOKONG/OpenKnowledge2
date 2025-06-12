@@ -21,6 +21,8 @@ public partial class ExaminationDialogWindow : AppWindowBase
     private readonly ExaminationDialogWindowViewModel _windowViewModel;
     private readonly LocalizationService _localizationService;
     
+    private readonly LoggerService _logger;
+    
     public ExaminationDialogWindow()
     {
         InitializeComponent();
@@ -28,6 +30,7 @@ public partial class ExaminationDialogWindow : AppWindowBase
         // Create and set the view model
         var configService = App.GetService<ConfigureService>();
         _localizationService = App.GetService<LocalizationService>();
+        _logger = App.GetWindowsLogger("ExaminationDialogWindow");
         
         _windowViewModel = new ExaminationDialogWindowViewModel(configService, _localizationService);
         DataContext = _windowViewModel;
@@ -111,6 +114,7 @@ public partial class ExaminationDialogWindow : AppWindowBase
         {
             var file = result[0];
             var filePath = file.Path.LocalPath;
+            _logger.Info($"Loading examination from file: {filePath}");
             
             // Load the examination but don't start it
             _windowViewModel.LoadExamination(filePath);

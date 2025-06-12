@@ -515,6 +515,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             {
                 // 为AI评分生成提示
                 string prompt = GenerateComprehensiveGradingPrompt(section, question, parentQuestion);
+                _logger.Debug($"Generated AI prompt: \n{prompt}");
                 
                 _configService.AppStatistics.AddAiCallCount(_configService);
                 // 发送到AI进行评分
@@ -522,6 +523,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                     aiClient,
                     _configService.SystemConfig,
                     prompt);
+                _logger.Debug($"Received AI response: \n{response}");
                 
                 if (!string.IsNullOrEmpty(response))
                 {
@@ -706,12 +708,14 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                 questionSection,
                 questionToScore, 
                 parentQuestion);
+            _logger.Debug($"Generated AI prompt: \n{prompt}");
         
             _configService.AppStatistics.AddAiCallCount(_configService);
             string? response = await AiTools.SendChatMessageAsync(
                 aiClient,
                 _configService.SystemConfig,
                 prompt);
+            _logger.Debug($"Received AI response: \n{response}");
         
             if (!string.IsNullOrEmpty(response))
             {

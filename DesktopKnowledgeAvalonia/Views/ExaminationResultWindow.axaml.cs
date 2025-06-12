@@ -760,7 +760,9 @@ public partial class ExaminationResultWindow : AppWindowBase
             if (result != null)
             {
                 var filePath = result.Path.LocalPath;
+                _logger.Info($"Saving examination to {filePath}");
                 ExaminationSerializer.SerializeToFile(e.Examination, filePath, includeUserAnswers: true);
+                _logger.Info($"Examination saved to {filePath}");
             }
         }
         catch (Exception ex)
@@ -775,7 +777,7 @@ public partial class ExaminationResultWindow : AppWindowBase
         if (_configService.AppData != null)
         {
             _configService.AppData.IsInExamination = false;
-            _configService.SaveChangesAsync();
+            _ = _configService.SaveChangesAsync();
         }
     
         Close();
@@ -797,7 +799,7 @@ public partial class ExaminationResultWindow : AppWindowBase
         if (_configService.AppData != null)
         {
             _configService.AppData.IsInExamination = true;
-            _configService.SaveChangesAsync();
+            _ = _configService.SaveChangesAsync();
         }
     }
     
