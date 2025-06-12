@@ -36,7 +36,7 @@ public class ConfigureService
         _dataFilePath = dataFilePath ?? GetDefaultAppDataPath();
         _statisticsFilePath = statisticsFilePath ?? GetDefaultStatisticsPath();
 
-        Logger = App.GetService<LoggerService>();
+        Logger = App.GetService<LoggerService>().CreateSubModule("ConfigureService");
         Logger.Info("Initializing configure service...");
         Logger.Info($"Configuration file path: {_configFilePath}");
         Logger.Info($"Data file path: {_dataFilePath}");

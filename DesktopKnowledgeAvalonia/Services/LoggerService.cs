@@ -11,11 +11,15 @@ public class LoggerService
     public CustomLogger Logger { get; }
     public Microsoft.Extensions.Logging.ILogger Logging { get; }
     
+    public string? LogFilePath { get; }
+    
     private readonly bool _writeToFile;
+    private readonly ILoggerFactory? _loggerFactory;
     
     public LoggerService(string? logFilePath = null, CustomLogger? logger = null, ILoggerFactory? loggerFactory = null, bool writeToFile = true)
     {
         _writeToFile = writeToFile;
+        LogFilePath = logFilePath;
         
         if (!string.IsNullOrEmpty(logFilePath))
         {
@@ -27,12 +31,38 @@ public class LoggerService
         }
         
         Logger = logger ?? new ConsoleSimpleLogger("APP", true);
-        Logging = loggerFactory?.CreateLogger<LoggerService>() ?? CreateDefaultMicrosoftLogger(logFilePath);
+        
+        _loggerFactory = loggerFactory ?? CreateDefaultLoggerFactory(logFilePath);
+        Logging = _loggerFactory.CreateLogger<LoggerService>();
     }
     
-    private Microsoft.Extensions.Logging.ILogger CreateDefaultMicrosoftLogger(string? logFilePath)
+    public LoggerService CreateSubModule(string moduleName)
     {
-        var factory = LoggerFactory.Create(builder =>
+        var subCustomLogger = Logger is ConsoleSimpleLogger consoleLogger 
+            ? new ConsoleSimpleLogger($"{consoleLogger.Title}.{moduleName}", consoleLogger.Colorful)
+            : new ConsoleSimpleLogger($"APP.{moduleName}", true);
+        
+        return new LoggerService(
+            logFilePath: LogFilePath,
+            logger: subCustomLogger,
+            loggerFactory: _loggerFactory,
+            writeToFile: _writeToFile
+        );
+    }
+    
+    public Microsoft.Extensions.Logging.ILogger GetSubLogger<T>()
+    {
+        return _loggerFactory?.CreateLogger<T>() ?? Logging;
+    }
+    
+    public Microsoft.Extensions.Logging.ILogger GetSubLogger(string categoryName)
+    {
+        return _loggerFactory?.CreateLogger(categoryName) ?? Logging;
+    }
+    
+    public static ILoggerFactory CreateDefaultLoggerFactory(string? logFilePath)
+    {
+        return LoggerFactory.Create(builder =>
         {
             builder.SetMinimumLevel(LogLevel.Information);
             if (!string.IsNullOrEmpty(logFilePath))
@@ -48,11 +78,14 @@ public class LoggerService
             }
             else
             {
-
                 builder.AddDebug();
             }
         });
-        
+    }
+    
+    private Microsoft.Extensions.Logging.ILogger CreateDefaultMicrosoftLogger(string? logFilePath)
+    {
+        var factory = CreateDefaultLoggerFactory(logFilePath);
         return factory.CreateLogger<LoggerService>();
     }
     
