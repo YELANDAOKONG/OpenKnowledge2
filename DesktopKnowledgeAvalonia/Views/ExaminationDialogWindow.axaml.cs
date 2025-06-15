@@ -25,6 +25,9 @@ public partial class ExaminationDialogWindow : AppWindowBase
     private Border? _dragDropOverlay;
     private Grid? _mainGrid;
     
+    private bool _isDragOverlayVisible = false;
+    private bool _isValidDragInProgress = false;
+    
     public ExaminationDialogWindow()
     {
         InitializeComponent();
@@ -70,6 +73,7 @@ public partial class ExaminationDialogWindow : AppWindowBase
                 _mainGrid.AddHandler(DragDrop.DragOverEvent, OnDragOver);
                 _mainGrid.AddHandler(DragDrop.DropEvent, OnDrop);
                 _mainGrid.AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
+                _mainGrid.AddHandler(DragDrop.DragEnterEvent, OnDragEnter);
                 
                 _logger.Debug("Drag and drop setup completed");
             }
@@ -88,51 +92,61 @@ public partial class ExaminationDialogWindow : AppWindowBase
     #region Drag and Drop Event Handlers
     
     /// <summary>
+    /// Handles drag enter event
+    /// </summary>
+    private void OnDragEnter(object? sender, DragEventArgs e)
+    {
+        try
+        {
+            var isValidDrag = ValidateDragData(e);
+            if (isValidDrag != _isValidDragInProgress)
+            {
+                _isValidDragInProgress = isValidDrag;
+                if (isValidDrag)
+                {
+                    _logger.Debug("Valid drag operation started");
+                }
+            }
+            
+            e.DragEffects = isValidDrag ? DragDropEffects.Copy : DragDropEffects.None;
+            ShowDragDropOverlay(isValidDrag);
+            e.Handled = true;
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"Error in drag enter event: {ex.Message}");
+            e.DragEffects = DragDropEffects.None;
+            ShowDragDropOverlay(false);
+            e.Handled = true;
+        }
+    }
+    
+    /// <summary>
     /// Handles the drag over event to validate dropped files
     /// </summary>
     private void OnDragOver(object? sender, DragEventArgs e)
     {
         try
         {
-            // Check if the drag data contains files
-            if (e.Data.Contains(DataFormats.Files))
+            var isValidDrag = ValidateDragData(e);
+            
+            // Only update if the drag validity has changed
+            if (isValidDrag != _isValidDragInProgress)
             {
-                var files = e.Data.GetFiles();
-                if (files != null)
+                _isValidDragInProgress = isValidDrag;
+                ShowDragDropOverlay(isValidDrag);
+                
+                if (isValidDrag)
                 {
-                    // Check if any of the files is a JSON file
-                    var jsonFiles = files.Where(file => 
-                        !string.IsNullOrEmpty(file.Name) &&
-                        Path.GetExtension(file.Name).Equals(".json", StringComparison.OrdinalIgnoreCase))
-                        .ToList();
-                        
-                    if (jsonFiles.Any())
-                    {
-                        // Allow drop for JSON files
-                        e.DragEffects = DragDropEffects.Copy;
-                        ShowDragDropOverlay(true);
-                        _logger.Debug($"Drag over: Found {jsonFiles.Count} JSON file(s)");
-                    }
-                    else
-                    {
-                        // Don't allow drop for non-JSON files
-                        e.DragEffects = DragDropEffects.None;
-                        ShowDragDropOverlay(false);
-                        _logger.Debug("Drag over: No JSON files found");
-                    }
+                    _logger.Debug("Valid JSON file(s) detected in drag operation");
                 }
                 else
                 {
-                    e.DragEffects = DragDropEffects.None;
-                    ShowDragDropOverlay(false);
+                    _logger.Debug("No valid JSON files in drag operation");
                 }
             }
-            else
-            {
-                e.DragEffects = DragDropEffects.None;
-                ShowDragDropOverlay(false);
-            }
             
+            e.DragEffects = isValidDrag ? DragDropEffects.Copy : DragDropEffects.None;
             e.Handled = true;
         }
         catch (Exception ex)
@@ -142,8 +156,27 @@ public partial class ExaminationDialogWindow : AppWindowBase
             
             e.DragEffects = DragDropEffects.None;
             ShowDragDropOverlay(false);
+            _isValidDragInProgress = false;
             e.Handled = true;
         }
+    }
+    
+    /// <summary>
+    /// Validates drag data to check if it contains valid JSON files
+    /// </summary>
+    private bool ValidateDragData(DragEventArgs e)
+    {
+        if (!e.Data.Contains(DataFormats.Files))
+            return false;
+            
+        var files = e.Data.GetFiles();
+        if (files == null)
+            return false;
+            
+        // Check if any of the files is a JSON file
+        return files.Any(file => 
+            !string.IsNullOrEmpty(file.Name) &&
+            Path.GetExtension(file.Name).Equals(".json", StringComparison.OrdinalIgnoreCase));
     }
     
     /// <summary>
@@ -153,7 +186,8 @@ public partial class ExaminationDialogWindow : AppWindowBase
     {
         try
         {
-            // Hide the drag drop overlay
+            // Reset drag state
+            _isValidDragInProgress = false;
             ShowDragDropOverlay(false);
             
             if (e.Data.Contains(DataFormats.Files))
@@ -209,6 +243,10 @@ public partial class ExaminationDialogWindow : AppWindowBase
             
             // Show error message
             _windowViewModel.ShowTemporaryStatusMessage(_localizationService["exam.dialog.drop.error"]);
+            
+            // Reset state
+            _isValidDragInProgress = false;
+            ShowDragDropOverlay(false);
             e.Handled = true;
         }
     }
@@ -220,7 +258,10 @@ public partial class ExaminationDialogWindow : AppWindowBase
     {
         try
         {
+            // Reset drag state
+            _isValidDragInProgress = false;
             ShowDragDropOverlay(false);
+            _logger.Debug("Drag operation left window area");
             e.Handled = true;
         }
         catch (Exception ex)
@@ -232,15 +273,17 @@ public partial class ExaminationDialogWindow : AppWindowBase
     }
     
     /// <summary>
-    /// Shows or hides the drag drop overlay
+    /// Shows or hides the drag drop overlay (only updates if state changed)
     /// </summary>
     private void ShowDragDropOverlay(bool show)
     {
         try
         {
-            if (_dragDropOverlay != null)
+            if (_dragDropOverlay != null && _isDragOverlayVisible != show)
             {
                 _dragDropOverlay.IsVisible = show;
+                _isDragOverlayVisible = show;
+                _logger.Debug($"Drag overlay visibility changed to: {show}");
             }
         }
         catch (Exception ex)
@@ -274,7 +317,6 @@ public partial class ExaminationDialogWindow : AppWindowBase
             Close();
         };
         window.Show();
-        // Close(); // Close this dialog when opening the examination window
     }
     
     private async void OnLoadNewExam(object? sender, EventArgs e)
@@ -435,8 +477,7 @@ public partial class ExaminationDialogWindow : AppWindowBase
         {
             _logger?.Error($"Error showing confirmation dialog: {ex.Message}");
             _logger?.Trace($"Error showing confirmation dialog: {ex.StackTrace}");
-            return false; // 出错时默认取消
+            return false;
         }
     }
-
 }
