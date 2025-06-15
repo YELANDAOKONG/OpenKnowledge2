@@ -31,6 +31,7 @@ public partial class ExaminationWindow : AppWindowBase
     private System.Timers.Timer _uiUpdateTimer;
     private long _sessionStartTime; // Track when this session started
     private bool _isSubmitting = false;
+    private bool _canWindowClose = true;
 
     private LoggerService _logger;
     
@@ -57,6 +58,7 @@ public partial class ExaminationWindow : AppWindowBase
             _viewModel.WindowCloseRequested += (s, e) => Close();
             _viewModel.TimeConstraintViolated += OnTimeConstraintViolated;
             _viewModel.ForceSubmitRequested += OnForceSubmitRequested;
+            Closing += OnWindowClosing;
         
             // Initialize UI text
             InitializeUI();
@@ -233,13 +235,15 @@ public partial class ExaminationWindow : AppWindowBase
                 // 显示强制提交消息并自动提交
                 Dispatcher.UIThread.InvokeAsync(async () =>
                 {
+                    _canWindowClose = false;
                     try
                     {
                         await ShowStatusMessage(_localizationService?["exam.time.force.submit"] ?? "Time is up, auto-submitting examination...", true);
                     
                         await Task.Delay(2000); // 显示2秒提示
-                    
+                        
                         // 强制提交
+                        _canWindowClose = true;
                         await _viewModel.SubmitExamination(forceSubmit: true);
                     }
                     catch (Exception ex)
@@ -247,6 +251,7 @@ public partial class ExaminationWindow : AppWindowBase
                         _logger.Error($"Error during force submit: {ex.Message}");
                         _logger.Trace($"Error during force submit: {ex.StackTrace}");
                         _isSubmitting = false; // 重置状态
+                        _canWindowClose = true;
                         RestartTimers(); // 重启定时器
                         UpdateUIState(); // 更新UI状态
                     }
@@ -1647,6 +1652,16 @@ public partial class ExaminationWindow : AppWindowBase
                     _logger.Trace($"Error updating UI after dialog close: {ex.StackTrace}");
                 }
             });
+        }
+    }
+    
+    private async void OnWindowClosing(object? sender, WindowClosingEventArgs e)
+    {
+        e.Cancel = true;
+        if (_canWindowClose)
+        {
+            Closing -= OnWindowClosing;
+            Close();
         }
     }
     
