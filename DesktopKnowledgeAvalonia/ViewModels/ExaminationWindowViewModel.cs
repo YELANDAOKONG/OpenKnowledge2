@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using DesktopKnowledgeAvalonia.Services;
+using DesktopKnowledgeAvalonia.Utils;
 using DesktopKnowledgeAvalonia.Views;
 using LibraryOpenKnowledge.Extensions;
 using LibraryOpenKnowledge.Models;
@@ -57,6 +58,9 @@ public partial class ExaminationWindowViewModel : ViewModelBase
     public event EventHandler? ProgressUpdated;
     
     public event EventHandler? WindowCloseRequested;
+    
+    public event EventHandler<TimeConstraintEventArgs>? TimeConstraintViolated;
+    public event EventHandler? ForceSubmitRequested;
     
     public Question? ParentQuestion { get; private set; }
     
@@ -240,6 +244,68 @@ public partial class ExaminationWindowViewModel : ViewModelBase
         }
     }
     
+    /// <summary>
+    /// 检查当前考试时间是否满足时间限制要求
+    /// </summary>
+    /// <returns>时间检查结果</returns>
+    public ExamTimeCheckResult CheckExaminationTimeConstraints()
+    {
+        if (Examination?.ExaminationMetadata == null)
+            return new ExamTimeCheckResult { IsValid = true, CanSubmit = true };
+        // 计算当前总考试时间
+        long currentTotalTime = GetCurrentTotalExaminationTime();
+    
+        var metadata = Examination.ExaminationMetadata;
+    
+        // 检查最小时间限制
+        if (metadata.MinimumExamTime.HasValue && metadata.MinimumExamTime.Value > 0)
+        {
+            if (currentTotalTime < metadata.MinimumExamTime.Value)
+            {
+                return new ExamTimeCheckResult
+                {
+                    IsValid = false,
+                    CanSubmit = false,
+                    Message = string.Format(
+                        _localizationService["exam.time.minimum.not.reached"],
+                        TimeUtil.ToTimerString(metadata.MinimumExamTime.Value),
+                        TimeUtil.ToTimerString(currentTotalTime)
+                    )
+                };
+            }
+        }
+    
+        // 检查最大时间限制
+        if (metadata.MaximumExamTime.HasValue && metadata.MaximumExamTime.Value > 0)
+        {
+            if (currentTotalTime >= metadata.MaximumExamTime.Value)
+            {
+                return new ExamTimeCheckResult
+                {
+                    IsValid = false,
+                    CanSubmit = true,
+                    ForceSubmit = true,
+                    Message = _localizationService["exam.time.maximum.exceeded"]
+                };
+            }
+        }
+    
+        return new ExamTimeCheckResult { IsValid = true, CanSubmit = true };
+    }
+    
+    /// <summary>
+    /// 获取当前总考试时间（毫秒）
+    /// </summary>
+    private long GetCurrentTotalExaminationTime()
+    {
+        if (!_configService.AppData.ExaminationTimer.HasValue)
+            return _configService.AppData.AccumulatedExaminationTime;
+        
+        var currentSessionTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() - _configService.AppData.ExaminationTimer.Value;
+        return _configService.AppData.AccumulatedExaminationTime + currentSessionTime;
+    }
+
+    
     public async Task SaveProgressSilently()
     {
         if (Examination == null) return;
@@ -312,10 +378,22 @@ public partial class ExaminationWindowViewModel : ViewModelBase
         }
     }
     
-    public async Task SubmitExamination()
+    public async Task SubmitExamination(bool forceSubmit = false)
     {
         if (Examination == null) return;
-    
+
+        // 如果不是强制提交，检查时间约束
+        if (!forceSubmit)
+        {
+            var timeCheck = CheckExaminationTimeConstraints();
+            if (!timeCheck.CanSubmit)
+            {
+                // 通过事件通知UI显示错误信息
+                TimeConstraintViolated?.Invoke(this, new TimeConstraintEventArgs(timeCheck.Message));
+                return;
+            }
+        }
+
         // Save final answers
         SaveCurrentAnswer();
         
@@ -400,5 +478,23 @@ public partial class ExaminationWindowViewModel : ViewModelBase
     {
         string template = _localizationService[key];
         return string.Format(template, args);
+    }
+}
+
+public class ExamTimeCheckResult
+{
+    public bool IsValid { get; set; }
+    public bool CanSubmit { get; set; }
+    public bool ForceSubmit { get; set; }
+    public string Message { get; set; } = string.Empty;
+}
+
+public class TimeConstraintEventArgs : EventArgs
+{
+    public string Message { get; }
+    
+    public TimeConstraintEventArgs(string message)
+    {
+        Message = message;
     }
 }

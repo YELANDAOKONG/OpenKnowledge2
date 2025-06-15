@@ -296,8 +296,12 @@
   "settings.general.avatar.error.size": "Avatar file cannot exceed 64MB",
   "settings.general.avatar.error.format": "Avatar file format is not correct",
   "settings.general.avatar.error.loading": "Avatar file loading failed",
-  "settings.general.avatar.file.types": "Image Files (*.jpg;*.jpeg;*.png;*.bmp)"
+  "settings.general.avatar.file.types": "Image Files (*.jpg;*.jpeg;*.png;*.bmp)",
 
-
+  "exam.time.minimum.not.reached": "Insufficient examination time, minimum required: {0}, current: {1}",
+  "exam.time.maximum.exceeded": "Maximum examination time reached, system will auto-submit",
+  "exam.time.force.submit": "Time is up, auto-submitting examination...",
+  "exam.submit.blocked.minimum.time": "Submit failed: Minimum examination time requirement not met"
+  
 
 }

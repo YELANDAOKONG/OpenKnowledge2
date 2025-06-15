@@ -296,7 +296,12 @@
   "settings.general.avatar.error.size": "头像文件不能超过64MB",
   "settings.general.avatar.error.format": "头像文件格式不正确",
   "settings.general.avatar.error.loading": "头像文件加载失败",
-  "settings.general.avatar.file.types": "图像文件 (*.jpg;*.jpeg;*.png;*.bmp)"
+  "settings.general.avatar.file.types": "图像文件 (*.jpg;*.jpeg;*.png;*.bmp)",
+  
+  "exam.time.minimum.not.reached": "考试时间不足，最少需要考试 {0}，当前已考试 {1}",
+  "exam.time.maximum.exceeded": "考试时间已达上限，系统将自动交卷",
+  "exam.time.force.submit": "考试时间已到，正在自动提交...",
+  "exam.submit.blocked.minimum.time": "提交失败：未达到最小考试时间要求"
 
 
 

@@ -49,6 +49,8 @@ public partial class ExaminationWindow : AppWindowBase
         _viewModel.QuestionChanged += OnQuestionChanged;
         _viewModel.ProgressUpdated += OnProgressUpdated;
         _viewModel.WindowCloseRequested += (s, e) => Close();
+        _viewModel.TimeConstraintViolated += OnTimeConstraintViolated;
+        _viewModel.ForceSubmitRequested += OnForceSubmitRequested;
         
         // Initialize UI text
         InitializeUI();
@@ -135,16 +137,50 @@ public partial class ExaminationWindow : AppWindowBase
         {
             // Calculate time spent in current session
             var currentSessionTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() - _configService.AppData.ExaminationTimer.Value;
-            
+        
             // Add to accumulated time from previous sessions
             var totalTimeMs = _configService.AppData.AccumulatedExaminationTime + currentSessionTime;
-            
+        
             // Convert to TimeSpan for formatting
             var timeSpan = TimeSpan.FromMilliseconds(totalTimeMs);
             string timeFormat = $"{timeSpan.Hours:00}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}";
             _viewModel.TimeRemaining = timeFormat;
-            
+        
             TimeRemainingText.Text = string.Format(_localizationService["exam.time"], timeFormat);
+        
+            // 检查时间约束
+            CheckTimeConstraints(totalTimeMs);
+        }
+    }
+    
+    private void CheckTimeConstraints(long currentTotalTimeMs)
+    {
+        if (_viewModel.Examination?.ExaminationMetadata == null)
+            return;
+        
+        var metadata = _viewModel.Examination.ExaminationMetadata;
+    
+        // 检查是否超过最大时间限制
+        if (metadata.MaximumExamTime.HasValue && 
+            metadata.MaximumExamTime.Value > 0 && 
+            currentTotalTimeMs >= metadata.MaximumExamTime.Value)
+        {
+            // 停止定时器
+            _uiUpdateTimer.Stop();
+            _autoSaveTimer.Stop();
+        
+            // 显示强制提交消息并自动提交
+            Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                StatusMessageText.Text = _localizationService["exam.time.force.submit"];
+                StatusOverlay.IsVisible = true;
+                StatusProgressBar.IsVisible = true;
+            
+                await Task.Delay(2000); // 显示2秒提示
+            
+                // 强制提交
+                await _viewModel.SubmitExamination(forceSubmit: true);
+            });
         }
     }
     
@@ -1196,13 +1232,13 @@ public partial class ExaminationWindow : AppWindowBase
         {
             // Save current answers
             SaveCurrentAnswer();
-            
+        
             // Save accumulated time before submitting
             SaveAccumulatedTime();
-            
-            // Call ViewModel's submit method
-            await _viewModel.SubmitExamination();
-            
+        
+            // Call ViewModel's submit method (非强制提交，会检查时间约束)
+            await _viewModel.SubmitExamination(forceSubmit: false);
+        
             // Stop timers
             _uiUpdateTimer.Stop();
             _autoSaveTimer.Stop();
@@ -1229,6 +1265,7 @@ public partial class ExaminationWindow : AppWindowBase
             StatusOverlay.IsVisible = false;
         }
     }
+
     
     public void SaveCurrentAnswer()
     {
@@ -1280,6 +1317,27 @@ public partial class ExaminationWindow : AppWindowBase
                 break;
         }
     }
+    
+    private void OnTimeConstraintViolated(object? sender, TimeConstraintEventArgs e)
+    {
+        Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            StatusMessageText.Text = e.Message;
+            StatusOverlay.IsVisible = true;
+            StatusProgressBar.IsVisible = false;
+        
+            await Task.Delay(4000); // 显示4秒错误信息
+            StatusOverlay.IsVisible = false;
+        });
+    }
+    
+    private void OnForceSubmitRequested(object? sender, EventArgs e)
+    {
+        Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            await _viewModel.SubmitExamination(forceSubmit: true);
+        });
+    }
 
     
     protected override void OnClosed(EventArgs e)
@@ -1302,5 +1360,7 @@ public partial class ExaminationWindow : AppWindowBase
         _viewModel.ExaminationLoaded -= OnExaminationLoaded;
         _viewModel.QuestionChanged -= OnQuestionChanged;
         _viewModel.ProgressUpdated -= OnProgressUpdated;
+        _viewModel.TimeConstraintViolated -= OnTimeConstraintViolated;
+        _viewModel.ForceSubmitRequested -= OnForceSubmitRequested;
     }
 }
