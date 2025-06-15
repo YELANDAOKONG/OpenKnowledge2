@@ -18,7 +18,8 @@
         MinWidth="600" MinHeight="400"
         WindowStartupLocation="CenterOwner">
 
-    <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="20,40,20,20">
+    <Grid Name="MainGrid" RowDefinitions="Auto,*,Auto,Auto" Margin="20,40,20,20">
+        
         <!-- Header -->
         <Grid Grid.Row="0" RowDefinitions="Auto,Auto" Margin="0,0,0,20">
             <!-- Exam Status Title -->
@@ -36,6 +37,27 @@
                        Opacity="0.8"
                        IsVisible="{Binding HasActiveExam}"/>
         </Grid>
+        
+        <!-- Drag and Drop Overlay -->
+        <Border Grid.Row="0" Grid.RowSpan="4"
+                Name="DragDropOverlay"
+                Background="#80000000"
+                IsVisible="False"
+                ZIndex="1000">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="{loc:Translate Key=exam.dialog.drop.here}" 
+                           FontSize="24" 
+                           FontWeight="SemiBold"
+                           Foreground="White"
+                           TextAlignment="Center"
+                           Margin="0,0,0,10"/>
+                <TextBlock Text="{loc:Translate Key=exam.dialog.drop.json.files}" 
+                           FontSize="16"
+                           Foreground="White"
+                           Opacity="0.8"
+                           TextAlignment="Center"/>
+            </StackPanel>
+        </Border>
         
         <!-- Exam Details -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">

@@ -303,7 +303,12 @@
   "exam.time.force.submit": "Time is up, auto-submitting examination...",
   "exam.submit.blocked.minimum.time": "Submit failed: Minimum examination time requirement not met",
   "exam.submit.in.progress": "Submitting examination, please wait...",
-  "exam.window.close.blocked": "Cannot close window while examination is being submitted"
+  "exam.window.close.blocked": "Cannot close window while examination is being submitted",
+
+  "exam.dialog.drop.here": "Drop examination file here",
+  "exam.dialog.drop.json.files": "JSON files only",
+  "exam.dialog.drop.invalid.file": "Invalid file type. Please drop a JSON examination file.",
+  "exam.dialog.drop.error": "Error processing dropped file."
   
 
 }

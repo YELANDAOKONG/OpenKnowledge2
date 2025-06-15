@@ -157,7 +157,7 @@ public partial class ExaminationDialogWindowViewModel : ViewModelBase
         return input.Substring(0, maxLength - 3) + "...";
     }
     
-    private void ShowTemporaryStatusMessage(string message)
+    public void ShowTemporaryStatusMessage(string message)
     {
         StatusMessage = message;
         ShowStatusMessage = true;
