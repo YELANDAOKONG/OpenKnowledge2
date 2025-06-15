@@ -196,7 +196,31 @@ public partial class ExaminationWindow : AppWindowBase
             
                 if (TimeRemainingText != null && _localizationService != null)
                 {
-                    TimeRemainingText.Text = string.Format(_localizationService["exam.time"], timeFormat);
+                    var time = string.Format(_localizationService["exam.time"], timeFormat);
+                    if (_viewModel != null && 
+                        _viewModel.Examination != null &&
+                        _viewModel.Examination.ExaminationMetadata != null &&
+                        _viewModel.Examination.ExaminationMetadata.MaximumExamTime != null)
+                    {
+                        var maxTimeSpan = TimeSpan.FromMilliseconds(_viewModel.Examination.ExaminationMetadata.MaximumExamTime.Value);
+                        string maxTimeFormat = $"{maxTimeSpan.Hours:00}:{maxTimeSpan.Minutes:00}:{maxTimeSpan.Seconds:00}";
+
+                        if (_viewModel.Examination.ExaminationMetadata.MinimumExamTime != null)
+                        {
+                            var minTimeSpan = TimeSpan.FromMilliseconds(_viewModel.Examination.ExaminationMetadata.MinimumExamTime.Value);
+                            string minTimeFormat = $"{minTimeSpan.Hours:00}:{minTimeSpan.Minutes:00}:{minTimeSpan.Seconds:00}";
+                            
+                            TimeRemainingText.Text = time + " / " + maxTimeFormat + " " + "(" + minTimeFormat + ")";
+                        }
+                        else
+                        {
+                            TimeRemainingText.Text = time + " / " + maxTimeFormat;
+                        }
+                    }
+                    else
+                    {
+                        TimeRemainingText.Text = time;
+                    }
                 }
             
                 // 检查时间约束（只有在考试进行中且窗口可见时）
