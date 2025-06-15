@@ -135,95 +135,104 @@ public partial class ExaminationDialogWindow : AppWindowBase
     
     private async Task<bool> ShowConfirmationDialogAsync(string title, string message)
     {
-        // Create confirmation dialog window
-        var dialog = new Window
+        try
         {
-            Title = title,
-            SizeToContent = SizeToContent.WidthAndHeight,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            Width = 400,
-            MinWidth = 400,
-            MinHeight = 150,
-            MaxWidth = 600,
-            MaxHeight = 250,
-            TransparencyLevelHint = new[] { Avalonia.Controls.WindowTransparencyLevel.AcrylicBlur },
-            ExtendClientAreaToDecorationsHint = true
-        };
+            // Create confirmation dialog window
+            var dialog = new Window
+            {
+                Title = title,
+                SizeToContent = SizeToContent.WidthAndHeight,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Width = 400,
+                MinWidth = 400,
+                MinHeight = 150,
+                MaxWidth = 600,
+                MaxHeight = 250,
+                TransparencyLevelHint = new[] { Avalonia.Controls.WindowTransparencyLevel.AcrylicBlur },
+                ExtendClientAreaToDecorationsHint = true
+            };
 
-        // Apply theme service for consistent styling
-        var themeService = App.GetService<ThemeService>();
-        themeService.ApplyTransparencyToWindow(dialog);
+            // Apply theme service for consistent styling
+            var themeService = App.GetService<ThemeService>();
+            themeService.ApplyTransparencyToWindow(dialog);
 
-        var grid = new Grid
+            var grid = new Grid
+            {
+                Margin = new Thickness(20, 40, 20, 20),
+                RowDefinitions = new RowDefinitions("*, Auto")
+            };
+
+            var messageTextBlock = new TextBlock
+            {
+                Text = message,
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 0, 0, 20),
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                TextAlignment = TextAlignment.Center
+            };
+
+            var buttonPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Spacing = 10
+            };
+
+            var cancelButton = new Button
+            {
+                Content = _localizationService["common.cancel"],
+                Width = 100,
+                Height = 35,
+                HorizontalContentAlignment = HorizontalAlignment.Center,
+                VerticalContentAlignment = VerticalAlignment.Center
+            };
+
+            var confirmButton = new Button
+            {
+                Content = _localizationService["common.confirm"],
+                Width = 100,
+                Height = 35,
+                Classes = { "accent" },
+                HorizontalContentAlignment = HorizontalAlignment.Center,
+                VerticalContentAlignment = VerticalAlignment.Center
+            };
+
+            var result = false;
+
+            cancelButton.Click += (s, e) =>
+            {
+                result = false;
+                dialog.Close();
+            };
+
+            confirmButton.Click += (s, e) =>
+            {
+                result = true;
+                dialog.Close();
+            };
+
+            buttonPanel.Children.Add(cancelButton);
+            buttonPanel.Children.Add(confirmButton);
+
+            Grid.SetRow(messageTextBlock, 0);
+            Grid.SetRow(buttonPanel, 1);
+
+            grid.Children.Add(messageTextBlock);
+            grid.Children.Add(buttonPanel);
+
+            dialog.Content = grid;
+
+            await dialog.ShowDialog(this);
+
+            return result;
+        }
+        catch (Exception ex)
         {
-            Margin = new Thickness(20, 40, 20, 20),
-            RowDefinitions = new RowDefinitions("*, Auto")
-        };
-
-        var messageTextBlock = new TextBlock
-        {
-            Text = message,
-            TextWrapping = TextWrapping.Wrap,
-            Margin = new Thickness(0, 0, 0, 20),
-            VerticalAlignment = VerticalAlignment.Center,
-            HorizontalAlignment = HorizontalAlignment.Center,
-            TextAlignment = TextAlignment.Center
-        };
-
-        var buttonPanel = new StackPanel
-        {
-            Orientation = Orientation.Horizontal,
-            HorizontalAlignment = HorizontalAlignment.Center,
-            Spacing = 10
-        };
-
-        var cancelButton = new Button
-        {
-            Content = _localizationService["common.cancel"],
-            Width = 100,
-            Height = 35,
-            HorizontalContentAlignment = HorizontalAlignment.Center,
-            VerticalContentAlignment = VerticalAlignment.Center
-        };
-
-        var confirmButton = new Button
-        {
-            Content = _localizationService["common.confirm"],
-            Width = 100,
-            Height = 35,
-            Classes = { "accent" },
-            HorizontalContentAlignment = HorizontalAlignment.Center,
-            VerticalContentAlignment = VerticalAlignment.Center
-        };
-
-        var result = false;
-
-        cancelButton.Click += (s, e) =>
-        {
-            result = false;
-            dialog.Close();
-        };
-
-        confirmButton.Click += (s, e) =>
-        {
-            result = true;
-            dialog.Close();
-        };
-
-        buttonPanel.Children.Add(cancelButton);
-        buttonPanel.Children.Add(confirmButton);
-
-        Grid.SetRow(messageTextBlock, 0);
-        Grid.SetRow(buttonPanel, 1);
-
-        grid.Children.Add(messageTextBlock);
-        grid.Children.Add(buttonPanel);
-
-        dialog.Content = grid;
-
-        await dialog.ShowDialog(this);
-        
-        return result;
+            _logger?.Error($"Error showing confirmation dialog: {ex.Message}");
+            _logger?.Trace($"Error showing confirmation dialog: {ex.StackTrace}");
+            return false; // 出错时默认取消
+        }
     }
 
 }

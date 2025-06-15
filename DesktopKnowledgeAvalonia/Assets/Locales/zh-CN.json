@@ -301,7 +301,9 @@
   "exam.time.minimum.not.reached": "考试时间不足，最少需要考试 {0}，当前已考试 {1}",
   "exam.time.maximum.exceeded": "考试时间已达上限，系统将自动交卷",
   "exam.time.force.submit": "考试时间已到，正在自动提交...",
-  "exam.submit.blocked.minimum.time": "提交失败：未达到最小考试时间要求"
+  "exam.submit.blocked.minimum.time": "提交失败：未达到最小考试时间要求",
+  "exam.submit.in.progress": "正在提交考试，请稍候...",
+  "exam.window.close.blocked": "考试正在提交中，无法关闭窗口"
 
 
 

@@ -30,42 +30,56 @@ public partial class ExaminationWindow : AppWindowBase
     private System.Timers.Timer _autoSaveTimer;
     private System.Timers.Timer _uiUpdateTimer;
     private long _sessionStartTime; // Track when this session started
+    private bool _isSubmitting = false;
+
+    private LoggerService _logger;
     
     // Constructor with optional parameters for loading examinations
     public ExaminationWindow(string? filePath = null, bool force = false)
     {
-        InitializeComponent();
+        try
+        {
+            InitializeComponent();
         
-        // Get services
-        _localizationService = App.GetService<LocalizationService>();
-        _configService = App.GetService<ConfigureService>();
-        _viewModel = new ExaminationWindowViewModel(_configService, _localizationService);
+            // Get services
+            _localizationService = App.GetService<LocalizationService>();
+            _configService = App.GetService<ConfigureService>();
+            _viewModel = new ExaminationWindowViewModel(_configService, _localizationService);
+            _logger = App.GetWindowsLogger("ExaminationWindow");
         
-        // Set DataContext for convenience
-        DataContext = _viewModel;
+            // Set DataContext for convenience
+            DataContext = _viewModel;
         
-        // Subscribe to view model events
-        _viewModel.ExaminationLoaded += OnExaminationLoaded;
-        _viewModel.QuestionChanged += OnQuestionChanged;
-        _viewModel.ProgressUpdated += OnProgressUpdated;
-        _viewModel.WindowCloseRequested += (s, e) => Close();
-        _viewModel.TimeConstraintViolated += OnTimeConstraintViolated;
-        _viewModel.ForceSubmitRequested += OnForceSubmitRequested;
+            // Subscribe to view model events
+            _viewModel.ExaminationLoaded += OnExaminationLoaded;
+            _viewModel.QuestionChanged += OnQuestionChanged;
+            _viewModel.ProgressUpdated += OnProgressUpdated;
+            _viewModel.WindowCloseRequested += (s, e) => Close();
+            _viewModel.TimeConstraintViolated += OnTimeConstraintViolated;
+            _viewModel.ForceSubmitRequested += OnForceSubmitRequested;
         
-        // Initialize UI text
-        InitializeUI();
+            // Initialize UI text
+            InitializeUI();
         
-        // Set up event handlers
-        SetupEventHandlers();
+            // Set up event handlers
+            SetupEventHandlers();
         
-        // Load examination from file or current examination
-        LoadExamination(filePath, force);
+            // Load examination from file or current examination
+            LoadExamination(filePath, force);
         
-        // Initialize timers
-        InitializeTimers();
+            // Initialize timers
+            InitializeTimers();
         
-        // Assign the save method to ViewModel's delegate
-        _viewModel.SaveCurrentAnswer = SaveCurrentAnswer;
+            // Assign the save method to ViewModel's delegate
+            _viewModel.SaveCurrentAnswer = SaveCurrentAnswer;
+        }
+        catch (Exception ex)
+        {
+            var logger = App.GetWindowsLogger("ExaminationWindow");
+            logger.Error($"Error initializing examination window: {ex.Message}");
+            logger.Trace($"Error initializing examination window: {ex.StackTrace}");
+            throw;
+        }
     }
     
     private void InitializeUI()
@@ -97,90 +111,152 @@ public partial class ExaminationWindow : AppWindowBase
     
     private void InitializeTimers()
     {
-        // UI update timer (0.5 seconds)
-        _uiUpdateTimer = new System.Timers.Timer(500);
-        _uiUpdateTimer.Elapsed += (s, e) => 
+        try
         {
-            Dispatcher.UIThread.InvokeAsync(() => 
+            // UI update timer (0.5 seconds)
+            _uiUpdateTimer = new System.Timers.Timer(500);
+            _uiUpdateTimer.Elapsed += (s, e) => 
             {
-                if (_viewModel.Examination != null)
+                Dispatcher.UIThread.InvokeAsync(() => 
                 {
-                    UpdateTimeDisplay();
-                }
-            });
-        };
-        _uiUpdateTimer.Start();
+                    try
+                    {
+                        if (_viewModel?.Examination != null && !_isSubmitting)
+                        {
+                            UpdateTimeDisplay();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error($"Error in UI update timer: {ex.Message}");
+                        _logger.Trace($"Error in UI update timer: {ex.Message}");
+                    }
+                });
+            };
+            _uiUpdateTimer.Start();
         
-        // Auto-save timer (5 seconds)
-        _autoSaveTimer = new System.Timers.Timer(5000);
-        _autoSaveTimer.Elapsed += async (s, e) => 
-        {
-            await Dispatcher.UIThread.InvokeAsync(async () => 
+            // Auto-save timer (5 seconds)
+            _autoSaveTimer = new System.Timers.Timer(5000);
+            _autoSaveTimer.Elapsed += async (s, e) => 
             {
-                if (_viewModel.Examination != null && _configService.AppData.IsInExamination)
+                await Dispatcher.UIThread.InvokeAsync(async () => 
                 {
-                    // First save current answer
-                    SaveCurrentAnswer();
-                    // Also save accumulated time
-                    SaveAccumulatedTime();
-                    // Then silently save to disk
-                    await _viewModel.SaveProgressSilently();
-                }
-            });
-        };
-        _autoSaveTimer.Start();
+                    try
+                    {
+                        if (_viewModel?.Examination != null && 
+                            _configService?.AppData?.IsInExamination == true && 
+                            !_isSubmitting)
+                        {
+                            // First save current answer
+                            SaveCurrentAnswer();
+                            // Also save accumulated time
+                            SaveAccumulatedTime();
+                            // Then silently save to disk
+                            await _viewModel.SaveProgressSilently();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error($"Error in auto-save timer: {ex.Message}");
+                        _logger.Trace($"Error in auto-save timer: {ex.StackTrace}");
+                    }
+                });
+            };
+            _autoSaveTimer.Start();
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"Error initializing timers: {ex.Message}");
+            _logger.Trace($"Error initializing timers: {ex.StackTrace}");
+        }
     }
     
     private void UpdateTimeDisplay()
     {
-        if (_configService.AppData.ExaminationTimer.HasValue)
+        try
         {
-            // Calculate time spent in current session
-            var currentSessionTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() - _configService.AppData.ExaminationTimer.Value;
-        
-            // Add to accumulated time from previous sessions
-            var totalTimeMs = _configService.AppData.AccumulatedExaminationTime + currentSessionTime;
-        
-            // Convert to TimeSpan for formatting
-            var timeSpan = TimeSpan.FromMilliseconds(totalTimeMs);
-            string timeFormat = $"{timeSpan.Hours:00}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}";
-            _viewModel.TimeRemaining = timeFormat;
-        
-            TimeRemainingText.Text = string.Format(_localizationService["exam.time"], timeFormat);
-        
-            // 检查时间约束
-            CheckTimeConstraints(totalTimeMs);
+            if (_configService?.AppData?.ExaminationTimer.HasValue == true)
+            {
+                // Calculate time spent in current session
+                var currentSessionTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() - _configService.AppData.ExaminationTimer.Value;
+            
+                // Add to accumulated time from previous sessions
+                var totalTimeMs = _configService.AppData.AccumulatedExaminationTime + currentSessionTime;
+            
+                // Convert to TimeSpan for formatting
+                var timeSpan = TimeSpan.FromMilliseconds(totalTimeMs);
+                string timeFormat = $"{timeSpan.Hours:00}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}";
+            
+                if (_viewModel != null)
+                {
+                    _viewModel.TimeRemaining = timeFormat;
+                }
+            
+                if (TimeRemainingText != null && _localizationService != null)
+                {
+                    TimeRemainingText.Text = string.Format(_localizationService["exam.time"], timeFormat);
+                }
+            
+                // 检查时间约束（只有在考试进行中且窗口可见时）
+                if (_viewModel?.IsWindowVisible == true && !_isSubmitting)
+                {
+                    CheckTimeConstraints(totalTimeMs);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"Error updating time display: {ex.Message}");
+            _logger.Trace($"Error updating time display: {ex.StackTrace}");
         }
     }
     
     private void CheckTimeConstraints(long currentTotalTimeMs)
     {
-        if (_viewModel.Examination?.ExaminationMetadata == null)
-            return;
-        
-        var metadata = _viewModel.Examination.ExaminationMetadata;
-    
-        // 检查是否超过最大时间限制
-        if (metadata.MaximumExamTime.HasValue && 
-            metadata.MaximumExamTime.Value > 0 && 
-            currentTotalTimeMs >= metadata.MaximumExamTime.Value)
+        try
         {
-            // 停止定时器
-            _uiUpdateTimer.Stop();
-            _autoSaveTimer.Stop();
+            if (_viewModel?.Examination?.ExaminationMetadata == null || _isSubmitting) return;
+            var metadata = _viewModel.Examination.ExaminationMetadata;
         
-            // 显示强制提交消息并自动提交
-            Dispatcher.UIThread.InvokeAsync(async () =>
+            // 检查是否超过最大时间限制
+            if (metadata.MaximumExamTime.HasValue && 
+                metadata.MaximumExamTime.Value > 0 && 
+                currentTotalTimeMs >= metadata.MaximumExamTime.Value)
             {
-                StatusMessageText.Text = _localizationService["exam.time.force.submit"];
-                StatusOverlay.IsVisible = true;
-                StatusProgressBar.IsVisible = true;
+                // 设置提交状态，防止重复执行
+                _isSubmitting = true;
             
-                await Task.Delay(2000); // 显示2秒提示
+                // 停止定时器
+                _uiUpdateTimer?.Stop();
+                _autoSaveTimer?.Stop();
             
-                // 强制提交
-                await _viewModel.SubmitExamination(forceSubmit: true);
-            });
+                // 显示强制提交消息并自动提交
+                Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    try
+                    {
+                        await ShowStatusMessage(_localizationService?["exam.time.force.submit"] ?? "Time is up, auto-submitting examination...", true);
+                    
+                        await Task.Delay(2000); // 显示2秒提示
+                    
+                        // 强制提交
+                        await _viewModel.SubmitExamination(forceSubmit: true);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error($"Error during force submit: {ex.Message}");
+                        _logger.Trace($"Error during force submit: {ex.StackTrace}");
+                        _isSubmitting = false; // 重置状态
+                        RestartTimers(); // 重启定时器
+                        UpdateUIState(); // 更新UI状态
+                    }
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"Error checking time constraints: {ex.Message}");
+            _logger.Trace($"Error checking time constraints: {ex.StackTrace}");
         }
     }
     
@@ -1228,8 +1304,18 @@ public partial class ExaminationWindow : AppWindowBase
     
     private async Task SubmitExamination()
     {
+        if (_isSubmitting) return; // 防止重复提交
+    
         try
         {
+            _isSubmitting = true;
+        
+            // 禁用提交按钮防止重复点击
+            if (SubmitButton != null)
+            {
+                SubmitButton.IsEnabled = false;
+            }
+        
             // Save current answers
             SaveCurrentAnswer();
         
@@ -1239,9 +1325,8 @@ public partial class ExaminationWindow : AppWindowBase
             // Call ViewModel's submit method (非强制提交，会检查时间约束)
             await _viewModel.SubmitExamination(forceSubmit: false);
         
-            // Stop timers
-            _uiUpdateTimer.Stop();
-            _autoSaveTimer.Stop();
+            // 如果成功提交，定时器会在ViewModel中停止
+            // 如果由于时间约束失败，状态会在OnTimeConstraintViolated中重置
             
             // Show completion message
             // StatusMessageText.Text = "Examination submitted successfully!";
@@ -1256,15 +1341,18 @@ public partial class ExaminationWindow : AppWindowBase
         }
         catch (Exception ex)
         {
-            // Show error
-            StatusMessageText.Text = $"Error submitting examination: {ex.Message}";
-            StatusOverlay.IsVisible = true;
-            StatusProgressBar.IsVisible = false;
+            _logger.Error($"Error submitting examination: {ex.Message}");
+            _logger.Trace($"Error submitting examination: {ex.StackTrace}");
             
-            await Task.Delay(3000);
-            StatusOverlay.IsVisible = false;
+            // Show error
+            await ShowStatusMessage($"Error submitting examination: {ex.Message}", false);
+        
+            // 重置状态
+            _isSubmitting = false;
+            UpdateUIState();
         }
     }
+
 
     
     public void SaveCurrentAnswer()
@@ -1322,45 +1410,284 @@ public partial class ExaminationWindow : AppWindowBase
     {
         Dispatcher.UIThread.InvokeAsync(async () =>
         {
-            StatusMessageText.Text = e.Message;
-            StatusOverlay.IsVisible = true;
-            StatusProgressBar.IsVisible = false;
-        
-            await Task.Delay(4000); // 显示4秒错误信息
-            StatusOverlay.IsVisible = false;
+            try
+            {
+                // 暂停定时器避免重复触发
+                _uiUpdateTimer?.Stop();
+            
+                await ShowTimeConstraintDialog(e.Message);
+            
+                // 重置提交状态
+                _isSubmitting = false;
+            
+                // 重新启动定时器
+                RestartTimers();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Error handling time constraint violation: {ex.Message}");
+                _logger.Trace($"Error handling time constraint violation: {ex.StackTrace}");
+                
+                // 确保状态被重置
+                _isSubmitting = false;
+                RestartTimers();
+                // 备用简单提示
+                await ShowStatusMessage(e.Message, false);
+            }
         });
+    }
+    
+    private void RestartTimers()
+    {
+        try
+        {
+            // 确保定时器处于正确状态
+            if (_viewModel?.Examination != null && 
+                _configService?.AppData?.IsInExamination == true && 
+                _viewModel.IsWindowVisible)
+            {
+                // 重启UI更新定时器
+                if (_uiUpdateTimer != null && !_uiUpdateTimer.Enabled)
+                {
+                    _uiUpdateTimer.Start();
+                }
+            
+                // 重启自动保存定时器
+                if (_autoSaveTimer != null && !_autoSaveTimer.Enabled)
+                {
+                    _autoSaveTimer.Start();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"Error restarting timers: {ex.Message}");
+            _logger.Trace($"Error restarting timers: {ex.StackTrace}");
+        }
     }
     
     private void OnForceSubmitRequested(object? sender, EventArgs e)
     {
+        if (_isSubmitting) return;
+    
         Dispatcher.UIThread.InvokeAsync(async () =>
         {
-            await _viewModel.SubmitExamination(forceSubmit: true);
+            try
+            {
+                await _viewModel.SubmitExamination(forceSubmit: true);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Error during force submit: {ex.Message}");
+                _logger.Trace($"Error during force submit: {ex.StackTrace}");
+                _isSubmitting = false;
+            }
         });
     }
 
     
     protected override void OnClosed(EventArgs e)
     {
-        base.OnClosed(e);
+        try
+        {
+            // Save any pending changes
+            SaveCurrentAnswer();
         
-        // Save any pending changes
-        SaveCurrentAnswer();
+            // Save accumulated time before closing
+            SaveAccumulatedTime();
         
-        // Save accumulated time before closing
-        SaveAccumulatedTime();
+            _ = _viewModel?.SaveProgressSilently();
         
-        _ = _viewModel.SaveProgressSilently();
+            // Stop timers
+            _uiUpdateTimer?.Stop();
+            _autoSaveTimer?.Stop();
         
-        // Stop timers
-        _uiUpdateTimer.Stop();
-        _autoSaveTimer.Stop();
-        
-        // Unsubscribe from events
-        _viewModel.ExaminationLoaded -= OnExaminationLoaded;
-        _viewModel.QuestionChanged -= OnQuestionChanged;
-        _viewModel.ProgressUpdated -= OnProgressUpdated;
-        _viewModel.TimeConstraintViolated -= OnTimeConstraintViolated;
-        _viewModel.ForceSubmitRequested -= OnForceSubmitRequested;
+            // Unsubscribe from events
+            if (_viewModel != null)
+            {
+                _viewModel.ExaminationLoaded -= OnExaminationLoaded;
+                _viewModel.QuestionChanged -= OnQuestionChanged;
+                _viewModel.ProgressUpdated -= OnProgressUpdated;
+                _viewModel.TimeConstraintViolated -= OnTimeConstraintViolated;
+                _viewModel.ForceSubmitRequested -= OnForceSubmitRequested;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"Error during window close: {ex.Message}");
+            _logger.Trace($"Error during window close: {ex.StackTrace}");
+        }
+        finally
+        {
+            base.OnClosed(e);
+        }
     }
+    
+    private async Task ShowStatusMessage(string message, bool showProgress)
+    {
+        try
+        {
+            if (StatusMessageText != null)
+                StatusMessageText.Text = message;
+            if (StatusOverlay != null)
+                StatusOverlay.IsVisible = true;
+            if (StatusProgressBar != null)
+                StatusProgressBar.IsVisible = showProgress;
+        
+            if (!showProgress)
+            {
+                await Task.Delay(3000);
+                if (StatusOverlay != null)
+                    StatusOverlay.IsVisible = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"Error showing status message: {ex.Message}");
+            _logger.Trace($"Error showing status message: {ex.StackTrace}");
+        }
+    }
+    
+    private async Task ShowTimeConstraintDialog(string message)
+    {
+        var dialog = new Window
+        {
+            Title = _localizationService?["exam.submit.blocked.minimum.time"] ?? "Time Constraint",
+            SizeToContent = SizeToContent.Manual,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Width = 500,
+            Height = 200,
+            MinWidth = 400,
+            MinHeight = 150,
+            MaxWidth = 700,
+            MaxHeight = 300,
+            CanResize = true,
+            TransparencyLevelHint = new[] { Avalonia.Controls.WindowTransparencyLevel.AcrylicBlur },
+            ExtendClientAreaToDecorationsHint = true
+        };
+
+        // Apply theme service for consistent styling
+        var themeService = App.GetService<ThemeService>();
+        themeService?.ApplyTransparencyToWindow(dialog);
+
+        var grid = new Grid
+        {
+            Margin = new Thickness(20, 40, 20, 20),
+            RowDefinitions = new RowDefinitions("*, Auto")
+        };
+
+        var messageTextBlock = new TextBlock
+        {
+            Text = message,
+            TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(0, 0, 0, 20),
+            VerticalAlignment = VerticalAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            TextAlignment = TextAlignment.Center,
+            FontSize = 14
+        };
+
+        var buttonPanel = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Spacing = 10
+        };
+
+        var okButton = new Button
+        {
+            Content = "OK",
+            Width = 100,
+            Height = 35,
+            Classes = { "accent" },
+            HorizontalContentAlignment = HorizontalAlignment.Center,
+            VerticalContentAlignment = VerticalAlignment.Center
+        };
+
+        // 对话框关闭处理
+        var dialogClosed = false;
+        okButton.Click += (s, e) => 
+        {
+            dialogClosed = true;
+            dialog.Close();
+        };
+
+        // 允许直接关闭窗口
+        dialog.Closing += (s, e) => 
+        {
+            dialogClosed = true;
+        };
+
+        buttonPanel.Children.Add(okButton);
+
+        Grid.SetRow(messageTextBlock, 0);
+        Grid.SetRow(buttonPanel, 1);
+
+        grid.Children.Add(messageTextBlock);
+        grid.Children.Add(buttonPanel);
+
+        dialog.Content = grid;
+
+        await dialog.ShowDialog(this);
+        
+        // 确保对话框关闭后状态正确
+        if (dialogClosed)
+        {
+            // 触发UI更新以确保时间显示和按钮状态正确
+            Dispatcher.UIThread.Post(() =>
+            {
+                try
+                {
+                    UpdateTimeDisplay();
+                    UpdateUIState();
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error($"Error updating UI after dialog close: {ex.Message}");
+                    _logger.Trace($"Error updating UI after dialog close: {ex.StackTrace}");
+                }
+            });
+        }
+    }
+    
+    private void UpdateUIState()
+    {
+        try
+        {
+            // 确保提交按钮可用（如果不是在提交过程中）
+            if (SubmitButton != null && !_isSubmitting)
+            {
+                SubmitButton.IsEnabled = true;
+            }
+        
+            // 确保其他按钮状态正确
+            if (SaveButton != null && !_isSubmitting)
+            {
+                SaveButton.IsEnabled = true;
+            }
+        
+            if (PrevButton != null && !_isSubmitting)
+            {
+                // 根据当前位置更新导航按钮状态
+                PrevButton.IsEnabled = _viewModel?.CurrentSectionIndex > 0 || _viewModel?.CurrentQuestionIndex > 0;
+            }
+        
+            if (NextButton != null && !_isSubmitting)
+            {
+                bool hasNextQuestion = false;
+                if (_viewModel?.CurrentSection?.Questions != null)
+                {
+                    hasNextQuestion = _viewModel.CurrentQuestionIndex < _viewModel.CurrentSection.Questions.Length - 1;
+                }
+                bool hasNextSection = _viewModel?.CurrentSectionIndex < (_viewModel?.Examination?.ExaminationSections?.Length ?? 0) - 1;
+                NextButton.IsEnabled = hasNextQuestion || hasNextSection;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"Error updating UI state: {ex.Message}");
+            _logger.Trace($"Error updating UI state: {ex.StackTrace}");
+        }
+    }
+
 }
