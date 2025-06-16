@@ -308,7 +308,12 @@
   "exam.dialog.drop.here": "請將試卷檔案拖放到此處",
   "exam.dialog.drop.json.files": "僅支援JSON檔案",
   "exam.dialog.drop.invalid.file": "檔案類型無效。請拖放JSON格式的考試檔案。",
-  "exam.dialog.drop.error": "處理拖放檔案時發生錯誤。"
+  "exam.dialog.drop.error": "處理拖放檔案時發生錯誤。",
+
+  "settings.general.logging": "日誌",
+  "settings.general.logging.level": "日誌級別",
+  "settings.general.logging.description": "更高級別的日誌記錄會減少日誌檔案大小，但提供的偵錯資訊更少。"
+
 
 
 

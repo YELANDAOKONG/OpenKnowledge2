@@ -308,7 +308,12 @@
   "exam.dialog.drop.here": "Drop examination file here",
   "exam.dialog.drop.json.files": "JSON files only",
   "exam.dialog.drop.invalid.file": "Invalid file type. Please drop a JSON examination file.",
-  "exam.dialog.drop.error": "Error processing dropped file."
-  
+  "exam.dialog.drop.error": "Error processing dropped file.",
+
+  "settings.general.logging": "Logging",
+  "settings.general.logging.level": "Log Level",
+  "settings.general.logging.description": "Higher log levels reduce log file size but provide less debugging information."
+
+
 
 }

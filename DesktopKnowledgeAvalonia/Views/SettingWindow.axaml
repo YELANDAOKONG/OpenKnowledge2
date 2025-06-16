@@ -165,6 +165,31 @@
                                                           IsEnabled="{Binding EnableStatistics}"/>
                                         </Grid>
                                     </StackPanel>
+                                    
+                                    <!-- Logging Section -->
+                                    <StackPanel Margin="5" Spacing="10">
+                                        <TextBlock Text="{loc:Translate Key=settings.general.logging}" 
+                                                   FontWeight="SemiBold" 
+                                                   Margin="0,0,0,10"/>
+    
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Grid.Column="0" 
+                                                       Text="{loc:Translate Key=settings.general.logging.level}"
+                                                       VerticalAlignment="Center"/>
+                                            <ComboBox Grid.Column="1" 
+                                                      ItemsSource="{Binding LogLevels}"
+                                                      SelectedItem="{Binding SelectedLogLevel}"
+                                                      Width="150"
+                                                      HorizontalAlignment="Right"/>
+                                        </Grid>
+    
+                                        <TextBlock Text="{loc:Translate Key=settings.general.logging.description}" 
+                                                   TextWrapping="Wrap"
+                                                   Opacity="0.7"
+                                                   FontSize="12"
+                                                   Margin="0,4,0,0"/>
+                                    </StackPanel>
+
                                 </StackPanel>
                             </DataTemplate>
 

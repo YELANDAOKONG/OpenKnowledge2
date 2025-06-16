@@ -156,6 +156,20 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
     [ObservableProperty]
     private Avalonia.Media.IBrush _avatarMessageBackground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#569AFF"));
     
+    public List<string> LogLevels { get; } = new List<string> 
+    { 
+        "Trace", 
+        "Debug", 
+        "Information", 
+        "Warning", 
+        "Error", 
+        "Critical", 
+        "None" 
+    };
+    
+    [ObservableProperty]
+    private string _selectedLogLevel = "Information";
+    
     private readonly LoggerService _logger;
 
     public GeneralSettingsViewModel(LoggerService logger, ConfigureService configService, LocalizationService localizationService)
@@ -166,6 +180,7 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
         _userName = _configService.AppConfig.UserName;
         _enableStatistics = _configService.AppConfig.EnableStatistics;
         _randomizeWelcomeMessage = _configService.AppConfig.RandomizeWelcomeMessage;
+        _selectedLogLevel = _configService.AppConfig.LogLevel.ToString();
         
         UpdateUserInitials();
         LoadAvatarAsync().ConfigureAwait(false);
@@ -358,6 +373,13 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
         _configService.AppConfig.UserName = UserName;
         _configService.AppConfig.EnableStatistics = EnableStatistics;
         _configService.AppConfig.RandomizeWelcomeMessage = RandomizeWelcomeMessage;
+        
+        // Save log level
+        if (Enum.TryParse<Microsoft.Extensions.Logging.LogLevel>(SelectedLogLevel, out var logLevel))
+        {
+            await _configService.UpdateLogLevelAsync(logLevel);
+        }
+        
         await Task.CompletedTask;
     }
 }
