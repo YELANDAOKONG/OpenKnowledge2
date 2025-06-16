@@ -13,6 +13,7 @@ using DesktopKnowledgeAvalonia.ViewModels;
 using DesktopKnowledgeAvalonia.Views;
 using LibraryOpenKnowledge.Tools;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace DesktopKnowledgeAvalonia;
 
@@ -62,6 +63,7 @@ public partial class App : Application
             {
                 // Check if we need to initialize the AI API settings
                 var configService = GetService<ConfigureService>();
+                _ = SetGlobalLogLevelAsync(GetService<LoggerService>(), GetService<ConfigureService>().AppConfig.LogLevel);
                 bool needsInitialization = string.IsNullOrEmpty(configService.SystemConfig.OpenAiApiUrl) || 
                                            string.IsNullOrEmpty(configService.SystemConfig.OpenAiApiKey) || 
                                            string.IsNullOrEmpty(configService.SystemConfig.OpenAiModel);
@@ -101,10 +103,29 @@ public partial class App : Application
     {
         // Register core services
         // services.AddSingleton<LoggerService>();
+        // services.AddSingleton<LoggerService>(serviceProvider => {
+        //     string logFilePath = Path.Combine(ConfigureService.NewLogFilePath());
+        //     var customLogger = new ConsoleSimpleLogger("APP", true);
+        //     return new LoggerService(logFilePath, customLogger, null, null, true);
+        // });
+        // Add to ConfigureServices method in App.axaml.cs:
+
         services.AddSingleton<LoggerService>(serviceProvider => {
             string logFilePath = Path.Combine(ConfigureService.NewLogFilePath());
             var customLogger = new ConsoleSimpleLogger("APP", true);
-            return new LoggerService(logFilePath, customLogger, null, null, true);
+            // Create the logger with the configured log level
+            var loggerService = new LoggerService(
+                logFilePath: logFilePath, 
+                logger: customLogger, 
+                moduleName: "APP", 
+                loggerFactory: null, 
+                writeToFile: true,
+                fileLogLevel: LogLevel.Information,
+                onLogLevelChanged: (oldLevel, newLevel, module) => {
+                    customLogger.Info($"Log level changed for {module}: {oldLevel} -> {newLevel}");
+                }
+            );
+            return loggerService;
         });
         
         // Register services
@@ -185,7 +206,36 @@ public partial class App : Application
     {
         return GetService<LoggerService>().CreateSubModule("Windows").CreateSubModule(windowName);
     }
-
+    
+    public static async Task SetGlobalLogLevelAsync(LoggerService logger, LogLevel level)
+    {
+        // Update log level directly in the logger hierarchy
+        logger.FileLogLevel = level;
+        
+        // Update in configuration so it persists
+        var configService = App.GetService<ConfigureService>();
+        await configService.UpdateLogLevelAsync(level);
+    }
+    
+    public static Task SetGlobalLogLevelAsync(LoggerService logger, string levelName)
+    {
+        if (System.Enum.TryParse<LogLevel>(levelName, true, out var level))
+        {
+            logger.UpdateGlobalLogLevel(level);
+        }
+        else
+        {
+            logger.Error($"Invalid log level name: {levelName}");
+        }
+        return Task.CompletedTask;
+    }
+    
+    public static LogLevel GetGlobalLogLevel()
+    {
+        var configService = App.GetService<ConfigureService>();
+        return configService.AppConfig.LogLevel;
+    }
+    
 
     #region Statistics
     
