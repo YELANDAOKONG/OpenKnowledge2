@@ -7,7 +7,7 @@ namespace DesktopKnowledgeAvalonia.Models;
 [Serializable]
 public class ApplicationConfig
 {
-    public TransparencyMode TransparencyMode { get; set; } = TransparencyMode.FullTransparency;
+    public TransparencyMode TransparencyMode { get; set; } = TransparencyMode.Auto;
     public ThemeVariantMode ThemeVariant { get; set; } = ThemeVariantMode.Dark;
     public double BackgroundOpacity { get; set; } = 0.38; 
     public string? PreferredLanguage { get; set; } = null;

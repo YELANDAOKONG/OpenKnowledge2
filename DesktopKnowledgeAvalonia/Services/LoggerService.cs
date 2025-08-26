@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Collections.Generic;
 using LibraryOpenKnowledge.Tools;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -8,34 +9,78 @@ namespace DesktopKnowledgeAvalonia.Services;
 
 public class LoggerService
 {
+    // Delegate for log level change trigger
+    public delegate void LogLevelChangeTrigger(LogLevel oldLevel, LogLevel newLevel, string moduleName);
+    
     public CustomLogger Logger { get; }
     public Microsoft.Extensions.Logging.ILogger Logging { get; }
     
     public string? LogFilePath { get; }
     public string ModuleName { get; }
     
+    // Parent reference for hierarchy
+    private readonly LoggerService? _parentLogger;
+    
+    // Track child loggers for propagation
+    private readonly List<LoggerService> _childLoggers = new();
+    
+    // Log level with propagation
+    private LogLevel _fileLogLevel = LogLevel.Information;
+    public LogLevel FileLogLevel 
+    { 
+        get => _fileLogLevel;
+        set
+        {
+            if (_fileLogLevel == value)
+                return;
+                
+            var oldLevel = _fileLogLevel;
+            _fileLogLevel = value;
+            
+            // Invoke the trigger if set
+            OnLogLevelChanged?.Invoke(oldLevel, value, ModuleName);
+            
+            // Propagate to children
+            PropagateLogLevelChange(value);
+        }
+    }
+    
+    // The trigger delegate - renamed to avoid ambiguity
+    public LogLevelChangeTrigger? OnLogLevelChanged { get; set; }
+    
     private readonly bool _writeToFile;
     private readonly ILoggerFactory? _loggerFactory;
     
-    public LoggerService(string? logFilePath = null, CustomLogger? logger = null, string? moduleName = null, ILoggerFactory? loggerFactory = null, bool writeToFile = true)
+    public LoggerService(
+        string? logFilePath = null, 
+        CustomLogger? logger = null, 
+        string? moduleName = null, 
+        ILoggerFactory? loggerFactory = null, 
+        bool writeToFile = true,
+        LogLevel fileLogLevel = LogLevel.Information,
+        LogLevelChangeTrigger? onLogLevelChanged = null,
+        LoggerService? parentLogger = null)
     {
         _writeToFile = writeToFile;
         LogFilePath = logFilePath;
         ModuleName = moduleName ?? "Application";
+        _fileLogLevel = fileLogLevel;
+        OnLogLevelChanged = onLogLevelChanged;
+        _parentLogger = parentLogger;
+        
+        // Register with parent if we have one
+        _parentLogger?._childLoggers.Add(this);
         
         if (!string.IsNullOrEmpty(logFilePath))
         {
             string? directory = Path.GetDirectoryName(logFilePath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-            {
                 Directory.CreateDirectory(directory);
-            }
         }
         
-        Logger = logger ?? new ConsoleSimpleLogger(ModuleName, true); // "APP"
+        Logger = logger ?? new ConsoleSimpleLogger(ModuleName, true);
         
         _loggerFactory = loggerFactory ?? CreateDefaultLoggerFactory(logFilePath);
-        // Logging = _loggerFactory.CreateLogger<LoggerService>();
         Logging = _loggerFactory.CreateLogger(ModuleName);
     }
     
@@ -46,34 +91,57 @@ public class LoggerService
         
         var newName = directName ? moduleName : $"{ModuleName}.{moduleName}";
         
+        // Create submodule with current logger as parent
         return new LoggerService(
             logFilePath: LogFilePath,
             logger: subCustomLogger,
             moduleName: newName,
             loggerFactory: _loggerFactory,
-            writeToFile: _writeToFile
+            writeToFile: _writeToFile,
+            fileLogLevel: FileLogLevel,        // Inherit current log level
+            onLogLevelChanged: OnLogLevelChanged,  // Inherit trigger
+            parentLogger: this                // Set parent reference
         );
     }
     
-    public Microsoft.Extensions.Logging.ILogger GetSubLogger<T>()
+    // Propagate log level changes to all child loggers
+    private void PropagateLogLevelChange(LogLevel newLevel)
     {
-        return _loggerFactory?.CreateLogger<T>() ?? Logging;
+        foreach (var child in _childLoggers)
+        {
+            // This will trigger the setter which handles the notification
+            child.FileLogLevel = newLevel;
+        }
     }
     
-    public Microsoft.Extensions.Logging.ILogger GetSubLogger(string categoryName)
+    // Static access to update all loggers from any module
+    public void UpdateGlobalLogLevel(LogLevel newLevel)
     {
-        return _loggerFactory?.CreateLogger(categoryName) ?? Logging;
+        // Find root logger and update it (propagates to all)
+        LoggerService rootLogger = this;
+        while (rootLogger._parentLogger != null)
+            rootLogger = rootLogger._parentLogger;
+        
+        rootLogger.FileLogLevel = newLevel;
     }
+    
+    public Microsoft.Extensions.Logging.ILogger GetSubLogger<T>() => 
+        _loggerFactory?.CreateLogger<T>() ?? Logging;
+    
+    public Microsoft.Extensions.Logging.ILogger GetSubLogger(string categoryName) => 
+        _loggerFactory?.CreateLogger(categoryName) ?? Logging;
     
     public static ILoggerFactory CreateDefaultLoggerFactory(string? logFilePath)
     {
         return LoggerFactory.Create(builder =>
         {
-            builder.SetMinimumLevel(LogLevel.Information);
+            // Set to minimum to allow filtering at the call site
+            builder.SetMinimumLevel(LogLevel.Trace);
+            
             if (!string.IsNullOrEmpty(logFilePath))
             {
                 var serilogLogger = new LoggerConfiguration()
-                    .MinimumLevel.Information()
+                    .MinimumLevel.Verbose() // Allow all levels and filter at the call site
                     .WriteTo.File(logFilePath, 
                         rollingInterval: RollingInterval.Day,
                         outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level}] [{SourceContext}] {Message}{NewLine}{Exception}")
@@ -82,9 +150,7 @@ public class LoggerService
                 builder.AddSerilog(serilogLogger, dispose: true);
             }
             else
-            {
                 builder.AddDebug();
-            }
         });
     }
     
@@ -143,7 +209,9 @@ public class LoggerService
     
     private void LogToFileIfEnabled(LogLevel level, params string[] messages)
     {
-        if (!_writeToFile) return;
+        // Skip if file logging is disabled or level is below threshold
+        if (!_writeToFile || level < FileLogLevel) 
+            return;
         
         string message = string.Join(" ", messages);
         switch (level)

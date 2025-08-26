@@ -18,7 +18,8 @@
         MinWidth="600" MinHeight="400"
         WindowStartupLocation="CenterOwner">
 
-    <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="20,40,20,20">
+    <Grid Name="MainGrid" RowDefinitions="Auto,*,Auto,Auto" Margin="20,40,20,20">
+        
         <!-- Header -->
         <Grid Grid.Row="0" RowDefinitions="Auto,Auto" Margin="0,0,0,20">
             <!-- Exam Status Title -->
@@ -36,6 +37,40 @@
                        Opacity="0.8"
                        IsVisible="{Binding HasActiveExam}"/>
         </Grid>
+        
+        <!-- Drag and Drop Overlay -->
+        <Border Grid.Row="0" Grid.RowSpan="4"
+                Name="DragDropOverlay"
+                Background="#CC1A1A1A"
+                CornerRadius="12"
+                BorderBrush="#4DFFFFFF"
+                BorderThickness="2"
+                BoxShadow="0 8 32 0 #40000000"
+                IsVisible="False"
+                ZIndex="1000"
+                Margin="10">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Border Background="#66000000"
+                        CornerRadius="8"
+                        Padding="30,20"
+                        BorderBrush="#33FFFFFF"
+                        BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="{loc:Translate Key=exam.dialog.drop.here}" 
+                                   FontSize="24" 
+                                   FontWeight="SemiBold"
+                                   Foreground="White"
+                                   TextAlignment="Center"
+                                   Margin="0,0,0,10"/>
+                        <TextBlock Text="{loc:Translate Key=exam.dialog.drop.json.files}" 
+                                   FontSize="16"
+                                   Foreground="White"
+                                   Opacity="0.9"
+                                   TextAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
         
         <!-- Exam Details -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using DesktopKnowledgeAvalonia.Services;
+using DesktopKnowledgeAvalonia.Utils;
 using DesktopKnowledgeAvalonia.Views;
 using LibraryOpenKnowledge.Extensions;
 using LibraryOpenKnowledge.Models;
@@ -57,6 +58,9 @@ public partial class ExaminationWindowViewModel : ViewModelBase
     public event EventHandler? ProgressUpdated;
     
     public event EventHandler? WindowCloseRequested;
+    
+    public event EventHandler<TimeConstraintEventArgs>? TimeConstraintViolated;
+    public event EventHandler? ForceSubmitRequested;
     
     public Question? ParentQuestion { get; private set; }
     
@@ -240,6 +244,89 @@ public partial class ExaminationWindowViewModel : ViewModelBase
         }
     }
     
+    /// <summary>
+    /// 检查当前考试时间是否满足时间限制要求
+    /// </summary>
+    /// <returns>时间检查结果</returns>
+    public ExamTimeCheckResult CheckExaminationTimeConstraints()
+    {
+        try
+        {
+            if (Examination?.ExaminationMetadata == null)
+                return new ExamTimeCheckResult { IsValid = true, CanSubmit = true };
+            // 计算当前总考试时间
+            long currentTotalTime = GetCurrentTotalExaminationTime();
+            
+            var metadata = Examination.ExaminationMetadata;
+            
+            // 检查最小时间限制
+            if (metadata.MinimumExamTime.HasValue && metadata.MinimumExamTime.Value > 0)
+            {
+                if (currentTotalTime < metadata.MinimumExamTime.Value)
+                {
+                    return new ExamTimeCheckResult
+                    {
+                        IsValid = false,
+                        CanSubmit = false,
+                        Message = string.Format(
+                            _localizationService?["exam.time.minimum.not.reached"] ?? "Insufficient examination time, minimum required: {0}, current: {1}",
+                            TimeUtil.ToTimerString(metadata.MinimumExamTime.Value),
+                            TimeUtil.ToTimerString(currentTotalTime)
+                        )
+                    };
+                }
+            }
+            
+            // 检查最大时间限制
+            if (metadata.MaximumExamTime.HasValue && metadata.MaximumExamTime.Value > 0)
+            {
+                if (currentTotalTime >= metadata.MaximumExamTime.Value)
+                {
+                    return new ExamTimeCheckResult
+                    {
+                        IsValid = false,
+                        CanSubmit = true,
+                        ForceSubmit = true,
+                        Message = _localizationService?["exam.time.maximum.exceeded"] ?? "Maximum examination time reached, system will auto-submit"
+                    };
+                }
+            }
+            
+            return new ExamTimeCheckResult { IsValid = true, CanSubmit = true };
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"Error checking examination time constraints: {ex.Message}");
+            _logger.Trace($"Error checking examination time constraints: {ex.StackTrace}");
+            return new ExamTimeCheckResult { IsValid = true, CanSubmit = true };
+        }
+    }
+    
+    /// <summary>
+    /// 获取当前总考试时间（毫秒）
+    /// </summary>
+    private long GetCurrentTotalExaminationTime()
+    {
+        try
+        {
+            if (_configService?.AppData == null)
+                return 0;
+            
+            if (!_configService.AppData.ExaminationTimer.HasValue)
+                return _configService.AppData.AccumulatedExaminationTime;
+            
+            var currentSessionTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() - _configService.AppData.ExaminationTimer.Value;
+            return _configService.AppData.AccumulatedExaminationTime + currentSessionTime;
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"Error getting current total examination time: {ex.Message}");
+            _logger.Trace($"Error getting current total examination time: {ex.StackTrace}");
+            return 0;
+        }
+    }
+
+    
     public async Task SaveProgressSilently()
     {
         if (Examination == null) return;
@@ -312,60 +399,97 @@ public partial class ExaminationWindowViewModel : ViewModelBase
         }
     }
     
-    public async Task SubmitExamination()
+    public async Task SubmitExamination(bool forceSubmit = false)
     {
         if (Examination == null) return;
-    
-        // Save final answers
-        SaveCurrentAnswer();
-        
-        // 计算考试时间并累加到统计数据
-        // 直接使用已经累加好的时间 AccumulatedExaminationTime
-        if (_configService.AppData.AccumulatedExaminationTime > 0)
-        {
-            // 将累计考试时间添加到统计数据
-            _configService.AppStatistics.AddExaminationTime(_configService, _configService.AppData.AccumulatedExaminationTime);
-        
-            // 重置计时器和累计时间
-            _configService.AppData.ExaminationTimer = null;
-            _configService.AppData.AccumulatedExaminationTime = 0;
-        }
-        
-        // 累加统计计数
-        var config = App.GetService<ConfigureService>();
-        config.AppStatistics.AddSubmitExaminationCount(config);
-    
-        // Calculate scores
-        var scoreRecord = new ScoreRecord
-        {
-            ExamId = Examination.ExaminationMetadata.ExamId ?? string.Empty,
-            ExamTitle = Examination.ExaminationMetadata.Title,
-            UserName = _configService.AppConfig.UserName
-        };
-    
-        // Calculate scores
-        scoreRecord.CalculateScores(Examination);
-    
-        // Create a deep copy to avoid issues with Options
-        var examinationJson = ExaminationSerializer.SerializeToJson(Examination);
-        var examinationCopy = ExaminationSerializer.DeserializeFromJson(examinationJson!);
-    
-        if (examinationCopy != null)
-        {
-            // Save examination with final scores
-            _configService.AppData.CurrentExamination = examinationCopy;
-            _configService.AppData.IsInExamination = false;
-            await _configService.SaveChangesAsync();
-        }
 
-        IsWindowVisible = false;
-        var resultWindow = new ExaminationResultWindow(Examination, scoreRecord);
-        resultWindow.Closed += (sender, args) =>
+        try
         {
-            WindowCloseRequested?.Invoke(this, EventArgs.Empty);
-        };
-        resultWindow.Show();
+            // 如果不是强制提交，检查时间约束
+            if (!forceSubmit)
+            {
+                var timeCheck = CheckExaminationTimeConstraints();
+                if (!timeCheck.CanSubmit)
+                {
+                    // 通过事件通知UI显示错误信息
+                    TimeConstraintViolated?.Invoke(this, new TimeConstraintEventArgs(timeCheck.Message));
+                    return; // 重要：这里直接返回，不继续执行提交逻辑
+                }
+            }
+
+            // 只有通过时间检查或强制提交时才执行以下逻辑
+            
+            // Save final answers
+            SaveCurrentAnswer();
+            
+            // 计算考试时间并累加到统计数据
+            long accumulatedTime = 0;
+            if (_configService?.AppData != null)
+            {
+                // 保存当前会话的时间
+                if (_configService.AppData.ExaminationTimer.HasValue)
+                {
+                    var currentSessionTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() - _configService.AppData.ExaminationTimer.Value;
+                    _configService.AppData.AccumulatedExaminationTime += currentSessionTime;
+                }
+                
+                accumulatedTime = _configService.AppData.AccumulatedExaminationTime;
+                
+                // 将累计考试时间添加到统计数据
+                if (accumulatedTime > 0)
+                {
+                    _configService.AppStatistics?.AddExaminationTime(_configService, accumulatedTime);
+                }
+            
+                // 重置计时器和累计时间
+                _configService.AppData.ExaminationTimer = null;
+                _configService.AppData.AccumulatedExaminationTime = 0;
+            }
+            
+            // 累加统计计数
+            var config = App.GetService<ConfigureService>();
+            config?.AppStatistics?.AddSubmitExaminationCount(config);
+
+            // Calculate scores
+            var scoreRecord = new ScoreRecord
+            {
+                ExamId = Examination.ExaminationMetadata?.ExamId ?? string.Empty,
+                ExamTitle = Examination.ExaminationMetadata?.Title ?? "Unknown",
+                UserName = _configService?.AppConfig?.UserName ?? "Unknown"
+            };
+
+            // Calculate scores
+            scoreRecord.CalculateScores(Examination);
+
+            // Create a deep copy to avoid issues with Options
+            var examinationJson = ExaminationSerializer.SerializeToJson(Examination);
+            var examinationCopy = ExaminationSerializer.DeserializeFromJson(examinationJson!);
+
+            if (examinationCopy != null && _configService?.AppData != null)
+            {
+                // Save examination with final scores
+                _configService.AppData.CurrentExamination = examinationCopy;
+                _configService.AppData.IsInExamination = false;
+                await _configService.SaveChangesAsync();
+            }
+
+            IsWindowVisible = false;
+            var resultWindow = new ExaminationResultWindow(Examination, scoreRecord);
+            resultWindow.Closed += (sender, args) =>
+            {
+                WindowCloseRequested?.Invoke(this, EventArgs.Empty);
+            };
+            resultWindow.Show();
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"Error submitting examination: {ex.Message}");
+            _logger.Trace($"Error submitting examination: {ex.StackTrace}");
+            // 通知UI显示错误，但不重置考试状态
+            TimeConstraintViolated?.Invoke(this, new TimeConstraintEventArgs($"Error submitting examination: {ex.Message}"));
+        }
     }
+
     
     public void BackToMain()
     {
@@ -400,5 +524,23 @@ public partial class ExaminationWindowViewModel : ViewModelBase
     {
         string template = _localizationService[key];
         return string.Format(template, args);
+    }
+}
+
+public class ExamTimeCheckResult
+{
+    public bool IsValid { get; set; }
+    public bool CanSubmit { get; set; }
+    public bool ForceSubmit { get; set; }
+    public string Message { get; set; } = string.Empty;
+}
+
+public class TimeConstraintEventArgs : EventArgs
+{
+    public string Message { get; }
+    
+    public TimeConstraintEventArgs(string message)
+    {
+        Message = message;
     }
 }

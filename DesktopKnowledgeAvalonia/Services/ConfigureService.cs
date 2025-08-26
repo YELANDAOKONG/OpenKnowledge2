@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using LibraryOpenKnowledge.Models;
 using DesktopKnowledgeAvalonia.Models;
+using Microsoft.Extensions.Logging;
 using Serilog;
 
 namespace DesktopKnowledgeAvalonia.Services;
@@ -547,6 +548,41 @@ public class ConfigureService
     {
         SystemConfig.OpenAiModelTemperature = temperature;
         await SaveConfigAsync();
+    }
+    
+    public async Task UpdateLogLevelAsync(LogLevel logLevel)
+    {
+        // Store previous value to check if changed
+        var previousLevel = AppConfig.LogLevel;
+    
+        // Update in configuration
+        AppConfig.LogLevel = logLevel;
+    
+        // Save changes
+        await SaveConfigAsync();
+    
+        // Update the application logger if the level changed
+        if (previousLevel != logLevel)
+        {
+            // Get root logger and update, which will propagate to all child loggers
+            var logger = App.GetLogger();
+            logger.FileLogLevel = logLevel;
+        
+            _logger.Info($"Log level changed from {previousLevel} to {logLevel}");
+        }
+    }
+    
+    // Overload for string-based level updates (e.g. from UI)
+    public async Task UpdateLogLevelAsync(string logLevelName)
+    {
+        if (Enum.TryParse<LogLevel>(logLevelName, true, out var logLevel))
+        {
+            await UpdateLogLevelAsync(logLevel);
+        }
+        else
+        {
+            _logger.Error($"Invalid log level name: {logLevelName}");
+        }
     }
     
     public async Task UpdateSystemConfigAsync(SystemConfig config)
