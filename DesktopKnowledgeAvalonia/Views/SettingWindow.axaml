@@ -192,6 +192,26 @@
                                                   Width="200"
                                                   HorizontalAlignment="Left"/>
                                     </StackPanel>
+                                    
+                                    <StackPanel>
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Grid.Column="0" 
+                                                       Text="{loc:Translate Key=settings.appearance.opacity}"
+                                                       FontWeight="SemiBold"
+                                                       VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="1" 
+                                                       Text="{Binding BackgroundOpacityFormatted}"
+                                                       Opacity="0.7"
+                                                       MinWidth="40"
+                                                       HorizontalAlignment="Right"/>
+                                        </Grid>
+                                        <Slider Value="{Binding BackgroundOpacity}" 
+                                                Minimum="0.0" 
+                                                Maximum="1.0" 
+                                                TickFrequency="0.01"
+                                                IsSnapToTickEnabled="True"
+                                                TickPlacement="BottomRight"/>
+                                    </StackPanel>
                                 </StackPanel>
                             </DataTemplate>
                             

@@ -2,8 +2,8 @@
 
 public enum TransparencyMode
 {
-    Auto,
-    FullTransparency,
-    LightBackground,
-    DarkBackground
+    Auto = 0,
+    FullTransparency = 1,
+    LightBackground = 2,
+    DarkBackground = 3,
 }

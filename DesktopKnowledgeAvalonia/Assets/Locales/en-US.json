@@ -59,6 +59,7 @@
   "settings.theme.light": "Light",
   "settings.theme.dark": "Dark",
   "settings.theme.system": "System",
+  "settings.appearance.opacity": "Background Opacity",
   "settings.category.ai": "AI Configuration",
   "settings.ai.apiurl": "API URL",
   "settings.ai.apiurl.placeholder": "Enter API URL (e.g., https://api.deepseek.com/v1)",

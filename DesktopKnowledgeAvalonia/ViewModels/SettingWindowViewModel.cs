@@ -381,6 +381,11 @@ public partial class AppearanceSettingsViewModel : SettingsViewModelBase
     [ObservableProperty]
     private string _selectedTransparency;
     
+    [ObservableProperty]
+    private double _backgroundOpacity;
+    
+    public string BackgroundOpacityFormatted => BackgroundOpacity.ToString("P0");
+    
     private readonly LoggerService _logger;
 
     public AppearanceSettingsViewModel(LoggerService logger,ConfigureService configService, ThemeService themeService, LocalizationService localizationService)
@@ -416,6 +421,13 @@ public partial class AppearanceSettingsViewModel : SettingsViewModelBase
             TransparencyMode.DarkBackground => TransparencyOptions[3],
             _ => TransparencyOptions[0]
         };
+        
+        _backgroundOpacity = _configService.AppConfig.BackgroundOpacity;
+    }
+    
+    partial void OnBackgroundOpacityChanged(double value)
+    {
+        OnPropertyChanged(nameof(BackgroundOpacityFormatted));
     }
 
     public override async Task SaveAsync()
@@ -437,6 +449,9 @@ public partial class AppearanceSettingsViewModel : SettingsViewModelBase
             var t when t == TransparencyOptions[3] => TransparencyMode.DarkBackground,
             _ => TransparencyMode.Auto
         };
+        
+        _configService.AppConfig.BackgroundOpacity = BackgroundOpacity;
+        
         _themeService.ApplyThemeSettingsAsync().Wait();
         await Task.CompletedTask;
     }

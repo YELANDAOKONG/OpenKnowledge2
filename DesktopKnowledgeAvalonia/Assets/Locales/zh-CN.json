@@ -52,6 +52,7 @@
   "settings.transparency.full": "完全透明",
   "settings.transparency.light": "浅色背景",
   "settings.transparency.dark": "深色背景",
+  "settings.appearance.opacity": "背景不透明度",
   "settings.appearance.theme": "主题",
   "settings.appearance.transparency": "透明度模式",
   "settings.language.select": "选择语言",
