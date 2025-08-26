@@ -1,6 +1,7 @@
 ﻿using System;
 using DesktopKnowledgeAvalonia.Tools;
 using LibraryOpenKnowledge.Models;
+using Microsoft.Extensions.Logging;
 
 namespace DesktopKnowledgeAvalonia.Models;
 
@@ -16,6 +17,8 @@ public class ApplicationConfig
     
     public bool EnableStatistics { get; set; } = true;
     public bool RandomizeWelcomeMessage { get; set; } = false;
+    
+    public LogLevel LogLevel { get; set; } = LogLevel.Information;
 
     public string PromptGradingTemplate { get; set; }  = PromptTemplateManager.DefaultGradingTemplate;
     public string PromptExplanationTemplate { get; set; }  = PromptTemplateManager.DefaultExplanationTemplate;
