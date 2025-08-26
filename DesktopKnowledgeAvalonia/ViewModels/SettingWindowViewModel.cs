@@ -405,7 +405,7 @@ public partial class AppearanceSettingsViewModel : SettingsViewModelBase
         };
         _selectedTheme = _configService.AppConfig.ThemeVariant == null ? 
             ThemeOptions[2] : // System
-            _configService.AppConfig.ThemeVariant == "Light" ? 
+            _configService.AppConfig.ThemeVariant == ThemeVariantMode.Light ? 
                 ThemeOptions[0] : // Light
                 ThemeOptions[1]; // Dark
         _selectedTransparency = _configService.AppConfig.TransparencyMode switch
@@ -427,7 +427,7 @@ public partial class AppearanceSettingsViewModel : SettingsViewModelBase
         else if (SelectedTheme == ThemeOptions[1]) // Dark
             themeVariant = "Dark";
         // else leave as null for System
-        _configService.AppConfig.ThemeVariant = themeVariant;
+        _configService.AppConfig.ThemeVariant = ThemeService.ToThemeVariantMode(themeVariant ?? "Default");
     
         _configService.AppConfig.TransparencyMode = SelectedTransparency switch
         {

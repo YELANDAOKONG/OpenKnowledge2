@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Platform;
 
 namespace DesktopKnowledgeAvalonia.Services;
 
@@ -13,7 +15,12 @@ public class LocalizationService
     private readonly Dictionary<string, Dictionary<string, string>> _translations = new();
     private string _currentLanguage = "en-US";
     
-    private readonly LoggerService _logger;
+    private readonly JsonSerializerOptions _jsonOptions = new() 
+    { 
+        WriteIndented = true,
+        PropertyNamingPolicy = null,
+        TypeInfoResolver = new DefaultJsonTypeInfoResolver()
+    };
 
     public event EventHandler? LanguageChanged;
 
@@ -35,8 +42,6 @@ public class LocalizationService
 
     public LocalizationService()
     {
-        _logger = App.GetLogger("LocalizationService");
-        _logger.Info("Initializing localization service...");
         LoadTranslations();
     }
 
@@ -56,32 +61,58 @@ public class LocalizationService
         return key;
     }
 
-    private void LoadTranslations(bool throwExceptions = false)
+    private void LoadTranslationsBaseDirectory(bool throwExceptions = false)
     {
         try
         {
             var localesDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Locales");
             if (!Directory.Exists(localesDirectory))
                 Directory.CreateDirectory(localesDirectory);
-
+    
             foreach (var file in Directory.GetFiles(localesDirectory, "*.json"))
             {
                 var languageCode = Path.GetFileNameWithoutExtension(file);
                 var jsonContent = File.ReadAllText(file);
-                var translations = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonContent);
+                var translations = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonContent, _jsonOptions);
                 
-                _logger.Info($"Loaded translations for \"{languageCode}\"");
                 if (translations != null) _translations[languageCode] = translations;
             }
-
+    
             // If no translations found, create at least an empty English one
             if (!_translations.ContainsKey("en-US"))
                 _translations["en-US"] = new Dictionary<string, string>();
         }
         catch (Exception ex) when (!throwExceptions)
         {
-            _logger.Error($"Error loading translations: {ex.Message}");
-            _logger.Trace($"Error loading translations: {ex.StackTrace}");
+            Console.WriteLine($"[*] Error loading translations: {ex.Message}");
+        }
+    }
+    
+    private void LoadTranslations(bool throwExceptions = false)
+    {
+        try
+        {
+            var assets = AssetLoader.GetAssets(new Uri("avares://DesktopKnowledgeAvalonia/Assets/Locales/"), null);
+
+            foreach (var asset in assets)
+            {
+                var fileName = Path.GetFileNameWithoutExtension(asset.AbsolutePath.ToString());
+                using var stream = AssetLoader.Open(asset);
+                using var reader = new StreamReader(stream);
+                var jsonContent = reader.ReadToEnd();
+                var translations = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonContent, _jsonOptions);
+
+                if (translations != null)
+                    _translations[fileName] = translations;
+            }
+
+            // Ensure at least English is available
+            if (!_translations.ContainsKey("en-US"))
+                _translations["en-US"] = new Dictionary<string, string>();
+        }
+        catch (Exception ex) when (!throwExceptions)
+        {
+            Console.WriteLine($"[*] Error loading translations: {ex.Message}");
         }
     }
 

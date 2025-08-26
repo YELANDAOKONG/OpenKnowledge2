@@ -8,7 +8,8 @@ namespace DesktopKnowledgeAvalonia.Models;
 public class ApplicationConfig
 {
     public TransparencyMode TransparencyMode { get; set; } = TransparencyMode.FullTransparency;
-    public string? ThemeVariant { get; set; } = "Dark";
+    public ThemeVariantMode ThemeVariant { get; set; } = ThemeVariantMode.Dark;
+    public double BackgroundOpacity { get; set; } = 0.38; 
     public string? PreferredLanguage { get; set; } = null;
     public string UserName { get; set; } = "Default";
     public string? AvatarFilePath { get; set; } = null;

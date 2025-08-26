@@ -27,6 +27,45 @@ public class ThemeService
         await ApplyThemeVariantAsync();
         ApplyTransparencyMode();
     }
+    
+    public static ThemeVariantMode ToThemeVariantMode(ThemeVariant theme)
+    {
+        ThemeVariantMode variant;
+        if (theme == ThemeVariant.Light)
+        {
+            variant = ThemeVariantMode.Light;
+            
+        }
+        else if (theme == ThemeVariant.Dark)
+        {
+            variant = ThemeVariantMode.Dark;
+        }
+        else
+        {
+            variant = ThemeVariantMode.Default;
+            
+        }
+        return variant;
+    }
+    
+    public static ThemeVariantMode ToThemeVariantMode(string theme)
+    {
+        ThemeVariantMode variant;
+        if (theme.Equals("Light"))
+        {
+            variant = ThemeVariantMode.Light;
+            
+        }
+        else if (theme.Equals("Dark"))
+        {
+            variant = ThemeVariantMode.Dark;
+        }
+        else
+        {
+            variant = ThemeVariantMode.Default;
+        }
+        return variant;
+    }
         
     public async Task ToggleThemeVariantAsync()
     {
@@ -38,7 +77,7 @@ public class ThemeService
                 : ThemeVariant.Light;
                 
             Application.Current.RequestedThemeVariant = newTheme;
-            _configureService.AppConfig.ThemeVariant = newTheme.ToString();
+            _configureService.AppConfig.ThemeVariant = ToThemeVariantMode(newTheme);
             await _configureService.SaveChangesAsync();
             ApplyTransparencyMode();
         }
@@ -50,19 +89,26 @@ public class ThemeService
         await _configureService.SaveChangesAsync();
         ApplyTransparencyMode();
     }
+
+    public async Task ApplyThemeVariantAsync(ThemeVariantMode variant)
+    {
+        _configureService.AppConfig.ThemeVariant = variant;
+        await _configureService.SaveChangesAsync();
+        _ = ApplyThemeSettingsAsync();
+    }
         
     private Task ApplyThemeVariantAsync()
     {
-        if (Application.Current != null && !string.IsNullOrEmpty(_configureService.AppConfig.ThemeVariant))
+        if (Application.Current != null && _configureService.AppConfig.ThemeVariant != null)
         {
             // Convert string to ThemeVariant
             ThemeVariant? variant = null;
                 
-            if (_configureService.AppConfig.ThemeVariant == "Light")
+            if (_configureService.AppConfig.ThemeVariant == ThemeVariantMode.Light)
                 variant = ThemeVariant.Light;
-            else if (_configureService.AppConfig.ThemeVariant == "Dark")
+            else if (_configureService.AppConfig.ThemeVariant == ThemeVariantMode.Dark)
                 variant = ThemeVariant.Dark;
-            else if (_configureService.AppConfig.ThemeVariant == "Default")
+            else if (_configureService.AppConfig.ThemeVariant == ThemeVariantMode.Default)
                 variant = ThemeVariant.Default;
                 
             if (variant != null)
@@ -77,7 +123,7 @@ public class ThemeService
         // Get all top-level windows using a safer approach
         if (Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
         {
-            var windows = new List<Window> { desktop.MainWindow };
+            var windows = new List<Window?> { desktop.MainWindow };
                 
             // Add other windows if needed
             if (desktop.Windows != null)
@@ -96,34 +142,52 @@ public class ThemeService
             }
         }
     }
+    
+    private Avalonia.Media.Color ApplyAlphaToColor(Avalonia.Media.Color baseColor, double alpha)
+    {
+        // Ensure alpha is between 0 and 1
+        var clampedAlpha = Math.Clamp(alpha, 0.0, 1.0);
+        var alphaByte = (byte)(clampedAlpha * 255);
+        return new Avalonia.Media.Color(alphaByte, baseColor.R, baseColor.G, baseColor.B);
+    }
         
     public void ApplyTransparencyToWindow(Window window)
     {
         if (window == null) return;
-        
-        var isLightTheme = Application.Current?.RequestedThemeVariant == ThemeVariant.Light;
+    
+        // Get the actual theme of the window (inherits from system if app theme is default)
+        var actualTheme = window.ActualThemeVariant;
+        var isLightTheme = actualTheme == ThemeVariant.Light;
+    
         var transparencyMode = _configureService.AppConfig.TransparencyMode;
-        
+        var opacity = _configureService.AppConfig.BackgroundOpacity;
+    
+        var lightBaseColor = Avalonia.Media.Color.Parse("#FFFFFF"); // White
+        var darkBaseColor = Avalonia.Media.Color.Parse("#101010");  // Very dark gray/black
+    
+        Avalonia.Media.Color finalColor;
+    
         switch (transparencyMode)
         {
             case TransparencyMode.Auto:
                 // Use light or dark background based on current theme
-                if (isLightTheme)
-                    window.Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#E0FFFFFF"));
-                else
-                    window.Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#E0202020"));
+                var baseColor = isLightTheme ? lightBaseColor : darkBaseColor;
+                finalColor = ApplyAlphaToColor(baseColor, opacity);
+                window.Background = new Avalonia.Media.SolidColorBrush(finalColor);
                 break;
-            
+    
             case TransparencyMode.FullTransparency:
                 window.Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Colors.Transparent);
                 break;
-                
+        
             case TransparencyMode.LightBackground:
-                window.Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#E0FFFFFF"));
+                finalColor = ApplyAlphaToColor(lightBaseColor, opacity);
+                window.Background = new Avalonia.Media.SolidColorBrush(finalColor);
                 break;
-                
+        
             case TransparencyMode.DarkBackground:
-                window.Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#E0202020"));
+                finalColor = ApplyAlphaToColor(darkBaseColor, opacity);
+                window.Background = new Avalonia.Media.SolidColorBrush(finalColor);
                 break;
         }
     }
