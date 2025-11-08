@@ -10,7 +10,7 @@ using DesktopKnowledgeAvalonia.Utils;
 using DesktopKnowledgeAvalonia.Views;
 using LibraryOpenKnowledge.Extensions;
 using LibraryOpenKnowledge.Models;
-using LibraryOpenKnowledge.Tools;
+using LibraryOpenKnowledge.Utilities;
 
 namespace DesktopKnowledgeAvalonia.ViewModels;
 

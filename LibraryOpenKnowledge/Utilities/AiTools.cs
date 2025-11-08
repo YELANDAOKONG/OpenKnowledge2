@@ -1,13 +1,9 @@
-﻿using System;
-using System.ClientModel;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using OpenAI;
+﻿using System.ClientModel;
 using LibraryOpenKnowledge.Models;
+using OpenAI;
 using OpenAI.Chat;
 
-namespace LibraryOpenKnowledge.Tools;
+namespace LibraryOpenKnowledge.Utilities;
 
 public class AiTools
 {
@@ -44,7 +40,7 @@ public class AiTools
     /// <exception cref="InvalidOperationException">Thrown when configuration cannot be loaded or is invalid</exception>
     public static OpenAIClient CreateOpenAiClientFromConfig(string configFileName = "system_config.json")
     {
-        var config = ConfigTools.LoadConfig<SystemConfig>(configFileName);
+        var config = ConfigHelper.LoadConfig<SystemConfig>(configFileName);
         
         if (config == null)
         {
@@ -122,7 +118,7 @@ public class AiTools
     /// <returns>OpenAI client instance</returns>
     public static OpenAIClient GetOrCreateOpenAiClient(string configFileName = "open-knowledge.json")
     {
-        var config = ConfigTools.GetOrCreateSystemConfig(configFileName);
+        var config = ConfigHelper.GetOrCreateSystemConfig(configFileName);
         return CreateOpenAiClient(config);
     }
 }

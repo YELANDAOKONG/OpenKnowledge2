@@ -38,10 +38,10 @@ public class ConfigureService
         _statisticsFilePath = statisticsFilePath ?? GetDefaultStatisticsPath();
 
         _logger = App.GetLogger("ConfigureService");
-        _logger.Info("Initializing configure service...");
-        _logger.Info($"Configuration file path: {_configFilePath}");
-        _logger.Info($"Data file path: {_dataFilePath}");
-        _logger.Info($"Statistics file path: {_statisticsFilePath}");
+        _logger.Information("Initializing configure service...");
+        _logger.Information($"Configuration file path: {_configFilePath}");
+        _logger.Information($"Data file path: {_dataFilePath}");
+        _logger.Information($"Statistics file path: {_statisticsFilePath}");
         
         try
         {
@@ -485,7 +485,7 @@ public class ConfigureService
             await File.WriteAllTextAsync(tempConfigPath, configJson);
             File.Copy(tempConfigPath, _configFilePath, true);
             File.Delete(tempConfigPath);
-            _logger.Info("Configuration saved successfully.");
+            _logger.Information("Configuration saved successfully.");
         }
         catch (Exception ex)
         {
@@ -501,7 +501,7 @@ public class ConfigureService
             await File.WriteAllTextAsync(tempDataPath, appDataJson);
             File.Copy(tempDataPath, _dataFilePath, true);
             File.Delete(tempDataPath);
-            _logger.Info("App data saved successfully.");
+            _logger.Information("App data saved successfully.");
         }
         catch (Exception ex)
         {
@@ -517,7 +517,7 @@ public class ConfigureService
             await File.WriteAllTextAsync(tempStatisticsPath, statisticsJson);
             File.Copy(tempStatisticsPath, _statisticsFilePath, true);
             File.Delete(tempStatisticsPath);
-            _logger.Info("Statistics saved successfully.");
+            _logger.Information("Statistics saved successfully.");
         }
         catch (Exception ex)
         {
@@ -568,7 +568,7 @@ public class ConfigureService
             var logger = App.GetLogger();
             logger.FileLogLevel = logLevel;
         
-            _logger.Info($"Log level changed from {previousLevel} to {logLevel}");
+            _logger.Information($"Log level changed from {previousLevel} to {logLevel}");
         }
     }
     

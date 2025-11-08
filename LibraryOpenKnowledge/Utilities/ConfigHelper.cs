@@ -1,12 +1,9 @@
-﻿using System;
-using System.IO;
-using System.Text.Json;
-using Newtonsoft.Json;
+﻿using System.Text.Json;
 using LibraryOpenKnowledge.Models;
 
-namespace LibraryOpenKnowledge.Tools;
+namespace LibraryOpenKnowledge.Utilities;
 
-public class ConfigTools
+public class ConfigHelper
 {
     /// <summary>
     /// 获取用户主目录的路径

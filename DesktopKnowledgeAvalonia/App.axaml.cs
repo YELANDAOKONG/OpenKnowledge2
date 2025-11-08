@@ -11,7 +11,8 @@ using Avalonia.Threading;
 using DesktopKnowledgeAvalonia.Services;
 using DesktopKnowledgeAvalonia.ViewModels;
 using DesktopKnowledgeAvalonia.Views;
-using LibraryOpenKnowledge.Tools;
+using LibraryOpenKnowledge.Log;
+using LibraryOpenKnowledge.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -112,7 +113,7 @@ public partial class App : Application
 
         services.AddSingleton<LoggerService>(serviceProvider => {
             string logFilePath = Path.Combine(ConfigureService.NewLogFilePath());
-            var customLogger = new ConsoleSimpleLogger("APP", true);
+            var customLogger = new ConsoleLogger("APP", true);
             // Create the logger with the configured log level
             var loggerService = new LoggerService(
                 logFilePath: logFilePath, 
@@ -122,7 +123,7 @@ public partial class App : Application
                 writeToFile: true,
                 fileLogLevel: LogLevel.Information,
                 onLogLevelChanged: (oldLevel, newLevel, module) => {
-                    customLogger.Info($"Log level changed for {module}: {oldLevel} -> {newLevel}");
+                    customLogger.Information($"Log level changed for {module}: {oldLevel} -> {newLevel}");
                 }
             );
             return loggerService;

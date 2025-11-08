@@ -1,4 +1,5 @@
 ﻿using DesktopKnowledgeAvalonia.Utils;
+using LibraryOpenKnowledge.Utilities;
 
 namespace DesktopKnowledgeAvalonia.ViewModels;
 
@@ -11,7 +12,6 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DesktopKnowledgeAvalonia.Services;
-using LibraryOpenKnowledge.Tools;
 
 public partial class ExaminationDialogWindowViewModel : ViewModelBase
 {
@@ -182,7 +182,7 @@ public partial class ExaminationDialogWindowViewModel : ViewModelBase
     
     public void LoadExamination(string filePath)
     {
-        _logger.Info($"Loading examination from file: {filePath}");
+        _logger.Information($"Loading examination from file: {filePath}");
         try
         {
             // Deserialize the examination from the file
@@ -201,13 +201,13 @@ public partial class ExaminationDialogWindowViewModel : ViewModelBase
                 // Update the UI
                 UpdateExamInfo();
                 
-                _logger.Info("Examination loaded successfully");
+                _logger.Information("Examination loaded successfully");
                 // Show success message
                 ShowTemporaryStatusMessage(_localizationService["exam.dialog.load.success"]);
             }
             else
             {
-                _logger.Info("Failed to load examination");
+                _logger.Information("Failed to load examination");
                 // Show error message
                 ShowTemporaryStatusMessage(_localizationService["exam.dialog.load.error"]);
             }
@@ -275,7 +275,7 @@ public partial class ExaminationDialogWindowViewModel : ViewModelBase
             {
                 // Get the file path
                 var filePath = result.Path.LocalPath;
-                _logger.Info($"Saving examination to {filePath}");
+                _logger.Information($"Saving examination to {filePath}");
                 
                 // Serialize the examination to the selected file
                 bool success = ExaminationSerializer.SerializeToFile(
@@ -285,7 +285,7 @@ public partial class ExaminationDialogWindowViewModel : ViewModelBase
                     
                 if (success)
                 {
-                    _logger.Info($"Examination saved to {filePath}");
+                    _logger.Information($"Examination saved to {filePath}");
                     // Show success message
                     ShowTemporaryStatusMessage(_localizationService["exam.dialog.save.success"]);
                 }

@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using LibraryOpenKnowledge.Models;
-using LibraryOpenKnowledge.Tools;
-using LibraryOpenKnowledge.Tools.Models;
+using LibraryOpenKnowledge.Utilities.Models;
 
 namespace DesktopKnowledgeAvalonia.Tools;
 

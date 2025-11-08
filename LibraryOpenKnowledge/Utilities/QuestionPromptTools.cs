@@ -1,8 +1,8 @@
 ﻿using System.Text;
 using LibraryOpenKnowledge.Models;
-using LibraryOpenKnowledge.Tools.Models;
+using LibraryOpenKnowledge.Utilities.Models;
 
-namespace LibraryOpenKnowledge.Tools;
+namespace LibraryOpenKnowledge.Utilities;
 
 public class QuestionPromptTools
 {

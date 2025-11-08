@@ -1,9 +1,9 @@
-﻿using System.IO;
-using System.Collections.Generic;
-using LibraryOpenKnowledge.Tools;
+﻿using System.Collections.Generic;
+using System.IO;
+using LibraryOpenKnowledge.Log;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using CustomLogger = LibraryOpenKnowledge.Tools.Interfaces.ISimpleLogger;
+using ILogger = LibraryOpenKnowledge.Interfaces.ILogger;
 
 namespace DesktopKnowledgeAvalonia.Services;
 
@@ -12,7 +12,7 @@ public class LoggerService
     // Delegate for log level change trigger
     public delegate void LogLevelChangeTrigger(LogLevel oldLevel, LogLevel newLevel, string moduleName);
     
-    public CustomLogger Logger { get; }
+    public ILogger Logger { get; }
     public Microsoft.Extensions.Logging.ILogger Logging { get; }
     
     public string? LogFilePath { get; }
@@ -50,11 +50,13 @@ public class LoggerService
     
     private readonly bool _writeToFile;
     private readonly ILoggerFactory? _loggerFactory;
+    private readonly RollingInterval  _rollingInterval;
     
     public LoggerService(
-        string? logFilePath = null, 
-        CustomLogger? logger = null, 
+        string? logFilePath = null,
+        ILogger? logger = null, 
         string? moduleName = null, 
+        RollingInterval? rollingInterval = null, 
         ILoggerFactory? loggerFactory = null, 
         bool writeToFile = true,
         LogLevel fileLogLevel = LogLevel.Information,
@@ -75,32 +77,39 @@ public class LoggerService
         {
             string? directory = Path.GetDirectoryName(logFilePath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
                 Directory.CreateDirectory(directory);
+            }
         }
+
+        Logger = logger ?? new ConsoleLogger(ModuleName, true); // "APP"
         
-        Logger = logger ?? new ConsoleSimpleLogger(ModuleName, true);
-        
-        _loggerFactory = loggerFactory ?? CreateDefaultLoggerFactory(logFilePath);
+        _loggerFactory = loggerFactory ?? CreateDefaultLoggerFactory(logFilePath, rollingInterval ?? RollingInterval.Infinite);
+        // Logging = _loggerFactory.CreateLogger<LoggerService>();
         Logging = _loggerFactory.CreateLogger(ModuleName);
     }
     
     public LoggerService CreateSubModule(string moduleName, bool directName = false)
     {
         var newCustomLoggerName = directName ? moduleName : $"{ModuleName}.{moduleName}";
-        var subCustomLogger = new ConsoleSimpleLogger(newCustomLoggerName, true);
+        var colorful = true;
+        if (Logger is ConsoleLogger logger)
+        {
+            colorful = logger.Colorful;
+        }
+        var subCustomLogger = new ConsoleLogger(newCustomLoggerName, colorful);
         
         var newName = directName ? moduleName : $"{ModuleName}.{moduleName}";
         
-        // Create submodule with current logger as parent
         return new LoggerService(
             logFilePath: LogFilePath,
             logger: subCustomLogger,
             moduleName: newName,
             loggerFactory: _loggerFactory,
             writeToFile: _writeToFile,
-            fileLogLevel: FileLogLevel,        // Inherit current log level
-            onLogLevelChanged: OnLogLevelChanged,  // Inherit trigger
-            parentLogger: this                // Set parent reference
+            fileLogLevel: FileLogLevel,             // Inherit current log level
+            onLogLevelChanged: OnLogLevelChanged,   // Inherit trigger
+            parentLogger: this                      // Set parent reference
         );
     }
     
@@ -125,45 +134,60 @@ public class LoggerService
         rootLogger.FileLogLevel = newLevel;
     }
     
-    public Microsoft.Extensions.Logging.ILogger GetSubLogger<T>() => 
-        _loggerFactory?.CreateLogger<T>() ?? Logging;
+    public Microsoft.Extensions.Logging.ILogger GetSubLogger<T>()
+    {
+        return _loggerFactory?.CreateLogger<T>() ?? Logging;
+    }
     
-    public Microsoft.Extensions.Logging.ILogger GetSubLogger(string categoryName) => 
-        _loggerFactory?.CreateLogger(categoryName) ?? Logging;
+    public Microsoft.Extensions.Logging.ILogger GetSubLogger(string categoryName)
+    {
+        return _loggerFactory?.CreateLogger(categoryName) ?? Logging;
+    }
     
-    public static ILoggerFactory CreateDefaultLoggerFactory(string? logFilePath)
+    public static ILoggerFactory CreateDefaultLoggerFactory(string? logFilePath, RollingInterval rollingInterval = RollingInterval.Infinite)
     {
         return LoggerFactory.Create(builder =>
         {
-            // Set to minimum to allow filtering at the call site
-            builder.SetMinimumLevel(LogLevel.Trace);
-            
+            builder.SetMinimumLevel(LogLevel.Information);
             if (!string.IsNullOrEmpty(logFilePath))
             {
                 var serilogLogger = new LoggerConfiguration()
-                    .MinimumLevel.Verbose() // Allow all levels and filter at the call site
+                    .MinimumLevel.Verbose()
                     .WriteTo.File(logFilePath, 
-                        rollingInterval: RollingInterval.Day,
-                        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level}] [{SourceContext}] {Message}{NewLine}{Exception}")
+                        rollingInterval: rollingInterval,
+                        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff}] [{Level}] [{SourceContext}] {Message}{NewLine}{Exception}")
                     .CreateLogger();
                     
                 builder.AddSerilog(serilogLogger, dispose: true);
             }
             else
+            {
                 builder.AddDebug();
+            }
         });
     }
     
-    private Microsoft.Extensions.Logging.ILogger CreateDefaultMicrosoftLogger(string? logFilePath)
+    private Microsoft.Extensions.Logging.ILogger CreateDefaultMicrosoftLogger(string? logFilePath, RollingInterval rollingInterval = RollingInterval.Infinite)
     {
-        var factory = CreateDefaultLoggerFactory(logFilePath);
+        var factory = CreateDefaultLoggerFactory(logFilePath, rollingInterval);
         return factory.CreateLogger<LoggerService>();
     }
     
-    public void All(params string[] messages)
+    public void Standard(params string[] messages)
     {
-        Logger.All(messages);
-        LogToFileIfEnabled(LogLevel.Trace, messages);
+        Logger.Standard(messages);
+        // LogToFileIfEnabled(LogLevel.Trace, messages);
+    }
+    
+    public void Formatted(params string[] messages)
+    {
+        Logger.Formatted(messages);
+        // LogToFileIfEnabled(LogLevel.Trace, messages);
+    }
+    
+    public void Null(params string[] messages)
+    {
+        Logger.Null(messages);
     }
     
     public void Trace(params string[] messages)
@@ -178,15 +202,15 @@ public class LoggerService
         LogToFileIfEnabled(LogLevel.Debug, messages);
     }
 
-    public void Info(params string[] messages)
+    public void Information(params string[] messages)
     {
-        Logger.Info(messages);
+        Logger.Information(messages);
         LogToFileIfEnabled(LogLevel.Information, messages);
     }
 
-    public void Warn(params string[] messages)
+    public void Warning(params string[] messages)
     {
-        Logger.Warn(messages);
+        Logger.Warning(messages);
         LogToFileIfEnabled(LogLevel.Warning, messages);
     }
 
@@ -196,26 +220,21 @@ public class LoggerService
         LogToFileIfEnabled(LogLevel.Error, messages);
     }
 
-    public void Fatal(params string[] messages)
+    public void Critical(params string[] messages)
     {
-        Logger.Fatal(messages);
+        Logger.Critical(messages);
         LogToFileIfEnabled(LogLevel.Critical, messages);
-    }
-
-    public void Off(params string[] messages)
-    {
-        Logger.Off(messages);
     }
     
     private void LogToFileIfEnabled(LogLevel level, params string[] messages)
     {
-        // Skip if file logging is disabled or level is below threshold
-        if (!_writeToFile || level < FileLogLevel) 
-            return;
+        if (!_writeToFile) return;
         
         string message = string.Join(" ", messages);
         switch (level)
         {
+            case LogLevel.None:
+                break;
             case LogLevel.Trace:
                 Logging.LogTrace(message);
                 break;

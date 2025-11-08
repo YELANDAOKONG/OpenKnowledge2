@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using LibraryOpenKnowledge.Models;
 
-namespace LibraryOpenKnowledge.Tools.Models;
+namespace LibraryOpenKnowledge.Utilities.Models;
 
 public class AIGradingResult
 {

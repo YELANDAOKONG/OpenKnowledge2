@@ -14,7 +14,7 @@ using DesktopKnowledgeAvalonia.Converters;
 using DesktopKnowledgeAvalonia.Services;
 using DesktopKnowledgeAvalonia.ViewModels;
 using LibraryOpenKnowledge.Models;
-using LibraryOpenKnowledge.Tools;
+using LibraryOpenKnowledge.Utilities;
 
 namespace DesktopKnowledgeAvalonia.Views;
 
@@ -760,9 +760,9 @@ public partial class ExaminationResultWindow : AppWindowBase
             if (result != null)
             {
                 var filePath = result.Path.LocalPath;
-                _logger.Info($"Saving examination to {filePath}");
+                _logger.Information($"Saving examination to {filePath}");
                 ExaminationSerializer.SerializeToFile(e.Examination, filePath, includeUserAnswers: true);
-                _logger.Info($"Examination saved to {filePath}");
+                _logger.Information($"Examination saved to {filePath}");
             }
         }
         catch (Exception ex)

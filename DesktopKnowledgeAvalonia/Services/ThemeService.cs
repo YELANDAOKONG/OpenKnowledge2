@@ -19,7 +19,7 @@ public class ThemeService
     {
         _configureService = configureService;
         _logger = App.GetLogger("ThemeService");
-        _logger.Info("Initializing theme service...");
+        _logger.Information("Initializing theme service...");
     }
         
     public async Task ApplyThemeSettingsAsync()

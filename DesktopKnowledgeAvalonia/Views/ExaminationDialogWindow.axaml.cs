@@ -79,7 +79,7 @@ public partial class ExaminationDialogWindow : AppWindowBase
             }
             else
             {
-                _logger.Warn("MainGrid not found - drag and drop will not work");
+                _logger.Warning("MainGrid not found - drag and drop will not work");
             }
         }
         catch (Exception ex)
@@ -203,7 +203,7 @@ public partial class ExaminationDialogWindow : AppWindowBase
                     if (jsonFile != null)
                     {
                         var filePath = jsonFile.Path.LocalPath;
-                        _logger.Info($"File dropped: {filePath}");
+                        _logger.Information($"File dropped: {filePath}");
                         
                         // Check if we need to show confirmation dialog
                         bool shouldLoad = true;
@@ -218,18 +218,18 @@ public partial class ExaminationDialogWindow : AppWindowBase
                         {
                             // Load the examination
                             _windowViewModel.LoadExamination(filePath);
-                            _logger.Info($"Examination loaded from dropped file: {filePath}");
+                            _logger.Information($"Examination loaded from dropped file: {filePath}");
                         }
                         else
                         {
-                            _logger.Info("User cancelled loading examination from dropped file");
+                            _logger.Information("User cancelled loading examination from dropped file");
                         }
                     }
                     else
                     {
                         // Show error message for invalid file type
                         _windowViewModel.ShowTemporaryStatusMessage(_localizationService["exam.dialog.drop.invalid.file"]);
-                        _logger.Warn("Invalid file type dropped - not a JSON file");
+                        _logger.Warning("Invalid file type dropped - not a JSON file");
                     }
                 }
             }
@@ -360,7 +360,7 @@ public partial class ExaminationDialogWindow : AppWindowBase
         {
             var file = result[0];
             var filePath = file.Path.LocalPath;
-            _logger.Info($"Loading examination from file: {filePath}");
+            _logger.Information($"Loading examination from file: {filePath}");
             
             // Load the examination but don't start it
             _windowViewModel.LoadExamination(filePath);

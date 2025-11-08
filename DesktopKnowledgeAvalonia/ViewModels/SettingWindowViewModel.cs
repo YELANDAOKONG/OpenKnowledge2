@@ -14,6 +14,7 @@ using CommunityToolkit.Mvvm.Input;
 using DesktopKnowledgeAvalonia.Models;
 using DesktopKnowledgeAvalonia.Services;
 using DesktopKnowledgeAvalonia.Tools;
+using LibraryOpenKnowledge.Utilities;
 
 namespace DesktopKnowledgeAvalonia.ViewModels;
 
@@ -217,7 +218,7 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
         
         if (!string.IsNullOrEmpty(avatarPath) && File.Exists(avatarPath))
         {
-            _logger.Info($"Loading avatar from {avatarPath}");
+            _logger.Information($"Loading avatar from {avatarPath}");
             try
             {
                 await using var stream = File.OpenRead(avatarPath);
@@ -301,11 +302,11 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
         {
             // Check file size
             var fileInfo = await file.GetBasicPropertiesAsync();
-            _logger.Info($"File path: {file.Path}");
-            _logger.Info($"File size: {fileInfo.Size} Bytes");
+            _logger.Information($"File path: {file.Path}");
+            _logger.Information($"File size: {fileInfo.Size} Bytes");
             if (fileInfo.Size > 64 * 1024 * 1024) // 64MB limit
             {
-                _logger.Info($"File size exceeds limit ( {fileInfo.Size} Bytes / 64MB)");
+                _logger.Information($"File size exceeds limit ( {fileInfo.Size} Bytes / 64MB)");
                 // Show error message
                 // In a real app, you'd show a dialog here
                 Console.WriteLine(_localizationService["settings.general.avatar.error.size"]);
@@ -319,7 +320,7 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
             var extension = Path.GetExtension((string) file.Name);
             var avatarFileName = $"avatar_{Guid.NewGuid()}{extension}";
             var avatarPath = Path.Combine(avatarDir, avatarFileName);
-            _logger.Info($"Use file name: {avatarFileName}");
+            _logger.Information($"Use file name: {avatarFileName}");
             
             // Copy the file
             await using (var sourceStream = await file.OpenReadAsync())
@@ -327,7 +328,7 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
             {
                 await sourceStream.CopyToAsync(destinationStream);
             }
-            _logger.Info($"Avatar copied to: {avatarPath}");
+            _logger.Information($"Avatar copied to: {avatarPath}");
             
             // Save the new path and load the image
             _configService.AppConfig.AvatarFilePath = avatarPath;
@@ -356,7 +357,7 @@ public partial class GeneralSettingsViewModel : SettingsViewModelBase
             try
             {
                 File.Delete(oldPath);
-                _logger.Info($"Avatar file deleted: {oldPath}");
+                _logger.Information($"Avatar file deleted: {oldPath}");
             }
             catch (Exception ex)
             {
@@ -638,11 +639,11 @@ public partial class AISettingsViewModel : SettingsViewModelBase
             };
         
             // Create OpenAI client using the SDK
-            var client = LibraryOpenKnowledge.Tools.AiTools.CreateOpenAiClient(tempConfig);
+            var client = AiTools.CreateOpenAiClient(tempConfig);
         
             _configService.AppStatistics.AddAiCallCount(_configService);
             // Test the main model
-            var response = await LibraryOpenKnowledge.Tools.AiTools.SendChatMessageAsync(
+            var response = await AiTools.SendChatMessageAsync(
                 client,
                 tempConfig,
                 "Hello, this is a test message.",
@@ -664,7 +665,7 @@ public partial class AISettingsViewModel : SettingsViewModelBase
                 try
                 {
                     _configService.AppStatistics.AddAiCallCount(_configService);
-                    var assistResponse = await LibraryOpenKnowledge.Tools.AiTools.SendChatMessageAsync(
+                    var assistResponse = await AiTools.SendChatMessageAsync(
                         client,
                         assistConfig,
                         "Hello, this is a test message for the assistant model.",

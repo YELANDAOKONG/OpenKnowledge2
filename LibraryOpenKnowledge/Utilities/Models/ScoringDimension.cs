@@ -1,4 +1,4 @@
-﻿namespace LibraryOpenKnowledge.Models;
+﻿namespace LibraryOpenKnowledge.Utilities.Models;
 
 // 用于维度评分的类
 [Serializable]

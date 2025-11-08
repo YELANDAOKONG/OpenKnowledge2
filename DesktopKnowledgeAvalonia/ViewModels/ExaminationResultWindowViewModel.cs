@@ -8,7 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 using DesktopKnowledgeAvalonia.Services;
 using DesktopKnowledgeAvalonia.Tools;
 using LibraryOpenKnowledge.Models;
-using LibraryOpenKnowledge.Tools;
+using LibraryOpenKnowledge.Utilities;
 using OpenAI;
 
 namespace DesktopKnowledgeAvalonia.ViewModels;

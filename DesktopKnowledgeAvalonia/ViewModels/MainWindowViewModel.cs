@@ -15,7 +15,6 @@ using DesktopKnowledgeAvalonia.Services;
 using DesktopKnowledgeAvalonia.Utils;
 using DesktopKnowledgeAvalonia.Views;
 using LibraryOpenKnowledge;
-using LibraryOpenKnowledge.Tools;
 using Calendar = Avalonia.Controls.Calendar;
 
 namespace DesktopKnowledgeAvalonia.ViewModels;
@@ -132,7 +131,7 @@ public partial class MainWindowViewModel : ViewModelBase
         
         if (!string.IsNullOrEmpty(avatarPath) && File.Exists(avatarPath))
         {
-            _logger.Info($"Loading avatar from {avatarPath}");
+            _logger.Information($"Loading avatar from {avatarPath}");
             try
             {
                 await using var stream = File.OpenRead(avatarPath);

@@ -16,7 +16,7 @@ using DesktopKnowledgeAvalonia.Services;
 using DesktopKnowledgeAvalonia.ViewModels;
 using LibraryOpenKnowledge.Extensions;
 using LibraryOpenKnowledge.Models;
-using LibraryOpenKnowledge.Tools;
+using LibraryOpenKnowledge.Utilities;
 
 namespace DesktopKnowledgeAvalonia.Views;
 

@@ -78,11 +78,11 @@ public partial class SettingWindow : AppWindowBase
         {
             // Check file size
             var fileInfo = await file.GetBasicPropertiesAsync();
-            _logger.Info($"File path: {file.Path}");
-            _logger.Info($"File size: {fileInfo.Size} Bytes");
+            _logger.Information($"File path: {file.Path}");
+            _logger.Information($"File size: {fileInfo.Size} Bytes");
             if (fileInfo.Size > 64 * 1024 * 1024) // 64MB limit
             {
-                _logger.Info($"File size exceeds limit ( {fileInfo.Size} Bytes / 64MB)");
+                _logger.Information($"File size exceeds limit ( {fileInfo.Size} Bytes / 64MB)");
                 // Show error message in UI
                 GeneralSettings.ShowAvatarSizeError();
                 return;
@@ -98,7 +98,7 @@ public partial class SettingWindow : AppWindowBase
             var extension = Path.GetExtension(file.Name);
             var avatarFileName = $"avatar_{Guid.NewGuid()}{extension}";
             var avatarPath = Path.Combine(avatarDir, avatarFileName);
-            _logger.Info($"Use file name: {avatarFileName}");
+            _logger.Information($"Use file name: {avatarFileName}");
             
             // Copy the file
             await using (var sourceStream = await file.OpenReadAsync())
@@ -106,7 +106,7 @@ public partial class SettingWindow : AppWindowBase
             {
                 await sourceStream.CopyToAsync(destinationStream);
             }
-            _logger.Info($"Avatar copied to: {avatarPath}");
+            _logger.Information($"Avatar copied to: {avatarPath}");
             
             // Update the avatar in the view model
             await GeneralSettings.UpdateAvatarAsync(avatarPath);
@@ -137,7 +137,7 @@ public partial class SettingWindow : AppWindowBase
             try
             {
                 File.Delete(oldPath);
-                _logger.Info($"Avatar file deleted: {oldPath}");
+                _logger.Information($"Avatar file deleted: {oldPath}");
             }
             catch (Exception ex)
             {
@@ -147,7 +147,7 @@ public partial class SettingWindow : AppWindowBase
         }
         else
         {
-            _logger.Warn($"Avatar file does not exist: {oldPath}");
+            _logger.Warning($"Avatar file does not exist: {oldPath}");
         }
         
         await ConfigureService.ClearAvatars(null);

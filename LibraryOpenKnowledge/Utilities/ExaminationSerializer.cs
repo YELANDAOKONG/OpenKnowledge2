@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
+﻿using System.Text;
 using LibraryOpenKnowledge.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace LibraryOpenKnowledge.Tools
+namespace LibraryOpenKnowledge.Utilities
 {
     public class ExaminationSerializer
     {
