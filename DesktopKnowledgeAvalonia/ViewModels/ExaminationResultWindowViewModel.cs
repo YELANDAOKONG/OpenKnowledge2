@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DesktopKnowledgeAvalonia.Services;
-using DesktopKnowledgeAvalonia.Tools;
+using DesktopKnowledgeAvalonia.Utilities;
 using LibraryOpenKnowledge.Models;
 using LibraryOpenKnowledge.Utilities;
 using OpenAI;
@@ -459,7 +459,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
         if (Examination?.ExaminationSections == null) 
             return;
 
-        var aiClient = AiTools.CreateOpenAiClient(_configService.SystemConfig);
+        var aiClient = AiHelper.CreateOpenAiClient(_configService.SystemConfig);
 
         // 计算需要AI评分的问题
         var questionsToScore = new List<(ExaminationSection section, Question question, Question? parentQuestion)>();
@@ -519,7 +519,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
                 
                 _configService.AppStatistics.AddAiCallCount(_configService);
                 // 发送到AI进行评分
-                string? response = await AiTools.SendChatMessageAsync(
+                string? response = await AiHelper.SendChatMessageAsync(
                     aiClient,
                     _configService.SystemConfig,
                     prompt);
@@ -701,7 +701,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
 
         try
         {
-            var aiClient = AiTools.CreateOpenAiClient(_configService.SystemConfig);
+            var aiClient = AiHelper.CreateOpenAiClient(_configService.SystemConfig);
         
             // Use the comprehensive grading method to include all reference materials
             string prompt = GenerateComprehensiveGradingPrompt(
@@ -711,7 +711,7 @@ public partial class ExaminationResultWindowViewModel : ViewModelBase
             _logger.Debug($"Generated AI prompt: \n{prompt}");
         
             _configService.AppStatistics.AddAiCallCount(_configService);
-            string? response = await AiTools.SendChatMessageAsync(
+            string? response = await AiHelper.SendChatMessageAsync(
                 aiClient,
                 _configService.SystemConfig,
                 prompt);

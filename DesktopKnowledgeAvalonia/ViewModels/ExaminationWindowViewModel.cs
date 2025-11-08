@@ -270,8 +270,8 @@ public partial class ExaminationWindowViewModel : ViewModelBase
                         CanSubmit = false,
                         Message = string.Format(
                             _localizationService?["exam.time.minimum.not.reached"] ?? "Insufficient examination time, minimum required: {0}, current: {1}",
-                            TimeUtil.ToTimerString(metadata.MinimumExamTime.Value),
-                            TimeUtil.ToTimerString(currentTotalTime)
+                            TimeHelper.ToTimerString(metadata.MinimumExamTime.Value),
+                            TimeHelper.ToTimerString(currentTotalTime)
                         )
                     };
                 }

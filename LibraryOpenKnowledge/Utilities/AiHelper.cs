@@ -5,7 +5,7 @@ using OpenAI.Chat;
 
 namespace LibraryOpenKnowledge.Utilities;
 
-public class AiTools
+public class AiHelper
 {
     /// <summary>
     /// Creates an OpenAI client based on system configuration

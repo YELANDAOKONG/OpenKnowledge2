@@ -2,7 +2,7 @@
 
 namespace DesktopKnowledgeAvalonia.Utils;
 
-public static class TimeUtil
+public static class TimeHelper
 {
     public static long GetUnixTimestamp()
     {

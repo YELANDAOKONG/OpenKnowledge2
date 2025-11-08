@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using LibraryOpenKnowledge.Models;
 using LibraryOpenKnowledge.Utilities.Models;
 
-namespace DesktopKnowledgeAvalonia.Tools;
+namespace DesktopKnowledgeAvalonia.Utilities;
 
 public static class PromptTemplateManager
 {

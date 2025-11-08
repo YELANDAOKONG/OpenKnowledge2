@@ -129,9 +129,9 @@ public partial class ExaminationDialogWindowViewModel : ViewModelBase
             ExamSubject = exam.ExaminationMetadata.Subject;
             ExamLanguage = exam.ExaminationMetadata.Language;
             ExamTotalScore = exam.ExaminationMetadata.TotalScore.ToString("F2");
-            if(exam.ExaminationMetadata.ExamTime != null) ExamRecommendedTime = TimeUtil.ToTimerString(exam.ExaminationMetadata.ExamTime.Value);
-            if (exam.ExaminationMetadata.MinimumExamTime != null) ExamTimeRangeMinimum = TimeUtil.ToTimerString(exam.ExaminationMetadata.MinimumExamTime.Value);
-            if (exam.ExaminationMetadata.MaximumExamTime != null) ExamTimeRangeMaximum = TimeUtil.ToTimerString(exam.ExaminationMetadata.MaximumExamTime.Value);
+            if(exam.ExaminationMetadata.ExamTime != null) ExamRecommendedTime = TimeHelper.ToTimerString(exam.ExaminationMetadata.ExamTime.Value);
+            if (exam.ExaminationMetadata.MinimumExamTime != null) ExamTimeRangeMinimum = TimeHelper.ToTimerString(exam.ExaminationMetadata.MinimumExamTime.Value);
+            if (exam.ExaminationMetadata.MaximumExamTime != null) ExamTimeRangeMaximum = TimeHelper.ToTimerString(exam.ExaminationMetadata.MaximumExamTime.Value);
         }
         else
         {

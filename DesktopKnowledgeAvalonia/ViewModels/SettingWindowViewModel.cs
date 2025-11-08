@@ -13,7 +13,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DesktopKnowledgeAvalonia.Models;
 using DesktopKnowledgeAvalonia.Services;
-using DesktopKnowledgeAvalonia.Tools;
+using DesktopKnowledgeAvalonia.Utilities;
 using LibraryOpenKnowledge.Utilities;
 
 namespace DesktopKnowledgeAvalonia.ViewModels;
@@ -639,11 +639,11 @@ public partial class AISettingsViewModel : SettingsViewModelBase
             };
         
             // Create OpenAI client using the SDK
-            var client = AiTools.CreateOpenAiClient(tempConfig);
+            var client = AiHelper.CreateOpenAiClient(tempConfig);
         
             _configService.AppStatistics.AddAiCallCount(_configService);
             // Test the main model
-            var response = await AiTools.SendChatMessageAsync(
+            var response = await AiHelper.SendChatMessageAsync(
                 client,
                 tempConfig,
                 "Hello, this is a test message.",
@@ -665,7 +665,7 @@ public partial class AISettingsViewModel : SettingsViewModelBase
                 try
                 {
                     _configService.AppStatistics.AddAiCallCount(_configService);
-                    var assistResponse = await AiTools.SendChatMessageAsync(
+                    var assistResponse = await AiHelper.SendChatMessageAsync(
                         client,
                         assistConfig,
                         "Hello, this is a test message for the assistant model.",

@@ -9,7 +9,7 @@ namespace DesktopKnowledgeAvalonia.Models;
 [Serializable]
 public class ApplicationStatistics
 {
-    public long InitializationTime { get; set; } = TimeUtil.GetUnixTimestampMilliseconds();
+    public long InitializationTime { get; set; } = TimeHelper.GetUnixTimestampMilliseconds();
     
     // 应用启动计数
     #region ApplicationStartCount

@@ -282,7 +282,7 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             // 计算初始化至今的天数
             long initTimestamp = _configureService.AppStatistics.InitializationTime;
-            long currentTimestamp = TimeUtil.GetUnixTimestampMilliseconds();
+            long currentTimestamp = TimeHelper.GetUnixTimestampMilliseconds();
             int daysSinceInit = (int)((currentTimestamp - initTimestamp) / (1000 * 60 * 60 * 24));
             
             return string.Format(_localizationService["main.stats.days.since.init"], daysSinceInit);

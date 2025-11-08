@@ -1,5 +1,5 @@
 ﻿using System;
-using DesktopKnowledgeAvalonia.Tools;
+using DesktopKnowledgeAvalonia.Utilities;
 using LibraryOpenKnowledge.Models;
 using Microsoft.Extensions.Logging;
 

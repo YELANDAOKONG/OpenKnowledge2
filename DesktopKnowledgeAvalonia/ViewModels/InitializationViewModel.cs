@@ -186,11 +186,11 @@ public partial class InitializationViewModel : ViewModelBase
             };
         
             // Create OpenAI client using the SDK
-            var client = AiTools.CreateOpenAiClient(tempConfig);
+            var client = AiHelper.CreateOpenAiClient(tempConfig);
         
             _configureService.AppStatistics.AddAiCallCount(_configureService);
             // Test the main model
-            var response = await AiTools.SendChatMessageAsync(
+            var response = await AiHelper.SendChatMessageAsync(
                 client,
                 tempConfig,
                 "Hello, this is a test message.",
@@ -212,7 +212,7 @@ public partial class InitializationViewModel : ViewModelBase
                 try
                 {
                     _configureService.AppStatistics.AddAiCallCount(_configureService);
-                    var assistResponse = await AiTools.SendChatMessageAsync(
+                    var assistResponse = await AiHelper.SendChatMessageAsync(
                         client,
                         assistConfig,
                         "Hello, this is a test message for the assistant model.",
