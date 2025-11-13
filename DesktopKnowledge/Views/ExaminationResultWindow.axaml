@@ -1,0 +1,180 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DesktopKnowledge.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:loc="using:DesktopKnowledge.Localization"
+        xmlns:conv="using:DesktopKnowledge.Converters"
+        xmlns:models="using:OpenKnowledge.Models"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="700"
+        x:Class="DesktopKnowledge.Views.ExaminationResultWindow"
+        x:DataType="vm:ExaminationResultWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        ExtendClientAreaToDecorationsHint="True"
+        Title="{loc:Translate Key=exam.result.title}"
+        Width="900" Height="700"
+        MinWidth="800" MinHeight="600"
+        WindowStartupLocation="CenterOwner">
+
+    <Window.Resources>
+        <conv:ScoreColorConverter x:Key="ScoreColorConverter"/>
+        <conv:ProgressToAngleConverter x:Key="ProgressToAngleConverter"/>
+        <conv:CorrectColorConverter x:Key="CorrectColorConverter"/>
+        <conv:QuestionTypeConverter x:Key="QuestionTypeConverter"/>
+    </Window.Resources>
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="20,40,20,20">
+        <!-- Top section with score and status -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,20">
+            <!-- Left: Circular progress indicator -->
+            <Grid Grid.Column="0" Width="150" Height="150" Margin="10">
+                <!-- Circular progress background -->
+                <Ellipse Fill="Transparent" 
+                         StrokeThickness="10" 
+                         Stroke="#20FFFFFF"/>
+                         
+                <!-- Circular progress bar -->
+                <Arc StartAngle="0"
+                     SweepAngle="{Binding ScorePercentage, Converter={StaticResource ProgressToAngleConverter}}"
+                     Stroke="{Binding ScorePercentage, Converter={StaticResource ScoreColorConverter}}"
+                     StrokeThickness="10"
+                     Width="150"
+                     Height="150"/>
+
+                <!-- Score display -->
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="{Binding ObtainedScore, StringFormat={}{0:F2}}"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="/"
+                               FontSize="18"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding TotalScore, StringFormat={}{0:F0}}"
+                               FontSize="18"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+            
+            <!-- Center: Result status text -->
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="20,0">
+                <TextBlock Text="{Binding ResultStatusText}" 
+                           FontSize="32" 
+                           FontWeight="Bold"
+                           Margin="0,0,0,10"/>
+                <TextBlock Text="{Binding SubStatusText}"
+                           FontSize="16"
+                           Opacity="0.7"/>
+            </StackPanel>
+            
+            <!-- Right: Action buttons -->
+            <StackPanel Grid.Column="2" Spacing="10" VerticalAlignment="Center">
+                <!-- Primary Action buttons row -->
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <Button Command="{Binding ExportScoreCommand}"
+                            ToolTip.Tip="{loc:Translate Key=exam.result.export.score}"
+                            IsEnabled="{Binding CanExportScore}">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <PathIcon Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-10.99L4.47 16.96l1.06 1.06L11 12.54v-7.53h2v7.53l5.47 5.47 1.06-1.06L13 9.01z" Width="16" Height="16"/>
+                            <TextBlock Text="{loc:Translate Key=exam.result.export.score}"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <Button Command="{Binding SaveExaminationCommand}"
+                            ToolTip.Tip="{loc:Translate Key=exam.result.download.exam}"
+                            IsEnabled="{Binding CanDownloadExam}">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <PathIcon Data="M5 5v14h14V5H5zm0-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm7 4a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm0 8c-.28 0-.5-.22-.5-.5V11a.5.5 0 0 1 1 0v3.5c0 .28-.22.5-.5.5z" Width="16" Height="16"/>
+                            <TextBlock Text="{loc:Translate Key=exam.result.download.exam}"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+                
+                <!-- Secondary Action buttons row -->
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <Button Command="{Binding RescoreAllCommand}"
+                            ToolTip.Tip="{loc:Translate Key=exam.result.rescore.all}"
+                            IsEnabled="{Binding HasPerformedInitialAiScoring}">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <PathIcon Data="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8c-.45-.83-.7-1.79-.7-2.8 0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" Width="16" Height="16"/>
+                            <TextBlock Text="{loc:Translate Key=exam.result.rescore.all}"/>
+                        </StackPanel>
+                    </Button>
+                    <!-- <Button Command="{Binding RescoreAllCommand}" -->
+                    <!--         ToolTip.Tip="{loc:Translate Key=exam.result.rescore.all}" -->
+                    <!--         IsEnabled="{Binding !IsAiScoringInProgress}"> -->
+                    <!--     <StackPanel Orientation="Horizontal" Spacing="5"> -->
+                    <!--         <PathIcon Data="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8c-.45-.83-.7-1.79-.7-2.8 0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" Width="16" Height="16"/> -->
+                    <!--         <TextBlock Text="{loc:Translate Key=exam.result.rescore.all}"/> -->
+                    <!--     </StackPanel> -->
+                    <!-- </Button> -->
+                    
+                    <Button Command="{Binding ExitCommand}"
+                            ToolTip.Tip="{loc:Translate Key=exam.result.exit}"
+                            IsEnabled="{Binding CanExit}">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <PathIcon Data="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" Width="16" Height="16"/>
+                            <TextBlock Text="{loc:Translate Key=exam.result.exit}"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+        
+        <!-- AI scoring notification (if needed) -->
+        <Border Grid.Row="1" 
+                Background="#15569AFF" 
+                CornerRadius="4" 
+                Padding="15" 
+                Margin="0,0,0,20"
+                IsVisible="{Binding IsAiScoringNeeded}">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" Spacing="5">
+                    <TextBlock Text="{loc:Translate Key=exam.result.ai.scoring.needed}" 
+                               FontWeight="SemiBold"/>
+                    <TextBlock Text="{loc:Translate Key=exam.result.ai.scoring.description}" 
+                               TextWrapping="Wrap" 
+                               Opacity="0.8"/>
+                </StackPanel>
+                
+                <Button Grid.Column="1" 
+                        Command="{Binding StartAiScoringCommand}"
+                        Content="{loc:Translate Key=exam.result.ai.scoring.start}"
+                        Classes="accent"
+                        IsEnabled="{Binding !IsAiScoringInProgress}"
+                        VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+        
+        <!-- Questions details organized by sections -->
+        <ScrollViewer Grid.Row="2" Margin="0,0,0,10">
+            <StackPanel x:Name="QuestionsPanel" Spacing="15">
+                <!-- This will be filled dynamically in the code-behind -->
+            </StackPanel>
+        </ScrollViewer>
+        
+        <!-- AI scoring progress bar (if in progress) -->
+        <StackPanel Grid.Row="3" Spacing="5" IsVisible="{Binding IsAiScoringInProgress}">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,5">
+                <TextBlock Text="{Binding CurrentScoringQuestionProgress}"
+                           FontWeight="Bold"
+                           Margin="0,0,10,0"/>
+                <TextBlock Text="{Binding CurrentScoringQuestion}"
+                           TextWrapping="Wrap"
+                           TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+            <Grid ColumnDefinitions="*,Auto">
+                <ProgressBar Grid.Column="0" Value="{Binding AiScoringProgress}" 
+                         Minimum="0" 
+                         Maximum="100"
+                         Height="10"/>
+                <TextBlock Grid.Column="1" 
+                           Text="{Binding AiScoringProgress, StringFormat={}{0:F0}%}"
+                           VerticalAlignment="Center"
+                           Margin="10,0,0,0"/>
+            </Grid>
+        </StackPanel>
+    </Grid>
+</Window>

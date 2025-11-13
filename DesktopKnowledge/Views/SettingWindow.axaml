@@ -1,0 +1,607 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DesktopKnowledge.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:loc="using:DesktopKnowledge.Localization"
+        xmlns:converters="clr-namespace:DesktopKnowledge.Converters"
+        xmlns:services="clr-namespace:DesktopKnowledge.Services"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="550"
+        x:Class="DesktopKnowledge.Views.SettingWindow"
+        x:DataType="vm:SettingWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        ExtendClientAreaToDecorationsHint="True"
+        Title="{loc:Translate Key=settings.window.title}"
+        Width="800" Height="550"
+        MinWidth="700" MinHeight="450"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <converters:BoolToExpandCollapseIconConverter x:Key="BoolToExpandCollapseIconConverter"/>
+        <converters:WindowStateToHeightConverter x:Key="WindowStateToHeightConverter"/>
+    </Window.Resources>
+    
+    <Design.DataContext>
+        <vm:SettingWindowViewModel/>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*" Margin="20,40,20,20">
+        <!-- Header -->
+        <TextBlock Grid.Row="0" 
+                   Text="{loc:Translate Key=settings.header}" 
+                   FontSize="24" 
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,20"/>
+
+        <!-- Main Content (230)-->
+        <Grid Grid.Row="1" ColumnDefinitions="230,*">
+            <!-- Left Side: Categories -->
+            <Border Grid.Column="0"
+                    BorderBrush="#20FFFFFF"
+                    BorderThickness="0,0,1,0"
+                    Margin="0,0,20,0">
+                <ListBox ItemsSource="{Binding Categories}"
+                         SelectedItem="{Binding SelectedCategory}"
+                         Background="Transparent"
+                         Padding="0">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="Auto,*" Margin="10" Height="25"> <!-- 40 -->
+                                <PathIcon Grid.Column="0"
+                                          Width="22"
+                                          Height="22"
+                                          Margin="0,0,15,0"
+                                          Data="{Binding IconPath}"
+                                          Foreground="#569AFF"/>
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding DisplayName}"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+
+            <!-- Right Side: Settings Content -->
+            <Grid Grid.Column="1" Margin="20,0,0,0" RowDefinitions="*,Auto">
+                <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                    <!-- Settings Content -->
+                    <ContentControl Grid.Row="0" Content="{Binding SelectedCategory.Content}">
+                        <ContentControl.DataTemplates>
+                            <!-- General Settings Template -->
+                            <DataTemplate DataType="vm:GeneralSettingsViewModel">
+                                <StackPanel Margin="20" Spacing="20">
+                                    <!-- Avatar Settings Section -->
+                                    <StackPanel Margin="5" Spacing="10">
+                                        <TextBlock Text="{loc:Translate Key=settings.general.avatar}" 
+                                                   FontWeight="SemiBold" 
+                                                   Margin="0,0,0,10"/>
+                                        
+                                        <Grid ColumnDefinitions="Auto,*">
+                                            <!-- Circular Avatar Container -->
+                                            <Border Grid.Column="0" 
+                                                    Width="80" 
+                                                    Height="80" 
+                                                    CornerRadius="40" 
+                                                    Background="#569AFF"
+                                                    Margin="0,0,15,0"
+                                                    ClipToBounds="True">
+                                                <!-- Avatar Image -->
+                                                <Panel>
+                                                    <Image Source="{Binding AvatarImage}" 
+                                                           IsVisible="{Binding AvatarImage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                           Stretch="UniformToFill"
+                                                           Width="80"
+                                                           Height="80"/>
+                                                    
+                                                    <!-- Fallback Text Avatar -->
+                                                    <TextBlock Text="{Binding UserInitials}" 
+                                                               IsVisible="{Binding AvatarImage, Converter={x:Static ObjectConverters.IsNull}}"
+                                                               HorizontalAlignment="Center" 
+                                                               VerticalAlignment="Center"
+                                                               FontSize="40" 
+                                                               FontWeight="SemiBold" 
+                                                               Foreground="White"/>
+                                                </Panel>
+                                            </Border>
+                                            
+                                            <StackPanel Grid.Column="1" 
+                                                        Orientation="Vertical" 
+                                                        Spacing="10" 
+                                                        VerticalAlignment="Center">
+                                                <Button Content="{loc:Translate Key=settings.general.avatar.change}" 
+                                                        Click="OnChangeAvatarClicked"/>
+                                                <Button Content="{loc:Translate Key=settings.general.avatar.remove}" 
+                                                        Click="OnRemoveAvatarClicked"
+                                                        IsEnabled="{Binding AvatarImage, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                            </StackPanel>
+                                        </Grid>
+                                        
+                                        <!-- Avatar notification area -->
+                                        <Border IsVisible="{Binding IsAvatarMessageVisible}" 
+                                                Background="{Binding AvatarMessageBackground}" 
+                                                CornerRadius="4" 
+                                                Padding="10"
+                                                Margin="0,10,0,0">
+                                            <TextBlock Text="{Binding AvatarMessage}" 
+                                                       Foreground="White" 
+                                                       TextWrapping="Wrap"/>
+                                        </Border>
+                                    </StackPanel>
+                                    
+                                    <!-- Username Section -->
+                                    <StackPanel Margin="5" Spacing="10">
+                                        <TextBlock Text="{loc:Translate Key=settings.general.username}" 
+                                                   FontWeight="SemiBold" 
+                                                   Margin="0,0,0,10"/>
+                                        
+                                        <TextBox Text="{Binding UserName}" MaxLength="50"/>
+                                    </StackPanel>
+                                    
+                                    <!-- Statistics Section -->
+                                    <StackPanel Margin="5" Spacing="10">
+                                        <TextBlock Text="{loc:Translate Key=settings.general.statistics}" 
+                                                   FontWeight="SemiBold" 
+                                                   Margin="0,0,0,10"/>
+                                        
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Grid.Column="0" 
+                                                       Text="{loc:Translate Key=settings.general.enable.statistics}"
+                                                       VerticalAlignment="Center"/>
+                                            <ToggleSwitch Grid.Column="1" 
+                                                          IsChecked="{Binding EnableStatistics}"
+                                                          HorizontalAlignment="Right"/>
+                                        </Grid>
+                                        
+                                        <Grid ColumnDefinitions="*,Auto" Margin="0,10,0,0">
+                                            <TextBlock Grid.Column="0" 
+                                                       Text="{loc:Translate Key=settings.general.randomize.welcome}"
+                                                       VerticalAlignment="Center"/>
+                                            <ToggleSwitch Grid.Column="1" 
+                                                          IsChecked="{Binding RandomizeWelcomeMessage}"
+                                                          HorizontalAlignment="Right"
+                                                          IsEnabled="{Binding EnableStatistics}"/>
+                                        </Grid>
+                                    </StackPanel>
+                                    
+                                    <!-- Logging Section -->
+                                    <StackPanel Margin="5" Spacing="10">
+                                        <TextBlock Text="{loc:Translate Key=settings.general.logging}" 
+                                                   FontWeight="SemiBold" 
+                                                   Margin="0,0,0,10"/>
+    
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Grid.Column="0" 
+                                                       Text="{loc:Translate Key=settings.general.logging.level}"
+                                                       VerticalAlignment="Center"/>
+                                            <ComboBox Grid.Column="1" 
+                                                      ItemsSource="{Binding LogLevels}"
+                                                      SelectedItem="{Binding SelectedLogLevel}"
+                                                      Width="150"
+                                                      HorizontalAlignment="Right"/>
+                                        </Grid>
+    
+                                        <TextBlock Text="{loc:Translate Key=settings.general.logging.description}" 
+                                                   TextWrapping="Wrap"
+                                                   Opacity="0.7"
+                                                   FontSize="12"
+                                                   Margin="0,4,0,0"/>
+                                    </StackPanel>
+
+                                </StackPanel>
+                            </DataTemplate>
+
+
+                            
+                            <!-- Appearance Settings Template -->
+                            <DataTemplate DataType="vm:AppearanceSettingsViewModel">
+                                <StackPanel Spacing="15">
+                                    <StackPanel>
+                                        <TextBlock Text="{loc:Translate Key=settings.appearance.theme}" 
+                                                   FontWeight="SemiBold" 
+                                                   Margin="0,0,0,5"/>
+                                        <ComboBox ItemsSource="{Binding ThemeOptions}" 
+                                                  SelectedItem="{Binding SelectedTheme}"
+                                                  Width="200"
+                                                  HorizontalAlignment="Left"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel>
+                                        <TextBlock Text="{loc:Translate Key=settings.appearance.transparency}" 
+                                                   FontWeight="SemiBold" 
+                                                   Margin="0,0,0,5"/>
+                                        <ComboBox ItemsSource="{Binding TransparencyOptions}" 
+                                                  SelectedItem="{Binding SelectedTransparency}"
+                                                  Width="200"
+                                                  HorizontalAlignment="Left"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel>
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Grid.Column="0" 
+                                                       Text="{loc:Translate Key=settings.appearance.opacity}"
+                                                       FontWeight="SemiBold"
+                                                       VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="1" 
+                                                       Text="{Binding BackgroundOpacityFormatted}"
+                                                       Opacity="0.7"
+                                                       MinWidth="40"
+                                                       HorizontalAlignment="Right"/>
+                                        </Grid>
+                                        <Slider Value="{Binding BackgroundOpacity}" 
+                                                Minimum="0.0" 
+                                                Maximum="1.0" 
+                                                TickFrequency="0.01"
+                                                IsSnapToTickEnabled="True"
+                                                TickPlacement="BottomRight"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </DataTemplate>
+                            
+                            <!-- Language Settings Template -->
+                            <DataTemplate DataType="vm:LanguageSettingsViewModel">
+                                <StackPanel Spacing="15">
+                                    <TextBlock Text="{loc:Translate Key=settings.language.select}" 
+                                               FontWeight="SemiBold" 
+                                               Margin="0,0,0,5"/>
+                                    <ComboBox ItemsSource="{Binding AvailableLanguages}" 
+                                              SelectedItem="{Binding SelectedLanguage}"
+                                              Width="200"
+                                              HorizontalAlignment="Left"/>
+                                </StackPanel>
+                            </DataTemplate>
+                            
+                            <!-- AI Settings Template -->
+                            <DataTemplate DataType="vm:AISettingsViewModel">
+                                <StackPanel Spacing="15">
+                                    <!-- API URL -->
+                                    <StackPanel>
+                                        <TextBlock Text="{loc:Translate Key=settings.ai.apiurl}" 
+                                                   FontWeight="SemiBold"
+                                                   Margin="0,0,0,5"/>
+                                        <TextBox Text="{Binding ApiUrl}" 
+                                                 Watermark="{loc:Translate Key=settings.ai.apiurl.placeholder}"
+                                                 MaxLength="100"/>
+                                    </StackPanel>
+                                    
+                                    <!-- API Key -->
+                                    <StackPanel>
+                                        <TextBlock Text="{loc:Translate Key=settings.ai.apikey}" 
+                                                   FontWeight="SemiBold"
+                                                   Margin="0,0,0,5"/>
+                                        <Grid>
+                                            <TextBox Text="{Binding ApiKey}"
+                                                     PasswordChar="{Binding ApiKeyPasswordChar}"
+                                                     Watermark="{loc:Translate Key=settings.ai.apikey.placeholder}"
+                                                     MaxLength="100"/>
+                                            <Button Grid.Column="1" 
+                                                    HorizontalAlignment="Right" 
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,10,0"
+                                                    Background="Transparent"
+                                                    Padding="5"
+                                                    Command="{Binding ToggleApiKeyVisibilityCommand}">
+                                                <PathIcon Data="{Binding ApiKeyVisibilityIcon}" Width="16" Height="16"/>
+                                            </Button>
+                                        </Grid>
+                                    </StackPanel>
+                                    
+                                    <!-- Model -->
+                                    <StackPanel>
+                                        <TextBlock Text="{loc:Translate Key=settings.ai.model}" 
+                                                   FontWeight="SemiBold"
+                                                   Margin="0,0,0,5"/>
+                                        <TextBox Text="{Binding Model}" 
+                                                 Watermark="{loc:Translate Key=settings.ai.model.placeholder}"
+                                                 MaxLength="50"/>
+                                    </StackPanel>
+                                    
+                                    <!-- Assistant Model (Optional) -->
+                                    <StackPanel>
+                                        <TextBlock Text="{loc:Translate Key=settings.ai.assistmodel}" 
+                                                   FontWeight="SemiBold"
+                                                   Margin="0,0,0,5"/>
+                                        <TextBox Text="{Binding AssistModel}" 
+                                                 Watermark="{loc:Translate Key=settings.ai.assistmodel.placeholder}"
+                                                 MaxLength="50"/>
+                                        <TextBlock Text="{loc:Translate Key=settings.ai.assistmodel.optional}" 
+                                                   Opacity="0.7"
+                                                   FontSize="12"
+                                                   Margin="0,4,0,0"/>
+                                    </StackPanel>
+
+                                    
+                                    <!-- Temperature -->
+                                    <StackPanel>
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Grid.Column="0" 
+                                                       Text="{loc:Translate Key=settings.ai.temperature}" 
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,0,0,5"/>
+                                            <TextBlock Grid.Column="1" 
+                                                       Text="{Binding TemperatureFormatted}" 
+                                                       Opacity="0.7"/>
+                                        </Grid>
+                                        <Slider Value="{Binding Temperature}" 
+                                                Minimum="0" 
+                                                Maximum="2" 
+                                                TickFrequency="0.01" 
+                                                IsSnapToTickEnabled="True" 
+                                                SmallChange="0.01" 
+                                                LargeChange="0.1"/>
+                                    </StackPanel>
+                                    
+                                    <!-- Test Connection Section -->
+                                    <Border Background="#10FFFFFF" CornerRadius="4" Padding="15" Margin="0,15,0,0">
+                                        <StackPanel Spacing="10">
+                                            <Grid ColumnDefinitions="*,Auto" Margin="0,5,0,0">
+                                                <Button Grid.Column="1" 
+                                                        Content="{loc:Translate Key=settings.ai.test.button}" 
+                                                        Command="{Binding TestConnectionCommand}" 
+                                                        IsEnabled="{Binding !IsTestingConnection}"/>
+                                            </Grid>
+                                            
+                                            <!-- Test Results -->
+                                            <Border IsVisible="{Binding IsConnectionTested}" 
+                                                    Background="{Binding ConnectionStatusBackground}" 
+                                                    CornerRadius="4" 
+                                                    Padding="10">
+                                                <TextBlock Text="{Binding ConnectionStatus}" 
+                                                           Foreground="White" 
+                                                           TextWrapping="Wrap"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </DataTemplate>
+                            
+                            
+                            <!-- Prompt Templates Settings Template -->
+                            <DataTemplate DataType="vm:PromptTemplatesViewModel">
+                                <StackPanel Spacing="15">
+                                    <!-- Grading Template -->
+                                    <Border Background="#10FFFFFF" CornerRadius="4" Padding="15">
+                                        <StackPanel>
+                                            <Grid ColumnDefinitions="*,Auto,Auto">
+                                                <TextBlock Grid.Column="0" 
+                                                           Text="{loc:Translate Key=settings.prompts.grading}" 
+                                                           FontWeight="SemiBold"/>
+                                                <Button Grid.Column="1"
+                                                        Command="{Binding ResetGradingTemplateCommand}"
+                                                        Background="Transparent"
+                                                        Padding="5"
+                                                        ToolTip.Tip="{loc:Translate Key=settings.prompts.reset}">
+                                                    <PathIcon Data="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
+                                                              Width="16" Height="16"/>
+                                                </Button>
+                                                <Button Grid.Column="2" 
+                                                        Command="{Binding ToggleGradingExpandedCommand}"
+                                                        Background="Transparent"
+                                                        Padding="5">
+                                                    <PathIcon Data="{Binding IsGradingExpanded, 
+                                                              Converter={StaticResource BoolToExpandCollapseIconConverter}}" 
+                                                              Width="16" Height="16"/>
+                                                </Button>
+                                            </Grid>
+                                            <TextBox IsVisible="{Binding IsGradingExpanded}"
+                                                     Text="{Binding GradingTemplate}"
+                                                     AcceptsReturn="True"
+                                                     TextWrapping="Wrap"
+                                                     Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}, Path=WindowState, Converter={StaticResource WindowStateToHeightConverter}, ConverterParameter=Height}"
+                                                     MinHeight="200"
+                                                     MaxHeight="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}, Path=WindowState, Converter={StaticResource WindowStateToHeightConverter}, ConverterParameter=MaxHeight}"
+                                                     Margin="0,10,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                    
+                                    <!-- Explanation Template -->
+                                    <Border Background="#10FFFFFF" CornerRadius="4" Padding="15">
+                                        <StackPanel>
+                                            <Grid ColumnDefinitions="*,Auto,Auto">
+                                                <TextBlock Grid.Column="0" 
+                                                           Text="{loc:Translate Key=settings.prompts.explanation}" 
+                                                           FontWeight="SemiBold"/>
+                                                <Button Grid.Column="1"
+                                                        Command="{Binding ResetExplanationTemplateCommand}"
+                                                        Background="Transparent"
+                                                        Padding="5"
+                                                        ToolTip.Tip="{loc:Translate Key=settings.prompts.reset}">
+                                                    <PathIcon Data="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
+                                                              Width="16" Height="16"/>
+                                                </Button>
+                                                <Button Grid.Column="2" 
+                                                        Command="{Binding ToggleExplanationExpandedCommand}"
+                                                        Background="Transparent"
+                                                        Padding="5">
+                                                    <PathIcon Data="{Binding IsExplanationExpanded, 
+                                                              Converter={StaticResource BoolToExpandCollapseIconConverter}}" 
+                                                              Width="16" Height="16"/>
+                                                </Button>
+                                            </Grid>
+                                            <TextBox IsVisible="{Binding IsExplanationExpanded}"
+                                                     Text="{Binding ExplanationTemplate}"
+                                                     AcceptsReturn="True"
+                                                     TextWrapping="Wrap"
+                                                     Height="200"
+                                                     Margin="0,10,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                    
+                                    <!-- Check Template -->
+                                    <Border Background="#10FFFFFF" CornerRadius="4" Padding="15">
+                                        <StackPanel>
+                                            <Grid ColumnDefinitions="*,Auto,Auto">
+                                                <TextBlock Grid.Column="0" 
+                                                           Text="{loc:Translate Key=settings.prompts.check}" 
+                                                           FontWeight="SemiBold"/>
+                                                <Button Grid.Column="1"
+                                                        Command="{Binding ResetCheckTemplateCommand}"
+                                                        Background="Transparent"
+                                                        Padding="5"
+                                                        ToolTip.Tip="{loc:Translate Key=settings.prompts.reset}">
+                                                    <PathIcon Data="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
+                                                              Width="16" Height="16"/>
+                                                </Button>
+                                                <Button Grid.Column="2" 
+                                                        Command="{Binding ToggleCheckExpandedCommand}"
+                                                        Background="Transparent"
+                                                        Padding="5">
+                                                    <PathIcon Data="{Binding IsCheckExpanded, 
+                                                              Converter={StaticResource BoolToExpandCollapseIconConverter}}" 
+                                                              Width="16" Height="16"/>
+                                                </Button>
+                                            </Grid>
+                                            <TextBox IsVisible="{Binding IsCheckExpanded}"
+                                                     Text="{Binding CheckTemplate}"
+                                                     AcceptsReturn="True"
+                                                     TextWrapping="Wrap"
+                                                     Height="200"
+                                                     Margin="0,10,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </DataTemplate>
+                            
+                            <!-- Storage Settings Template -->
+                            <DataTemplate DataType="vm:StorageSettingsViewModel">
+                                <StackPanel Spacing="15">
+                                    <!-- Cache Size Section -->
+                                    <Border Background="#10FFFFFF" CornerRadius="4" Padding="15">
+                                        <StackPanel Spacing="10">
+                                            <Grid ColumnDefinitions="Auto,*">
+                                                <TextBlock Grid.Column="0" 
+                                                           Text="{loc:Translate Key=settings.storage.cache.size}" 
+                                                           FontWeight="SemiBold"
+                                                           VerticalAlignment="Center"
+                                                           Margin="0,0,10,0"/>
+                                                <TextBlock Grid.Column="1" 
+                                                           Text="{Binding CacheSize}" 
+                                                           VerticalAlignment="Center"/>
+                                            </Grid>
+                                            
+                                            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,5,0,0">
+                                                <Button Content="{loc:Translate Key=settings.storage.refresh}" 
+                                                        Command="{Binding CalculateCacheSizeCommand}"
+                                                        IsEnabled="{Binding !IsCacheCalculating}"
+                                                        ToolTip.Tip="{loc:Translate Key=settings.storage.cache.refresh.tooltip}"/>
+                                                
+                                                <Button Content="{loc:Translate Key=settings.storage.clear}" 
+                                                        Command="{Binding ClearCacheCommand}"
+                                                        IsEnabled="{Binding !IsCacheClearing}"
+                                                        ToolTip.Tip="{loc:Translate Key=settings.storage.cache.clear.tooltip}"/>
+                                            </StackPanel>
+                                            
+                                            <TextBlock Text="{loc:Translate Key=settings.storage.calculating}" 
+                                                       IsVisible="{Binding IsCacheCalculating}" 
+                                                       Opacity="0.7"/>
+                                            
+                                            <TextBlock Text="{loc:Translate Key=settings.storage.clearing}" 
+                                                       IsVisible="{Binding IsCacheClearing}" 
+                                                       Opacity="0.7"/>
+                                        </StackPanel>
+                                    </Border>
+                                    
+                                    <!-- Logs Size Section -->
+                                    <Border Background="#10FFFFFF" CornerRadius="4" Padding="15">
+                                        <StackPanel Spacing="10">
+                                            <Grid ColumnDefinitions="Auto,*">
+                                                <TextBlock Grid.Column="0" 
+                                                           Text="{loc:Translate Key=settings.storage.logs.size}" 
+                                                           FontWeight="SemiBold"
+                                                           VerticalAlignment="Center"
+                                                           Margin="0,0,10,0"/>
+                                                <TextBlock Grid.Column="1" 
+                                                           Text="{Binding LogsSize}" 
+                                                           VerticalAlignment="Center"/>
+                                            </Grid>
+                                            
+                                            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,5,0,0">
+                                                <Button Content="{loc:Translate Key=settings.storage.refresh}" 
+                                                        Command="{Binding CalculateLogsSizeCommand}"
+                                                        IsEnabled="{Binding !IsLogsCalculating}"
+                                                        ToolTip.Tip="{loc:Translate Key=settings.storage.logs.refresh.tooltip}"/>
+                                                
+                                                <Button Content="{loc:Translate Key=settings.storage.clear}" 
+                                                        Command="{Binding ClearLogsCommand}"
+                                                        IsEnabled="{Binding !IsLogsClearing}"
+                                                        ToolTip.Tip="{loc:Translate Key=settings.storage.logs.clear.tooltip}"/>
+                                            </StackPanel>
+                                            
+                                            <TextBlock Text="{loc:Translate Key=settings.storage.calculating}" 
+                                                       IsVisible="{Binding IsLogsCalculating}" 
+                                                       Opacity="0.7"/>
+                                            
+                                            <TextBlock Text="{loc:Translate Key=settings.storage.clearing}" 
+                                                       IsVisible="{Binding IsLogsClearing}" 
+                                                       Opacity="0.7"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </DataTemplate>
+                            
+                            <!-- About Settings Template -->
+                            <DataTemplate DataType="{x:Type vm:AboutSettingsViewModel}">
+                                <StackPanel Margin="20">
+                                    <TextBlock Text="OpenKnowledge" 
+                                               FontSize="32" 
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,0,0,5" />
+                   
+                                    <TextBlock Text="{loc:Translate Key=settings.about.subtitle}"
+                                               FontSize="16" 
+                                               HorizontalAlignment="Center"
+                                               Margin="0,0,0,30" />
+
+                                    <StackPanel Spacing="15">
+                                        <StackPanel>
+                                            <TextBlock Text="{loc:Translate Key=settings.about.version}"
+                                                       FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding VersionInfo}" />
+                                        </StackPanel>
+            
+                                        <StackPanel>
+                                            <TextBlock Text="{loc:Translate Key=settings.about.protocol}"
+                                                       FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding ProtocolVersion}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </StackPanel>
+                            </DataTemplate>
+
+
+
+
+                        </ContentControl.DataTemplates>
+                    </ContentControl>
+                </ScrollViewer>
+
+                <!-- Buttons Container -->
+                <StackPanel Grid.Row="1" 
+                            Orientation="Horizontal" 
+                            HorizontalAlignment="Right" 
+                            Spacing="10" 
+                            Margin="0,20,0,0">
+                    <!-- Save Button -->
+                    <Button Grid.Row="1"
+                            Content="{loc:Translate Key=settings.save}"
+                            HorizontalAlignment="Right"
+                            Margin="0,20,0,0"
+                            Classes="Primary"
+                            Command="{Binding SaveCommand}"/>
+                    
+                    <!-- Save & Exit Button -->
+                    <Button Grid.Row="1"
+                            Content="{loc:Translate Key=settings.save-exit}"
+                            HorizontalAlignment="Right"
+                            Margin="0,20,0,0"
+                            Background="Green"
+                            Classes="Primary"
+                            Command="{Binding SaveExitCommand}"/>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

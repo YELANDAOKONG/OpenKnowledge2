@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryOpenKnowledge", "LibraryOpenKnowledge\LibraryOpenKnowledge.csproj", "{5EC1B792-60F6-43F5-BD95-3DFB2A92B48E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenKnowledge", "OpenKnowledge\OpenKnowledge.csproj", "{5EC1B792-60F6-43F5-BD95-3DFB2A92B48E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DesktopKnowledgeAvalonia", "DesktopKnowledgeAvalonia\DesktopKnowledgeAvalonia.csproj", "{669254E4-249A-4436-9C37-E73CDB89CB1E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DesktopKnowledge", "DesktopKnowledge\DesktopKnowledge.csproj", "{669254E4-249A-4436-9C37-E73CDB89CB1E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

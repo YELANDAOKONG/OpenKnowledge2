@@ -1,0 +1,153 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DesktopKnowledge.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:loc="using:DesktopKnowledge.Localization"
+        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
+        x:Class="DesktopKnowledge.Views.ExaminationWindow"
+        x:DataType="vm:ExaminationWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        ExtendClientAreaToDecorationsHint="True"
+        IsVisible="{Binding IsWindowVisible}"
+        ShowInTaskbar="{Binding IsWindowVisible}"
+        Title="{loc:Translate Key=exam.title}"
+        MinWidth="800"
+        MinHeight="600">
+    
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Top header with exam info and controls -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,32,0,10">
+            <Button x:Name="BackButton" Grid.Column="0" Margin="10,0" Classes="Transparent">
+                <PathIcon Data="M10.78 19.03a.75.75 0 0 1-1.06 0l-6.25-6.25a.75.75 0 0 1 0-1.06l6.25-6.25a.75.75 0 0 1 1.06 1.06L5.81 11.5h13.44a.75.75 0 0 1 0 1.5H5.81l4.97 4.97a.75.75 0 0 1 0 1.06z" Width="16" Height="16" />
+            </Button>
+            
+            <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                <TextBlock x:Name="ExamTitle" Classes="H5" 
+                           HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                <TextBlock x:Name="ExamSubject"
+                           HorizontalAlignment="Center" Opacity="0.7" Margin="0,5,0,0"/>
+            </StackPanel>
+            
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="10,0" Spacing="10">
+                <TextBlock x:Name="TimeRemainingText" VerticalAlignment="Center"/>
+                <Button x:Name="SubmitButton" Classes="Accent">
+                    <TextBlock x:Name="SubmitButtonText"/>
+                </Button>
+            </StackPanel>
+        </Grid>
+        
+        <!-- Main content area with resizable left panel -->
+        <Grid Grid.Row="1" ColumnDefinitions="240,Auto,*" Margin="10,0">
+            <!-- Left sidebar with sections and questions list -->
+            <Border Grid.Column="0" Margin="0,0,0,0" CornerRadius="8" 
+                    Background="#1AFFFFFF" Padding="10">
+                <Grid RowDefinitions="Auto,*">
+                    <TextBlock x:Name="SectionsHeader" FontWeight="SemiBold" Grid.Row="0" Margin="5"/>
+                    
+                    <ScrollViewer Grid.Row="1" Margin="0,10,0,0">
+                        <StackPanel x:Name="SectionsPanel">
+                            <!-- Sections and questions will be created dynamically -->
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+            
+            <!-- GridSplitter for resizing the left panel -->
+            <GridSplitter Grid.Column="1" Width="5" Background="Transparent"
+                          HorizontalAlignment="Center" VerticalAlignment="Stretch"
+                          Margin="5,0"/>
+            
+            <!-- Right content area with question display and answer area -->
+            <Border Grid.Column="2" CornerRadius="8" 
+                    Background="#1AFFFFFF" Padding="20">
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <!-- Question information -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+                        <StackPanel Grid.Column="0">
+                            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,0,5">
+                                <TextBlock x:Name="QuestionTypeText" 
+                                           Classes="Subtitle" Foreground="#569AFF"/>
+                                <TextBlock x:Name="QuestionScoreText"
+                                           Classes="Subtitle" Opacity="0.7"/>
+                            </StackPanel>
+                            <TextBlock x:Name="QuestionNumberText" FontWeight="SemiBold"/>
+                        </StackPanel>
+                        
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                            <Button x:Name="SaveButton" Classes="Transparent">
+                                <PathIcon Data="M5 5v14h14V5H5zm0-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm7 4a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm0 8c-.28 0-.5-.22-.5-.5V11a.5.5 0 0 1 1 0v3.5c0 .28-.22.5-.5.5z" Width="16" Height="16"/>
+                            </Button>
+                            <Button x:Name="InfoButton" Classes="Transparent">
+                                <PathIcon Data="M12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16zm0 6c.55 0 1 .45 1 1v4a1 1 0 1 1-2 0v-4c0-.55.45-1 1-1zm0-2.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z" Width="16" Height="16"/>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                    
+                    <!-- Question content and answer area -->
+                    <ScrollViewer Grid.Row="1" Margin="0,10">
+                        <StackPanel x:Name="QuestionContentPanel" Spacing="20">
+                            <!-- Question stem -->
+                            <TextBlock x:Name="QuestionStemText" TextWrapping="Wrap" FontSize="16"/>
+                            
+                            <!-- Reference materials expander -->
+                            <Expander x:Name="ReferenceMaterialsExpander">
+                                <StackPanel x:Name="ReferenceMaterialsPanel" Margin="0,5">
+                                    <!-- Reference materials will be added dynamically -->
+                                </StackPanel>
+                            </Expander>
+                            
+                            <!-- Answer container - will be populated dynamically based on question type -->
+                            <StackPanel x:Name="AnswerContainer">
+                                <!-- Answer controls will be created dynamically -->
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                    
+                    <!-- Navigation controls -->
+                    <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" Margin="0,10,0,0">
+                        <Button x:Name="PrevButton" Grid.Column="0"/>
+                        
+                        <StackPanel Grid.Column="1" HorizontalAlignment="Center" Orientation="Horizontal">
+                            <TextBlock x:Name="CurrentQuestionText" VerticalAlignment="Center"/>
+                            <TextBlock Text=" / " VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TotalQuestionsText" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        
+                        <Button x:Name="NextButton" Grid.Column="2" Classes="Accent"/>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+        
+        <!-- Bottom progress bar -->
+        <Grid Grid.Row="2" Margin="10,10,10,20">
+            <StackPanel>
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock x:Name="ProgressText" Grid.Column="0" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="ProgressPercentText" Grid.Column="1"/>
+                </Grid>
+                <ProgressBar x:Name="ProgressBar" Height="8" Margin="0,5,0,0"/>
+            </StackPanel>
+        </Grid>
+        
+        <!-- Status message overlay -->
+        <Border x:Name="StatusOverlay" Grid.Row="0" Grid.RowSpan="3" 
+                Background="#88000000" IsVisible="False">
+            <Border Background="#222222" 
+                    CornerRadius="8" 
+                    MaxWidth="400" 
+                    MaxHeight="200" 
+                    Padding="20">
+                <StackPanel Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <ProgressBar x:Name="StatusProgressBar" IsIndeterminate="True"/>
+                    <TextBlock x:Name="StatusMessageText" 
+                               TextWrapping="Wrap" 
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </Border>
+    </Grid>
+</Window>

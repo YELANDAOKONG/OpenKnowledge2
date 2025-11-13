@@ -1,0 +1,73 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:loc="using:DesktopKnowledge.Localization"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
+        x:Class="DesktopKnowledge.Views.FatalErrorWindow"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="{loc:Translate Key=error.window.title}"
+        Width="600" Height="400"
+        MinWidth="500" MinHeight="350"
+        WindowStartupLocation="CenterScreen"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        ExtendClientAreaToDecorationsHint="True">
+
+    <Panel>
+        <!-- Background -->
+        <Border CornerRadius="8" Margin="10">
+            <Border.Background>
+                <SolidColorBrush Color="#222222" Opacity="0.9"/>
+            </Border.Background>
+        </Border>
+        
+        <!-- Content -->
+        <Grid Margin="30,40,30,30" RowDefinitions="Auto,Auto,*,Auto">
+            <!-- Header -->
+            <StackPanel Grid.Row="0" Spacing="10">
+                <PathIcon Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" 
+                          Width="48" Height="48" Foreground="#E74C3C"/>
+                <TextBlock Text="{loc:Translate Key=error.header}" 
+                           FontSize="24" FontWeight="SemiBold" Foreground="White"/>
+                <TextBlock Text="{loc:Translate Key=error.instruction}" 
+                           Foreground="White" Opacity="0.8" TextWrapping="Wrap"/>
+            </StackPanel>
+            
+            <!-- Separator -->
+            <Separator Grid.Row="1" Margin="0,20" Background="#44FFFFFF"/>
+            
+            <!-- Stack Trace -->
+            <Grid Grid.Row="2" RowDefinitions="Auto,*">
+                <TextBlock Grid.Row="0" Text="{loc:Translate Key=error.stacktrace.header}" 
+                           Foreground="White" Opacity="0.8" Margin="0,0,0,10"/>
+                <Border Grid.Row="1" CornerRadius="4" Background="#22FFFFFF" Padding="10">
+                    <ScrollViewer>
+                        <SelectableTextBlock x:Name="ErrorDetailsTextBlock" 
+                                            Text="" 
+                                            Foreground="White" Opacity="0.7" 
+                                            TextWrapping="Wrap" FontFamily="Consolas"/>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+            
+            <!-- Buttons -->
+            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,20,0,0">
+                <Button x:Name="CopyButton" Click="CopyButton_OnClick" Classes="Transparent">
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <PathIcon Data="M5 3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5zm0 2h10v14H5V5zm14-3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-1v-2h1V4H9V3h10z" 
+                                 Height="16" Width="16"/>
+                        <TextBlock Text="{loc:Translate Key=error.button.copy}"/>
+                    </StackPanel>
+                </Button>
+                <Button x:Name="ExitButton" Click="ExitButton_OnClick" Classes="Accent">
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <PathIcon Data="M10 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm2.35 3.65a.5.5 0 0 1 0 .7L10.71 10l1.64 1.65a.5.5 0 0 1-.7.7L10 10.71l-1.65 1.64a.5.5 0 0 1-.7-.7L9.29 10 7.65 8.35a.5.5 0 1 1 .7-.7L10 9.29l1.65-1.64a.5.5 0 0 1 .7 0z" 
+                                 Height="16" Width="16"/>
+                        <TextBlock Text="{loc:Translate Key=error.button.exit}"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Panel>
+</Window>

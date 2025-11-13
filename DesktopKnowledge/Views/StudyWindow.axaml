@@ -1,0 +1,240 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DesktopKnowledge.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:loc="using:DesktopKnowledge.Localization"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="DesktopKnowledge.Views.StudyWindow"
+        Icon="/Assets/avalonia-logo.ico"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        ExtendClientAreaToDecorationsHint="True"
+        Title="OpenKnowledge Practice"
+        MinWidth="800"
+        MinHeight="600">
+        
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Top header with study info and controls -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,32,0,10">
+            <Button Grid.Column="0" Margin="10,0" Classes="Transparent">
+                <PathIcon Data="M10.78 19.03a.75.75 0 0 1-1.06 0l-6.25-6.25a.75.75 0 0 1 0-1.06l6.25-6.25a.75.75 0 0 1 1.06 1.06L5.81 11.5h13.44a.75.75 0 0 1 0 1.5H5.81l4.97 4.97a.75.75 0 0 1 0 1.06z" Width="16" Height="16" />
+            </Button>
+            
+            <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                <TextBlock Text="高等数学知识点练习" Classes="H5" 
+                           HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                <TextBlock Text="微分学基础" 
+                           HorizontalAlignment="Center" Opacity="0.7" Margin="0,5,0,0"/>
+            </StackPanel>
+            
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="10,0" Spacing="10">
+                <TextBlock Text="练习模式" VerticalAlignment="Center" Foreground="#569AFF"/>
+                <Button Classes="Success">完成练习</Button>
+            </StackPanel>
+        </Grid>
+        
+        <!-- Main content area -->
+        <Grid Grid.Row="1" ColumnDefinitions="240,*" Margin="10,0">
+            <!-- Left sidebar with sections and questions list -->
+            <Border Grid.Column="0" Margin="0,0,10,0" CornerRadius="8" 
+                    Background="#1AFFFFFF" Padding="10">
+                <Grid RowDefinitions="Auto,*">
+                    <TextBlock Text="章节与题目" FontWeight="SemiBold" Grid.Row="0" Margin="5"/>
+                    
+                    <ScrollViewer Grid.Row="1" Margin="0,10,0,0">
+                        <StackPanel>
+                            <Expander Header="第一章：极限与导数" Margin="0,0,0,5" IsExpanded="True">
+                                <StackPanel>
+                                    <Button Classes="Subtle" HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Left"
+                                            Margin="0,2">
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <TextBlock Grid.Column="0" Text="1" Margin="0,0,8,0"/>
+                                            <TextBlock Grid.Column="1" Text="求函数极限" TextTrimming="CharacterEllipsis"/>
+                                            <PathIcon Grid.Column="2" Data="M10.09 13.5 7.02 10.4a.75.75 0 0 0-1.06 1.06l3.5 3.5a1 1 0 0 0 1.42 0l7.5-7.5a.75.75 0 1 0-1.06-1.06l-7.23 7.1Z" 
+                                                      Width="12" Height="12" Margin="8,0,0,0"/>
+                                        </Grid>
+                                    </Button>
+                                    <Button Classes="Subtle" HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Left" Background="#22569AFF"
+                                            Margin="0,2">
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <TextBlock Grid.Column="0" Text="2" Margin="0,0,8,0"/>
+                                            <TextBlock Grid.Column="1" Text="导数的几何意义" TextTrimming="CharacterEllipsis"/>
+                                            <PathIcon Grid.Column="2" Data="M10.09 13.5 7.02 10.4a.75.75 0 0 0-1.06 1.06l3.5 3.5a1 1 0 0 0 1.42 0l7.5-7.5a.75.75 0 1 0-1.06-1.06l-7.23 7.1Z" 
+                                                      Width="12" Height="12" Margin="8,0,0,0"/>
+                                        </Grid>
+                                    </Button>
+                                    <Button Classes="Subtle" HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Left"
+                                            Margin="0,2">
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <TextBlock Grid.Column="0" Text="3" Margin="0,0,8,0"/>
+                                            <TextBlock Grid.Column="1" Text="微分中值定理" TextTrimming="CharacterEllipsis"/>
+                                        </Grid>
+                                    </Button>
+                                </StackPanel>
+                            </Expander>
+                            
+                            <Expander Header="第二章：积分学" Margin="0,0,0,5">
+                                <StackPanel>
+                                    <Button Classes="Subtle" HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Left"
+                                            Margin="0,2">
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <TextBlock Grid.Column="0" Text="4" Margin="0,0,8,0"/>
+                                            <TextBlock Grid.Column="1" Text="不定积分的计算" TextTrimming="CharacterEllipsis"/>
+                                        </Grid>
+                                    </Button>
+                                    <Button Classes="Subtle" HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Left"
+                                            Margin="0,2">
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <TextBlock Grid.Column="0" Text="5" Margin="0,0,8,0"/>
+                                            <TextBlock Grid.Column="1" Text="定积分的应用" TextTrimming="CharacterEllipsis"/>
+                                        </Grid>
+                                    </Button>
+                                </StackPanel>
+                            </Expander>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+            
+            <!-- Right content area with question display and answer area -->
+            <Border Grid.Column="1" CornerRadius="8" 
+                    Background="#1AFFFFFF" Padding="20">
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <!-- Question information with AI help buttons -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+                        <StackPanel Grid.Column="0">
+                            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,0,5">
+                                <TextBlock Text="概念理解题" 
+                                           Classes="Subtitle" Foreground="#569AFF"/>
+                                <TextBlock Text="(难度：中等)" 
+                                           Classes="Subtitle" Opacity="0.7"/>
+                            </StackPanel>
+                            <TextBlock Text="题目 2：导数的几何意义" FontWeight="SemiBold"/>
+                        </StackPanel>
+                        
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                            <Button Classes="Accent">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <PathIcon Data="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17zM19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 16H5V5h2v3h10V5h2v14z" Width="16" Height="16"/>
+                                    <TextBlock Text="智能检查"/>
+                                </StackPanel>
+                            </Button>
+                            
+                            <!-- AI Help Button -->
+                            <Button Classes="Accent">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <PathIcon Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1-5h-2v2h2v-2zm0-8c1.41 0 2.5 1.09 2.5 2.5 0 .83-.42 1.59-1.12 2.03l-.88.59c-.61.41-1 1.13-1 1.88v.5h-2v-.5c0-1.31.83-2.45 2.06-2.86l.88-.59c.27-.18.44-.5.44-.84 0-.55-.45-1-1-1s-1 .45-1 1H9c0-1.66 1.34-3 3-3z" 
+                                              Width="16" Height="16"/>
+                                    <TextBlock Text="智能答疑"/>
+                                </StackPanel>
+                            </Button>
+                            
+                            <!-- Reference materials button -->
+                            <Button Classes="Transparent">
+                                <PathIcon Data="M12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16zm0 6c.55 0 1 .45 1 1v4a1 1 0 1 1-2 0v-4c0-.55.45-1 1-1zm0-2.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z" Width="16" Height="16"/>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                    
+                    <!-- Question content and answer area -->
+                    <ScrollViewer Grid.Row="1" Margin="0,10">
+                        <StackPanel Spacing="20">
+                            <!-- Question stem -->
+                            <TextBlock Text="解释导数的几何意义，并说明导数 f'(x₀) 与函数在点 x₀ 处的切线斜率有什么关系？" 
+                                       TextWrapping="Wrap" FontSize="16"/>
+                            
+                            <!-- Reference materials if any -->
+                            <Expander Header="参考资料">
+                                <StackPanel Margin="0,5">
+                                    <TextBlock Text="导数的几何意义：函数导数 f'(x₀) 在几何上表示函数图像在点 (x₀, f(x₀)) 处的切线斜率。" 
+                                               TextWrapping="Wrap" Margin="0,3"/>
+                                    <TextBlock Text="切线方程：y - f(x₀) = f'(x₀)(x - x₀)" 
+                                               TextWrapping="Wrap" Margin="0,3"/>
+                                    <Image Source="avares://DesktopKnowledge/Assets/avalonia-logo.ico" 
+                                           MaxHeight="300" Margin="0,10"/>
+                                </StackPanel>
+                            </Expander>
+                            
+                            <!-- Answer area with TextBox -->
+                            <TextBox Watermark="请在此输入你的答案..." 
+                                     AcceptsReturn="True" TextWrapping="Wrap" MinHeight="150"
+                                     Text="导数的几何意义是函数在某一点的变化率，图形上表现为该点切线的斜率。如果 f'(x₀) 表示函数 f(x) 在点 x₀ 处的导数，那么它就等于函数图像在点 (x₀, f(x₀)) 处的切线斜率。"/>
+                            
+                            <!-- Answer control buttons -->
+                            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+                                <Button Classes="Transparent">
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <PathIcon Data="M14.5 2a2.5 2.5 0 0 1 2.5 2.5v15a.5.5 0 0 1-.8.4l-3.7-2.8-3.7 2.8a.5.5 0 0 1-.8-.4v-15A2.5 2.5 0 0 1 10.5 2h4zM12 17.66l2-1.5 2 1.5V4.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v13.16z" Width="16" Height="16"/>
+                                        <TextBlock Text="收藏题目"/>
+                                    </StackPanel>
+                                </Button>
+                                
+                                <!-- AI Feedback Button -->
+                                <Button Classes="Secondary">
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <PathIcon Data="M11 15h2v2h-2v-2zm0-8h2v6h-2V7zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" Width="16" Height="16"/>
+                                        <TextBlock Text="题目错误"/>
+                                    </StackPanel>
+                                </Button>
+                                
+                                <!-- Confirm Answer Button -->
+                                <Button Classes="Primary">
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <PathIcon Data="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" Width="16" Height="16"/>
+                                        <TextBlock Text="确认答案"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                            
+                            <!-- AI Feedback Display Area (Initially hidden, show when feedback requested) -->
+                            <Border Background="#15569AFF" CornerRadius="4" Padding="15" IsVisible="True">
+                                <StackPanel Spacing="10">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <PathIcon Data="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17zM19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 16H5V5h2v3h10V5h2v14z" Width="16" Height="16" Foreground="#569AFF"/>
+                                        <TextBlock Text="智能检查" Foreground="#569AFF" FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                    
+                                    <TextBlock TextWrapping="Wrap" Text="你的答案正确地解释了导数的几何意义！可以再补充一点：导数还表示函数在该点的瞬时变化率，这在物理上对应速度或加速度等概念。建议你可以增加一个具体的例子来展示，比如 f(x) = x² 在 x₀ = 1 处的导数是 2，所以切线斜率也是 2。"/>
+                                    
+                                    <Button HorizontalAlignment="Right" Classes="Transparent">
+                                        <TextBlock Text="关闭检查" Foreground="#569AFF"/>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                    
+                    <!-- Navigation controls -->
+                    <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" Margin="0,10,0,0">
+                        <Button Grid.Column="0" Content="上一题" />
+                        
+                        <StackPanel Grid.Column="1" HorizontalAlignment="Center" Orientation="Horizontal">
+                            <TextBlock Text="2" VerticalAlignment="Center"/>
+                            <TextBlock Text=" / " VerticalAlignment="Center"/>
+                            <TextBlock Text="5" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        
+                        <Button Grid.Column="2" Content="下一题" Classes="Accent"/>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+        
+        <!-- Bottom progress bar -->
+        <Grid Grid.Row="2" Margin="10,10,10,20">
+            <StackPanel>
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0" Text="学习进度" FontWeight="SemiBold"/>
+                    <TextBlock Grid.Column="1" Text="40%"/>
+                </Grid>
+                <ProgressBar Value="40" Maximum="100" Height="8" Margin="0,5,0,0"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>
