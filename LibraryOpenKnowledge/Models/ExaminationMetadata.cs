@@ -18,5 +18,5 @@ public class ExaminationMetadata
     public long? MinimumExamTime { get; set; } = null; // 最小考试时间（考试开始时间为 0 计时的毫秒时间戳，超过此时间后可提前胶卷）
     public long? MaximumExamTime { get; set; } = null; // 最大考试时间（考试开始时间为 0 计时的毫秒时间戳，超过此时间后无法继续考试）
 
-    public ReferenceMaterial[]? ReferenceMaterials { get; set; } = new ReferenceMaterial[] { }; // 试卷参考资料
+    public ReferenceMaterial[]? ReferenceMaterials { get; set; } = []; // 试卷参考资料
 }

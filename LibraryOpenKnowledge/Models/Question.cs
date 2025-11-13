@@ -15,7 +15,7 @@ public class Question
     public double Score { get; set; } = 1.0; // 分数
 
     public string[]? UserAnswer { get; set; } // 用户答案
-    public string[] Answer { get; set; } // 标准答案
+    public string[] Answer { get; set; } = []; // 标准答案
     public string[]? ReferenceAnswer { get; set; } // 参考答案
     
     public ReferenceMaterial[]? ReferenceMaterials { get; set; } = new ReferenceMaterial[] { }; // 参考资料

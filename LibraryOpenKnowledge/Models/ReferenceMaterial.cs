@@ -5,7 +5,7 @@ namespace LibraryOpenKnowledge.Models;
 [Serializable]
 public class ReferenceMaterial
 {
-    public string[] Materials { get; set; } = new string[] { };
+    public string[] Materials { get; set; } = [];
     
     public ReferenceMaterialDocument[]? Documents { get; set; } = null;
     

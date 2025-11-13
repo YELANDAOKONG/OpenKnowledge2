@@ -7,6 +7,6 @@ public class Examination
 {
     public ExaminationVersion ExaminationVersion { get; set; } = new();
     public ExaminationMetadata ExaminationMetadata { get; set; } = new();
-    public ExaminationSection[] ExaminationSections { get; set; } = new ExaminationSection[] { };
-    public ExaminationExtension[] ExaminationExtensions { get; set; } = new ExaminationExtension[] { };
+    public ExaminationSection[] ExaminationSections { get; set; } = [];
+    public ExaminationExtension[] ExaminationExtensions { get; set; } = [];
 }
